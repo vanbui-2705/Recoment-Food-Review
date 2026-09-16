@@ -1,0 +1,159 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  USER
+  ADMIN
+
+  @@map("user_role")
+}
+
+enum UserStatus {
+  ACTIVE
+  DISABLED
+
+  @@map("user_status")
+}
+
+enum AllergySeverity {
+  UNKNOWN
+  MILD
+  MODERATE
+  SEVERE
+
+  @@map("allergy_severity")
+}
+
+model User {
+  id                  String                   @id @default(uuid()) @db.Uuid
+  email               String                   @unique @db.VarChar(255)
+  passwordHash        String                   @map("password_hash")
+  displayName         String                   @map("display_name") @db.VarChar(100)
+  role                UserRole                 @default(USER)
+  status              UserStatus               @default(ACTIVE)
+  emailVerifiedAt     DateTime?                @map("email_verified_at") @db.Timestamptz(3)
+  createdAt           DateTime                 @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt           DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(3)
+  refreshTokens       RefreshToken[]
+  tasteProfile        TasteProfile?
+  allergies           UserAllergy[]
+  dietaryRestrictions UserDietaryRestriction[]
+  cuisinePreferences  UserCuisinePreference[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id                String        @id @default(uuid()) @db.Uuid
+  userId            String        @map("user_id") @db.Uuid
+  tokenHash         String        @unique @map("token_hash")
+  expiresAt         DateTime      @map("expires_at") @db.Timestamptz(3)
+  revokedAt         DateTime?     @map("revoked_at") @db.Timestamptz(3)
+  replacedByTokenId String?       @unique @map("replaced_by_token_id") @db.Uuid
+  lastUsedAt        DateTime?     @map("last_used_at") @db.Timestamptz(3)
+  userAgent         String?       @map("user_agent")
+  ipAddress         String?       @map("ip_address") @db.Inet
+  createdAt         DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  replacedBy        RefreshToken? @relation("TokenReplacement", fields: [replacedByTokenId], references: [id], onDelete: SetNull)
+  replaces          RefreshToken? @relation("TokenReplacement")
+
+  @@index([userId, expiresAt])
+  @@map("refresh_tokens")
+}
+
+model TasteProfile {
+  id                  String   @id @default(uuid()) @db.Uuid
+  userId              String   @unique @map("user_id") @db.Uuid
+  spicyLevel          Int      @map("spicy_level") @db.SmallInt
+  sweetLevel          Int      @map("sweet_level") @db.SmallInt
+  sourLevel           Int      @map("sour_level") @db.SmallInt
+  saltyLevel          Int      @map("salty_level") @db.SmallInt
+  budgetMin           Int      @map("budget_min")
+  budgetMax           Int      @map("budget_max")
+  maxDistanceMeters   Int      @map("max_distance_meters")
+  onboardingCompleted Boolean  @default(false) @map("onboarding_completed")
+  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt           DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("taste_profiles")
+}
+
+model Allergen {
+  id          String        @id @default(uuid()) @db.Uuid
+  code        String        @unique @db.VarChar(50)
+  name        String        @db.VarChar(100)
+  description String?
+  createdAt   DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  users       UserAllergy[]
+
+  @@map("allergens")
+}
+
+model UserAllergy {
+  userId     String          @map("user_id") @db.Uuid
+  allergenId String          @map("allergen_id") @db.Uuid
+  severity   AllergySeverity @default(UNKNOWN)
+  notes      String?         @db.VarChar(500)
+  createdAt  DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  allergen   Allergen        @relation(fields: [allergenId], references: [id], onDelete: Restrict)
+
+  @@id([userId, allergenId])
+  @@map("user_allergies")
+}
+
+model DietaryRestriction {
+  id          String                   @id @default(uuid()) @db.Uuid
+  code        String                   @unique @db.VarChar(50)
+  name        String                   @db.VarChar(100)
+  description String?
+  createdAt   DateTime                 @default(now()) @map("created_at") @db.Timestamptz(3)
+  users       UserDietaryRestriction[]
+
+  @@map("dietary_restrictions")
+}
+
+model UserDietaryRestriction {
+  userId               String             @map("user_id") @db.Uuid
+  dietaryRestrictionId String             @map("dietary_restriction_id") @db.Uuid
+  isMandatory          Boolean            @default(true) @map("is_mandatory")
+  createdAt            DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
+  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dietaryRestriction   DietaryRestriction @relation(fields: [dietaryRestrictionId], references: [id], onDelete: Restrict)
+
+  @@id([userId, dietaryRestrictionId])
+  @@map("user_dietary_restrictions")
+}
+
+model Cuisine {
+  id          String                  @id @default(uuid()) @db.Uuid
+  code        String                  @unique @db.VarChar(50)
+  name        String                  @db.VarChar(100)
+  description String?
+  createdAt   DateTime                @default(now()) @map("created_at") @db.Timestamptz(3)
+  users       UserCuisinePreference[]
+
+  @@map("cuisines")
+}
+
+model UserCuisinePreference {
+  userId          String   @map("user_id") @db.Uuid
+  cuisineId       String   @map("cuisine_id") @db.Uuid
+  preferenceScore Int      @map("preference_score") @db.SmallInt
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cuisine         Cuisine  @relation(fields: [cuisineId], references: [id], onDelete: Restrict)
+
+  @@id([userId, cuisineId])
+  @@map("user_cuisine_preferences")
+}
