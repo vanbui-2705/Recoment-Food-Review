@@ -72,9 +72,9 @@ Không tạo toàn bộ schema trong một migration lớn. Mỗi giai đoạn p
 |---|---|---|
 | DB01 Authentication | Hoàn thành | `20260916134059_init_auth` |
 | DB02 Taste Profile | Hoàn thành | `20260916135938_add_taste_profile` |
-| DB03 Dish Knowledge Base | Chưa bắt đầu | Bước tiếp theo |
-| DB04 Restaurants & Places | Chưa bắt đầu | Phụ thuộc DB03 |
-| DB05 Recommendation History | Chưa bắt đầu | Phụ thuộc các module trước |
+| DB03 Dish Knowledge Base | Hoàn thành | `20260918090000_add_dish_knowledge_base` |
+| DB04 Restaurants & Places | Hoàn thành | `20260918133000_add_restaurants_and_places` |
+| DB05 Recommendation History | Hoàn thành | `20260918170000_add_recommendation_history_feedback` + rating fix |
 
 ---
 
@@ -494,7 +494,46 @@ DB02 đã hoàn thành các bước:
 8. Thêm database integration tests cho unique, check constraint, relation và cascade.
 9. Ghi lại DB01 và DB02 bằng OpenSpec để proposal, spec, design và checklist có thể truy vết.
 
-## 15. Ngoài phạm vi hiện tại
+## 15. DB03 implementation record
+
+DB03 đã hoàn thành các bước:
+
+1. Thêm `Dish` với slug unique, cuisine, khoảng giá, flavor scores và trạng thái xác minh.
+2. Thêm `DishAlias`, `Ingredient`, `DishIngredient`, `DishAllergen` và `UserDishPreference` với composite keys phù hợp.
+3. Tạo và apply migration `20260918090000_add_dish_knowledge_base`.
+4. Thêm check constraint cho khoảng giá, flavor scores, nguồn bằng chứng dị nguyên và timestamp của mapping đã xác minh.
+5. Thêm index cho cuisine, normalized alias và chiều ngược của các bảng nối.
+6. Mở rộng seed idempotent với 14 nguyên liệu, 5 món Việt, 10 alias, 22 mapping nguyên liệu và 7 mapping dị nguyên có nguồn/trạng thái.
+7. Thêm database integration tests cho constraint, lookup theo slug/alias, unique mapping, allergen evidence, preference và cascade/restrict.
+8. Xác nhận seed chạy lặp lại không đổi row counts và toàn bộ 15 database integration tests pass.
+
+## 16. DB04 implementation record
+
+DB04 đã hoàn thành các bước:
+
+1. Thêm `Restaurant` với internal UUID, Google Place ID nullable/unique và metadata địa điểm có timestamp cache.
+2. Thêm `RestaurantDish` với composite primary key, giá VND, availability, source và verification timestamp.
+3. Tạo và apply migration `20260918133000_add_restaurants_and_places`.
+4. Thêm check constraint cho tọa độ, rating, rating count, price level, menu price và nguồn dữ liệu.
+5. Mở rộng seed idempotent với 3 restaurant và 5 restaurant-dish mappings.
+6. Thêm database integration tests cho provider upsert, manual restaurant, constraint, unique mapping và cascade/restrict.
+7. Xác nhận migration/seed trên database hiện tại và database trống; toàn bộ 23 database tests pass.
+
+## 17. DB05 implementation record
+
+DB05 đã hoàn thành các bước:
+
+1. Thêm `RecommendationRequest` để lưu user, thời gian, location, meal/weather, budget/distance snapshot, yêu cầu tự nhiên và status.
+2. Thêm `RecommendationResult` với rank unique trong request, score, lý do hiển thị và safety warnings dạng JSONB.
+3. Thêm `UserInteraction` với interaction type, rating và idempotency key unique.
+4. Tạo và apply migration `20260918170000_add_recommendation_history_feedback`.
+5. Thêm migration sửa tiếp `20260918172000_enforce_rated_interaction_rating` để PostgreSQL bắt buộc `RATED` phải có rating 1–5.
+6. Thêm index lịch sử theo user/thời gian và index cho các foreign key truy vấn ngược.
+7. Áp dụng cascade cho dữ liệu thuộc user/request và restrict cho dish/restaurant được history tham chiếu.
+8. Không tạo cột lưu chain-of-thought, secret prompt, credential hoặc raw private model reasoning.
+9. Xác nhận toàn bộ 6 migrations và seed chạy được trên database trống; 35 database integration tests pass.
+
+## 18. Ngoài phạm vi hiện tại
 
 - pgvector và embedding;
 - PostGIS;
@@ -505,6 +544,8 @@ DB02 đã hoàn thành các bước:
 - chat history dài hạn;
 - lưu toàn bộ raw prompt/response của LLM.
 
-**Status:** DB01 và DB02 implemented and verified  
-**Next milestone:** DB03 — Dish Knowledge Base  
-**Last updated:** 2026-09-16
+**Status:** DB01 đến DB05 implemented and verified — database plan hoàn thành
+
+**Next milestone:** Repository/service/API implementation trên schema đã hoàn thành
+
+**Last updated:** 2026-09-18

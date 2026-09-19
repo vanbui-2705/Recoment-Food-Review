@@ -31,21 +31,86 @@ enum AllergySeverity {
   @@map("allergy_severity")
 }
 
+enum VerificationStatus {
+  UNVERIFIED
+  REVIEWED
+  VERIFIED
+
+  @@map("verification_status")
+}
+
+enum AllergenPresence {
+  CONTAINS
+  MAY_CONTAIN
+
+  @@map("allergen_presence")
+}
+
+enum DishPreferenceValue {
+  LIKED
+  DISLIKED
+
+  @@map("dish_preference_value")
+}
+
+enum RestaurantBusinessStatus {
+  UNKNOWN
+  OPERATIONAL
+  TEMPORARILY_CLOSED
+  PERMANENTLY_CLOSED
+
+  @@map("restaurant_business_status")
+}
+
+enum RecommendationStatus {
+  SUCCESS
+  NO_MATCH
+  NO_SAFE_MATCH
+  INSUFFICIENT_DATA
+  FAILED
+
+  @@map("recommendation_status")
+}
+
+enum MealPeriod {
+  BREAKFAST
+  LUNCH
+  DINNER
+  SNACK
+  LATE_NIGHT
+
+  @@map("meal_period")
+}
+
+enum UserInteractionType {
+  VIEWED
+  LIKED
+  SKIPPED
+  CHOSEN
+  EATEN
+  RATED
+
+  @@map("user_interaction_type")
+}
+
 model User {
-  id                  String                   @id @default(uuid()) @db.Uuid
-  email               String                   @unique @db.VarChar(255)
-  passwordHash        String                   @map("password_hash")
-  displayName         String                   @map("display_name") @db.VarChar(100)
-  role                UserRole                 @default(USER)
-  status              UserStatus               @default(ACTIVE)
-  emailVerifiedAt     DateTime?                @map("email_verified_at") @db.Timestamptz(3)
-  createdAt           DateTime                 @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt           DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(3)
-  refreshTokens       RefreshToken[]
-  tasteProfile        TasteProfile?
-  allergies           UserAllergy[]
-  dietaryRestrictions UserDietaryRestriction[]
-  cuisinePreferences  UserCuisinePreference[]
+  id                     String                   @id @default(uuid()) @db.Uuid
+  email                  String                   @unique @db.VarChar(255)
+  passwordHash           String                   @map("password_hash")
+  displayName            String                   @map("display_name") @db.VarChar(100)
+  role                   UserRole                 @default(USER)
+  status                 UserStatus               @default(ACTIVE)
+  emailVerifiedAt        DateTime?                @map("email_verified_at") @db.Timestamptz(3)
+  createdAt              DateTime                 @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt              DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(3)
+  refreshTokens          RefreshToken[]
+  tasteProfile           TasteProfile?
+  allergies              UserAllergy[]
+  dietaryRestrictions    UserDietaryRestriction[]
+  cuisinePreferences     UserCuisinePreference[]
+  dishPreferences        UserDishPreference[]
+  recommendationRequests RecommendationRequest[]
+  interactions           UserInteraction[]
 
   @@map("users")
 }
@@ -88,12 +153,13 @@ model TasteProfile {
 }
 
 model Allergen {
-  id          String        @id @default(uuid()) @db.Uuid
-  code        String        @unique @db.VarChar(50)
-  name        String        @db.VarChar(100)
+  id          String         @id @default(uuid()) @db.Uuid
+  code        String         @unique @db.VarChar(50)
+  name        String         @db.VarChar(100)
   description String?
-  createdAt   DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
   users       UserAllergy[]
+  dishes      DishAllergen[]
 
   @@map("allergens")
 }
@@ -141,6 +207,7 @@ model Cuisine {
   description String?
   createdAt   DateTime                @default(now()) @map("created_at") @db.Timestamptz(3)
   users       UserCuisinePreference[]
+  dishes      Dish[]
 
   @@map("cuisines")
 }
@@ -156,4 +223,203 @@ model UserCuisinePreference {
 
   @@id([userId, cuisineId])
   @@map("user_cuisine_preferences")
+}
+
+model Dish {
+  id                    String                 @id @default(uuid()) @db.Uuid
+  slug                  String                 @unique @db.VarChar(120)
+  name                  String                 @db.VarChar(150)
+  description           String?
+  cuisineId             String                 @map("cuisine_id") @db.Uuid
+  priceMin              Int                    @map("price_min")
+  priceMax              Int                    @map("price_max")
+  spicyLevel            Int                    @map("spicy_level") @db.SmallInt
+  sweetLevel            Int                    @map("sweet_level") @db.SmallInt
+  sourLevel             Int                    @map("sour_level") @db.SmallInt
+  saltyLevel            Int                    @map("salty_level") @db.SmallInt
+  verificationStatus    VerificationStatus     @default(UNVERIFIED) @map("verification_status")
+  createdAt             DateTime               @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt             DateTime               @updatedAt @map("updated_at") @db.Timestamptz(3)
+  cuisine               Cuisine                @relation(fields: [cuisineId], references: [id], onDelete: Restrict)
+  aliases               DishAlias[]
+  ingredients           DishIngredient[]
+  allergens             DishAllergen[]
+  userPreferences       UserDishPreference[]
+  restaurants           RestaurantDish[]
+  recommendationResults RecommendationResult[]
+  interactions          UserInteraction[]
+
+  @@index([cuisineId])
+  @@map("dishes")
+}
+
+model DishAlias {
+  id              String   @id @default(uuid()) @db.Uuid
+  dishId          String   @map("dish_id") @db.Uuid
+  alias           String   @db.VarChar(150)
+  normalizedAlias String   @map("normalized_alias") @db.VarChar(150)
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  dish            Dish     @relation(fields: [dishId], references: [id], onDelete: Cascade)
+
+  @@unique([dishId, normalizedAlias])
+  @@index([normalizedAlias])
+  @@map("dish_aliases")
+}
+
+model Ingredient {
+  id          String           @id @default(uuid()) @db.Uuid
+  code        String           @unique @db.VarChar(80)
+  name        String           @db.VarChar(150)
+  description String?
+  createdAt   DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  dishes      DishIngredient[]
+
+  @@map("ingredients")
+}
+
+model DishIngredient {
+  dishId       String     @map("dish_id") @db.Uuid
+  ingredientId String     @map("ingredient_id") @db.Uuid
+  isPrimary    Boolean    @default(false) @map("is_primary")
+  notes        String?    @db.VarChar(300)
+  createdAt    DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  dish         Dish       @relation(fields: [dishId], references: [id], onDelete: Cascade)
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Restrict)
+
+  @@id([dishId, ingredientId])
+  @@index([ingredientId])
+  @@map("dish_ingredients")
+}
+
+model DishAllergen {
+  dishId             String             @map("dish_id") @db.Uuid
+  allergenId         String             @map("allergen_id") @db.Uuid
+  presence           AllergenPresence
+  verificationStatus VerificationStatus @default(UNVERIFIED) @map("verification_status")
+  evidenceSource     String             @map("evidence_source") @db.VarChar(500)
+  verifiedAt         DateTime?          @map("verified_at") @db.Timestamptz(3)
+  createdAt          DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
+  dish               Dish               @relation(fields: [dishId], references: [id], onDelete: Cascade)
+  allergen           Allergen           @relation(fields: [allergenId], references: [id], onDelete: Restrict)
+
+  @@id([dishId, allergenId])
+  @@index([allergenId])
+  @@map("dish_allergens")
+}
+
+model UserDishPreference {
+  userId     String              @map("user_id") @db.Uuid
+  dishId     String              @map("dish_id") @db.Uuid
+  preference DishPreferenceValue
+  createdAt  DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime            @updatedAt @map("updated_at") @db.Timestamptz(3)
+  user       User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dish       Dish                @relation(fields: [dishId], references: [id], onDelete: Cascade)
+
+  @@id([userId, dishId])
+  @@index([dishId])
+  @@map("user_dish_preferences")
+}
+
+model Restaurant {
+  id                    String                   @id @default(uuid()) @db.Uuid
+  googlePlaceId         String?                  @unique @map("google_place_id") @db.VarChar(255)
+  name                  String                   @db.VarChar(200)
+  address               String                   @db.VarChar(500)
+  latitude              Decimal                  @db.Decimal(9, 6)
+  longitude             Decimal                  @db.Decimal(9, 6)
+  rating                Decimal?                 @db.Decimal(2, 1)
+  ratingCount           Int                      @default(0) @map("rating_count")
+  priceLevel            Int?                     @map("price_level") @db.SmallInt
+  businessStatus        RestaurantBusinessStatus @default(UNKNOWN) @map("business_status")
+  placesDataUpdatedAt   DateTime?                @map("places_data_updated_at") @db.Timestamptz(3)
+  createdAt             DateTime                 @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt             DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(3)
+  dishes                RestaurantDish[]
+  recommendationResults RecommendationResult[]
+  interactions          UserInteraction[]
+
+  @@index([latitude, longitude])
+  @@map("restaurants")
+}
+
+model RestaurantDish {
+  restaurantId String     @map("restaurant_id") @db.Uuid
+  dishId       String     @map("dish_id") @db.Uuid
+  price        Int
+  isAvailable  Boolean    @default(true) @map("is_available")
+  source       String     @db.VarChar(500)
+  verifiedAt   DateTime?  @map("verified_at") @db.Timestamptz(3)
+  createdAt    DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime   @updatedAt @map("updated_at") @db.Timestamptz(3)
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  dish         Dish       @relation(fields: [dishId], references: [id], onDelete: Restrict)
+
+  @@id([restaurantId, dishId])
+  @@index([dishId])
+  @@map("restaurant_dishes")
+}
+
+model RecommendationRequest {
+  id                     String                 @id @default(uuid()) @db.Uuid
+  userId                 String                 @map("user_id") @db.Uuid
+  requestedAt            DateTime               @default(now()) @map("requested_at") @db.Timestamptz(3)
+  latitude               Decimal                @db.Decimal(9, 6)
+  longitude              Decimal                @db.Decimal(9, 6)
+  mealPeriod             MealPeriod?            @map("meal_period")
+  weather                String?                @db.VarChar(100)
+  budgetMin              Int?                   @map("budget_min")
+  budgetMax              Int?                   @map("budget_max")
+  maxDistanceMeters      Int?                   @map("max_distance_meters")
+  naturalLanguageRequest String?                @map("natural_language_request") @db.VarChar(1000)
+  status                 RecommendationStatus
+  user                   User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  results                RecommendationResult[]
+
+  @@index([userId, requestedAt(sort: Desc)])
+  @@map("recommendation_requests")
+}
+
+model RecommendationResult {
+  id             String                @id @default(uuid()) @db.Uuid
+  requestId      String                @map("request_id") @db.Uuid
+  dishId         String                @map("dish_id") @db.Uuid
+  restaurantId   String?               @map("restaurant_id") @db.Uuid
+  rank           Int
+  baseScore      Decimal               @map("base_score") @db.Decimal(7, 4)
+  finalScore     Decimal               @map("final_score") @db.Decimal(7, 4)
+  reason         String                @db.VarChar(1000)
+  safetyWarnings Json                  @map("safety_warnings") @db.JsonB
+  createdAt      DateTime              @default(now()) @map("created_at") @db.Timestamptz(3)
+  request        RecommendationRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  dish           Dish                  @relation(fields: [dishId], references: [id], onDelete: Restrict)
+  restaurant     Restaurant?           @relation(fields: [restaurantId], references: [id], onDelete: Restrict)
+  interactions   UserInteraction[]
+
+  @@unique([requestId, rank])
+  @@index([dishId])
+  @@index([restaurantId])
+  @@map("recommendation_results")
+}
+
+model UserInteraction {
+  id                     String                @id @default(uuid()) @db.Uuid
+  userId                 String                @map("user_id") @db.Uuid
+  recommendationResultId String?               @map("recommendation_result_id") @db.Uuid
+  dishId                 String                @map("dish_id") @db.Uuid
+  restaurantId           String?               @map("restaurant_id") @db.Uuid
+  interactionType        UserInteractionType   @map("interaction_type")
+  rating                 Int?                  @db.SmallInt
+  idempotencyKey         String                @unique @map("idempotency_key") @db.VarChar(255)
+  createdAt              DateTime              @default(now()) @map("created_at") @db.Timestamptz(3)
+  user                   User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recommendationResult   RecommendationResult? @relation(fields: [recommendationResultId], references: [id], onDelete: SetNull)
+  dish                   Dish                  @relation(fields: [dishId], references: [id], onDelete: Restrict)
+  restaurant             Restaurant?           @relation(fields: [restaurantId], references: [id], onDelete: Restrict)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([recommendationResultId])
+  @@index([dishId])
+  @@index([restaurantId])
+  @@map("user_interactions")
 }

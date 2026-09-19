@@ -1,0 +1,64 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: rec_food
+      POSTGRES_USER: rec_food
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-rec_food_dev_password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - rec_food_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rec_food -d rec_food"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  migrate:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: migrate
+    environment:
+      DATABASE_URL: postgresql://rec_food:${POSTGRES_PASSWORD:-rec_food_dev_password}@postgres:5432/rec_food?schema=public
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  seed:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: seed
+    environment:
+      DATABASE_URL: postgresql://rec_food:${POSTGRES_PASSWORD:-rec_food_dev_password}@postgres:5432/rec_food?schema=public
+      SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:-admin@rec-food.local}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-change-me-in-local-env}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: "no"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: production
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 3001
+      DATABASE_URL: postgresql://rec_food:${POSTGRES_PASSWORD:-rec_food_dev_password}@postgres:5432/rec_food?schema=public
+    ports:
+      - "3001:3001"
+    depends_on:
+      seed:
+        condition: service_completed_successfully
+
+volumes:
+  rec_food_postgres_data:
