@@ -13,6 +13,28 @@ jobs:
   backend:
     name: Backend
     runs-on: ubuntu-latest
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://rec_food:rec_food_ci_password@localhost:5432/rec_food?schema=public
+      JWT_ACCESS_SECRET: ci-jwt-access-secret-that-is-long-enough
+      ACCESS_TOKEN_TTL_SECONDS: 900
+      REFRESH_TOKEN_TTL_DAYS: 30
+      SEED_ADMIN_EMAIL: admin@rec-food.local
+      SEED_ADMIN_PASSWORD: ci-admin-password
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: rec_food
+          POSTGRES_USER: rec_food
+          POSTGRES_PASSWORD: rec_food_ci_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U rec_food -d rec_food"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     defaults:
       run:
         working-directory: backend
@@ -39,5 +61,17 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Apply database migrations
+        run: npm run db:migrate:deploy
+
+      - name: Seed database
+        run: npm run db:seed
+
       - name: Test
         run: npm test
+
+      - name: Database test
+        run: npm run test:db

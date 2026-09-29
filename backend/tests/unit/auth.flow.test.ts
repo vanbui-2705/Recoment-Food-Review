@@ -62,7 +62,9 @@ describe("complete authentication flow", () => {
       expect.objectContaining({ tokenHash: session.refreshToken }),
     );
 
-    await expect(verifyAccessToken(session.accessToken, config.jwtAccessSecret)).resolves.toMatchObject({
+    await expect(
+      verifyAccessToken(session.accessToken, config.jwtAccessSecret),
+    ).resolves.toMatchObject({
       userId: user.id,
       role: "USER",
     });
@@ -75,7 +77,9 @@ describe("complete authentication flow", () => {
     });
     const service = createAuthService(repository, config);
 
-    await expect(service.login({ email: user.email, password: "wrong-password" })).rejects.toMatchObject({
+    await expect(
+      service.login({ email: user.email, password: "wrong-password" }),
+    ).rejects.toMatchObject({
       statusCode: 401,
       code: "INVALID_CREDENTIALS",
     });
@@ -119,7 +123,9 @@ describe("complete authentication flow", () => {
       }),
     });
 
-    await expect(createAuthService(disabledRepository, config).refresh({ refreshToken: oldRefreshToken })).rejects.toMatchObject({
+    await expect(
+      createAuthService(disabledRepository, config).refresh({ refreshToken: oldRefreshToken }),
+    ).rejects.toMatchObject({
       statusCode: 401,
       code: "INVALID_CREDENTIALS",
     });

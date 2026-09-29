@@ -4,7 +4,10 @@ import type { FastifyInstance, FastifyRequest, preHandlerAsyncHookHandler } from
 import { loadEnv } from "../config/env.js";
 import { AppError } from "../common/errors/app-error.js";
 import { verifyAccessToken } from "../common/security/token.js";
-import { createAuthRepository, type RegisteredUserRecord } from "../modules/auth/auth.repository.js";
+import {
+  createAuthRepository,
+  type RegisteredUserRecord,
+} from "../modules/auth/auth.repository.js";
 
 export type AuthenticatedRequestUser = RegisteredUserRecord;
 export type AppRole = "USER" | "ADMIN";
@@ -30,40 +33,43 @@ export const authPlugin = fastifyPlugin(
     const repository = createAuthRepository(app.prisma);
 
     app.decorateRequest("authUser", null);
-    app.decorate("authenticate", async function authenticate(request: FastifyRequest): Promise<void> {
-      const authorization = request.headers.authorization;
-      if (!authorization?.startsWith("Bearer ")) {
-        throw unauthorized();
-      }
-
-      const accessToken = authorization.slice("Bearer ".length).trim();
-      if (!accessToken) {
-        throw unauthorized();
-      }
-
-      try {
-        const claims = await verifyAccessToken(accessToken, config.jwtAccessSecret);
-        const user = await repository.findUserById(claims.userId);
-
-        if (!user || user.status !== "ACTIVE") {
+    app.decorate(
+      "authenticate",
+      async function authenticate(request: FastifyRequest): Promise<void> {
+        const authorization = request.headers.authorization;
+        if (!authorization?.startsWith("Bearer ")) {
           throw unauthorized();
         }
 
-        request.authUser = {
-          id: user.id,
-          email: user.email,
-          displayName: user.displayName,
-          role: user.role,
-          createdAt: user.createdAt,
-        };
-      } catch (error) {
-        if (error instanceof AppError) {
-          throw error;
+        const accessToken = authorization.slice("Bearer ".length).trim();
+        if (!accessToken) {
+          throw unauthorized();
         }
 
-        throw unauthorized();
-      }
-    });
+        try {
+          const claims = await verifyAccessToken(accessToken, config.jwtAccessSecret);
+          const user = await repository.findUserById(claims.userId);
+
+          if (!user || user.status !== "ACTIVE") {
+            throw unauthorized();
+          }
+
+          request.authUser = {
+            id: user.id,
+            email: user.email,
+            displayName: user.displayName,
+            role: user.role,
+            createdAt: user.createdAt,
+          };
+        } catch (error) {
+          if (error instanceof AppError) {
+            throw error;
+          }
+
+          throw unauthorized();
+        }
+      },
+    );
 
     app.decorate("requireRoles", (...roles: AppRole[]) => {
       return async function requireRoles(request: FastifyRequest): Promise<void> {

@@ -13,7 +13,10 @@ import {
 } from "./auth.schema.js";
 import { createAuthService } from "./auth.service.js";
 
-function requestMetadata(request: { headers: Record<string, string | string[] | undefined>; ip: string }) {
+function requestMetadata(request: {
+  headers: Record<string, string | string[] | undefined>;
+  ip: string;
+}) {
   const userAgent = request.headers["user-agent"];
 
   const metadata: { userAgent?: string; ipAddress: string } = { ipAddress: request.ip };
@@ -49,7 +52,11 @@ export const authRoutes: FastifyPluginAsyncTypebox = async function authRoutes(a
     limit: 5,
     windowMs: 60_000,
   });
-  const loginRateLimit = createRateLimitHook({ keyPrefix: "auth-login", limit: 5, windowMs: 60_000 });
+  const loginRateLimit = createRateLimitHook({
+    keyPrefix: "auth-login",
+    limit: 5,
+    windowMs: 60_000,
+  });
   const refreshRateLimit = createRateLimitHook({
     keyPrefix: "auth-refresh",
     limit: 10,
@@ -114,14 +121,10 @@ export const authRoutes: FastifyPluginAsyncTypebox = async function authRoutes(a
     },
   );
 
-  app.post(
-    "/auth/logout",
-    { schema: { body: RefreshTokenSchema } },
-    async (request, reply) => {
-      await service.logout(request.body);
-      return reply.status(204).send();
-    },
-  );
+  app.post("/auth/logout", { schema: { body: RefreshTokenSchema } }, async (request, reply) => {
+    await service.logout(request.body);
+    return reply.status(204).send();
+  });
 
   app.post(
     "/auth/change-password",

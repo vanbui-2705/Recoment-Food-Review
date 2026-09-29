@@ -30,7 +30,8 @@ export function createRateLimitHook(options: RateLimitOptions): preHandlerAsyncH
 
     const key = `${options.keyPrefix}:${request.ip}`;
     const bucket = buckets.get(key);
-    const current = bucket && bucket.resetAt > now ? bucket : { count: 0, resetAt: now + options.windowMs };
+    const current =
+      bucket && bucket.resetAt > now ? bucket : { count: 0, resetAt: now + options.windowMs };
 
     if (current.count >= options.limit) {
       const retryAfterSeconds = Math.max(1, Math.ceil((current.resetAt - now) / 1_000));

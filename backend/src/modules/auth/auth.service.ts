@@ -65,10 +65,7 @@ function refreshTokenExpired(expiresAt: Date): boolean {
   return expiresAt.getTime() <= Date.now();
 }
 
-export function createAuthService(
-  repository: AuthRepository,
-  config?: AuthServiceConfig,
-) {
+export function createAuthService(repository: AuthRepository, config?: AuthServiceConfig) {
   const requireConfig = (): AuthServiceConfig => {
     if (!config) {
       throw new Error("Auth service token configuration is required");
@@ -219,7 +216,11 @@ export function createAuthService(
       }
 
       if (input.currentPassword === input.newPassword) {
-        throw new AppError(400, "PASSWORD_REUSE_NOT_ALLOWED", "Mật khẩu mới phải khác mật khẩu hiện tại");
+        throw new AppError(
+          400,
+          "PASSWORD_REUSE_NOT_ALLOWED",
+          "Mật khẩu mới phải khác mật khẩu hiện tại",
+        );
       }
 
       await repository.changePassword(userId, await hashPassword(input.newPassword));
