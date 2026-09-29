@@ -1,0 +1,20 @@
+{
+  "folders": [
+    {
+      "name": "Rec-Food",
+      "path": "."
+    }
+  ],
+  "settings": {
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/dist": true,
+      "**/src/generated/prisma": true
+    },
+    "files.exclude": {
+      "**/node_modules": true,
+      "**/dist": true
+    },
+    "typescript.tsdk": "backend/node_modules/typescript/lib"
+  }
+}
