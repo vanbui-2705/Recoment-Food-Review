@@ -15,6 +15,7 @@ function hasValidationErrors(error: unknown): error is ValidationErrorLike {
 }
 
 export function registerErrorHandlers(app: FastifyInstance): void {
+  // Chuẩn hóa lỗi 404 để mọi lỗi API có cùng cấu trúc error + request_id.
   app.setNotFoundHandler((request, reply) => {
     return reply.status(404).send({
       error: {
@@ -27,6 +28,7 @@ export function registerErrorHandlers(app: FastifyInstance): void {
   });
 
   app.setErrorHandler((error, request, reply) => {
+    // Lỗi do Fastify/TypeBox phát hiện khi request không đúng schema.
     if (hasValidationErrors(error)) {
       return reply.status(400).send({
         error: {
@@ -38,6 +40,7 @@ export function registerErrorHandlers(app: FastifyInstance): void {
       });
     }
 
+    // Lỗi nghiệp vụ đã biết, ví dụ email đăng ký bị trùng.
     if (error instanceof AppError) {
       return reply.status(error.statusCode).send({
         error: {
@@ -49,6 +52,7 @@ export function registerErrorHandlers(app: FastifyInstance): void {
       });
     }
 
+    // Lỗi không dự kiến chỉ được ghi vào server log; không trả stack/message nội bộ cho client.
     request.log.error({ err: error }, "Unhandled application error");
 
     return reply.status(500).send({

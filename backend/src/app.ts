@@ -2,7 +2,11 @@ import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import Fastify from "fastify";
 
 import { registerErrorHandlers } from "./common/errors/error-handler.js";
+import { adminRoutes } from "./modules/admin/admin.route.js";
+import { authRoutes } from "./modules/auth/auth.route.js";
 import { healthRoutes } from "./modules/health/health.route.js";
+import { usersRoutes } from "./modules/users/users.route.js";
+import { authPlugin } from "./plugins/auth.plugin.js";
 import { databasePlugin } from "./plugins/database.plugin.js";
 
 export type BuildAppOptions = {
@@ -19,6 +23,10 @@ export function buildApp(options: BuildAppOptions = {}) {
 
   if (options.database ?? true) {
     app.register(databasePlugin);
+    app.register(authPlugin);
+    app.register(authRoutes);
+    app.register(usersRoutes);
+    app.register(adminRoutes);
   }
 
   app.register(healthRoutes);
