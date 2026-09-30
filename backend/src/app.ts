@@ -5,6 +5,7 @@ import { registerErrorHandlers } from "./common/errors/error-handler.js";
 import { adminRoutes } from "./modules/admin/admin.route.js";
 import { authRoutes } from "./modules/auth/auth.route.js";
 import { healthRoutes } from "./modules/health/health.route.js";
+import { tasteProfileRoutes } from "./modules/taste-profile/taste-profile.route.js";
 import { usersRoutes } from "./modules/users/users.route.js";
 import { authPlugin } from "./plugins/auth.plugin.js";
 import { databasePlugin } from "./plugins/database.plugin.js";
@@ -26,6 +27,7 @@ export function buildApp(options: BuildAppOptions = {}) {
     app.register(authPlugin);
     app.register(authRoutes);
     app.register(usersRoutes);
+    app.register(tasteProfileRoutes);
     app.register(adminRoutes);
   }
 

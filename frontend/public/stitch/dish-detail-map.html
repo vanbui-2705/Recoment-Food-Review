@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_stack" name="shell-type"/><title>EatWise AI - Chi Tiết</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;background-color:#faf8ff;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}*{-ms-overflow-style:none;scrollbar-width:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "error": "#ba1a1a", "inverse-surface": "#283044", "on-error": "#ffffff", "on-primary-fixed": "#341100", "inverse-primary": "#ffb690", "surface-bright": "#faf8ff", "on-secondary-container": "#fffbff", "tertiary-container": "#00b07a", "on-secondary-fixed": "#07006c", "on-tertiary": "#ffffff", "surface": "#faf8ff", "outline-variant": "#e0c0b1", "on-background": "#131b2e", "tertiary-fixed": "#6ffbbe", "secondary-container": "#6063ee", "surface-container-lowest": "#ffffff", "on-primary-fixed-variant": "#783200", "on-primary": "#ffffff", "primary-fixed": "#ffdbca", "primary": "#9d4300", "secondary-fixed-dim": "#c0c1ff", "primary-fixed-dim": "#ffb690", "surface-variant": "#dae2fd", "surface-container": "#eaedff", "secondary": "#4648d4", "on-surface-variant": "#584237", "inverse-on-surface": "#eef0ff", "on-tertiary-fixed": "#002113", "error-container": "#ffdad6", "surface-dim": "#d2d9f4", "surface-container-low": "#f2f3ff", "on-secondary-fixed-variant": "#2f2ebe", "on-error-container": "#93000a", "on-tertiary-fixed-variant": "#005236", "outline": "#8c7164", "tertiary": "#006c49", "on-tertiary-container": "#003b26", "secondary-fixed": "#e1e0ff", "background": "#faf8ff", "tertiary-fixed-dim": "#4edea3", "surface-container-highest": "#dae2fd", "on-secondary": "#ffffff", "on-surface": "#131b2e", "primary-container": "#f97316", "on-primary-container": "#582200", "surface-tint": "#9d4300", "surface-container-high": "#e2e7ff" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "space-md": "1rem", "margin-lg": "3rem", "gutter-md": "1.5rem", "gutter": "1rem", "space-xl": "2.25rem", "gutter-lg": "2rem", "margin-md": "2rem", "space-xs": "0.25rem", "margin": "1rem", "space-sm": "0.5rem", "space-lg": "1.5rem" }, fontFamily: { "label-sm": ["Plus Jakarta Sans"], "display-lg-mobile": ["Plus Jakarta Sans"], "body-md": ["Plus Jakarta Sans"], "headline-sm": ["Plus Jakarta Sans"], "body-sm": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "display-lg": ["Plus Jakarta Sans"], "label-lg": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"], "label-md": ["Plus Jakarta Sans"] }, fontSize: { "label-sm": ["10px", { "lineHeight": "12px", "letterSpacing": "0.04em", "fontWeight": "700" }], "display-lg-mobile": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.025em", "fontWeight": "800" }], "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }], "headline-sm": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }], "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "400" }], "display-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.03em", "fontWeight": "800" }], "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }], "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.015em", "fontWeight": "700" }], "headline-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }] } } } };</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-body-md text-on-surface antialiased min-h-screen flex flex-col selection:bg-primary-container selection:text-on-primary-container"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.03)]"><div class="h-16 px-gutter flex items-center justify-between"><div class="flex items-center gap-space-sm min-w-0"><button class="min-w-[44px] min-h-[44px] rounded-full flex items-center justify-center text-on-surface hover:bg-surface-container transition-colors -ml-2" onclick="history.back()" type="button"><span class="material-symbols-outlined text-[24px]">arrow_back</span></button><h1 class="font-headline-sm text-headline-sm text-on-surface truncate font-bold">Chi Tiet Mon An</h1></div><div class="flex items-center gap-space-xs shrink-0"><button class="min-w-[44px] min-h-[44px] rounded-full flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors" type="button"><span class="material-symbols-outlined text-[22px]">share</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex-1 flex flex-col relative w-full pt-16 pb-safe bg-surface"><div class="flex flex-col w-full pb-24">
+<!-- Top Visual Card: Dish Hero & Dietary Safety Badges -->
+<div class="px-gutter pt-space-sm">
+<div class="relative w-full rounded-xl overflow-hidden shadow-md bg-surface-container-lowest">
+<div class="relative h-60 w-full overflow-hidden">
+<img class="w-full h-full object-cover transform hover:scale-105 transition-transform duration-700" data-alt="A steaming, mouth-watering bowl of Hue beef noodle soup Bun Bo Hue with tender beef shank slices, rich chili lemongrass broth, aromatic scallions, and fresh herbs, gourmet food photography, warm cinematic lighting, high culinary definition with soft orange glow" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCn2J0aiTv7b56bN6xgc17Ra0mk2gyVuCnqdZt7AjdoKL8be2Cp2JZ81yiZIo_qW9D0POyP7UyV2FwcjNXiGYw5uQexdLH-uiPOyHlMXQnSuG1-PiZpUYlhvffej20ewPm6XL8D-O7Kn1g34XEJ3LI4RwyiH3Wj8xUO4x6HIS1dDDbaSOSSo6t5_BH0dOGmro_PlaStOuSNpUF3GDlWo1ZDZ4FJn_G_PIeKZ3MYqNd9RAXd7TthplcZbA"/>
+<div class="absolute inset-0 bg-gradient-to-t from-inverse-surface/80 via-transparent to-black/20"></div>
+<!-- Top Badges Floating Over Image -->
+<div class="absolute top-space-sm left-space-sm right-space-sm flex items-center justify-between gap-space-xs">
+<div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-tertiary text-on-tertiary shadow-sm backdrop-blur-md">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="font-label-md text-label-md">An toàn dị ứng 100% • Không hải sản</span>
+</div>
+<button class="w-9 h-9 rounded-full bg-surface-container-lowest/80 backdrop-blur-md flex items-center justify-center text-primary transition-transform active:scale-90 shadow-sm" id="favorite-toggle" onclick="toggleFavorite()">
+<span class="material-symbols-outlined text-[20px]" id="fav-icon" style="font-variation-settings: 'FILL' 1;">favorite</span>
+</button>
+</div>
+<!-- Floating Price Pill on Hero -->
+<div class="absolute bottom-space-sm left-space-sm">
+<div class="bg-surface-container-lowest/95 backdrop-blur-md px-3 py-1 rounded-full shadow-md flex items-baseline gap-1">
+<span class="font-display-lg-mobile text-headline-sm text-primary font-bold">55.000đ</span>
+<span class="font-body-sm text-body-sm text-outline line-through">70.000đ</span>
+</div>
+</div>
+</div>
+<!-- Dish Vital Attributes -->
+<div class="p-space-md flex flex-col gap-space-sm">
+<div class="flex items-start justify-between gap-2">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Bún Bò Huế Đặc Biệt</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Bò bắp hoa mềm, chả cua quế, nước hầm xương ống 12 tiếng</p>
+</div>
+</div>
+<!-- Sensoric & Macro Grid -->
+<div class="grid grid-cols-3 gap-2 pt-1">
+<div class="bg-surface-container rounded-lg p-2.5 flex flex-col items-center justify-center text-center">
+<div class="flex items-center gap-1 text-primary mb-0.5">
+<span class="material-symbols-outlined text-[18px]">local_fire_department</span>
+<span class="font-label-lg text-label-lg text-on-surface">480</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Năng lượng kcal</span>
+</div>
+<div class="bg-surface-container rounded-lg p-2.5 flex flex-col items-center justify-center text-center">
+<div class="flex items-center gap-0.5 text-error mb-0.5">
+<span class="text-[13px]">🌶️🌶️🌶️</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Độ cay 3/5 (Vừa)</span>
+</div>
+<div class="bg-surface-container rounded-lg p-2.5 flex flex-col items-center justify-center text-center">
+<div class="flex items-center gap-1 text-tertiary mb-0.5">
+<span class="material-symbols-outlined text-[18px]">shield</span>
+<span class="font-label-lg text-label-lg text-tertiary">Safe+</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Không mì chính thô</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Interactive Map Stack Section -->
+<div class="px-gutter pt-space-lg flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[22px]">explore</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Vị trí &amp; Quán gợi ý lân cận</h3>
+</div>
+<span class="font-label-md text-label-md text-primary font-semibold">Cầu Giấy, Hà Nội</span>
+</div>
+<!-- Map Canvas Card with Overlays -->
+<div class="relative w-full rounded-xl overflow-hidden shadow-sm bg-surface-container-high h-[340px]">
+<!-- Background Map Layer using pipeline data-location -->
+<div class="w-full h-full bg-cover bg-center absolute inset-0 filter saturate-150 contrast-95 opacity-90" data-location="Duy Tan, Cau Giay, Hanoi, Vietnam" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBdd49EO-uZligIs8OFdvZ2n17Y7s8u5ZIY3vlbBLF5rZxGoJ-Y4zjYLkldx7ild09tMdGBR0UR6YEWHQdTH_pZ48vjQR3_wrRRkhVD7ZDzLAkUJDH5Qi2gryfK_sOtFEDsEZhPWEVbtryEVBIw5ElhE0lH8WWg8W8TAiw-FLaewkscfXdbgkJS96d3MSQ6YHUdAYMf0Qkvh2gT_83HEI0uF4RpqtXhgbg0ZXXSZICvMzUPNqReugE54g')"></div>
+<!-- Stylized Street Grids & Radials simulation for live look -->
+<div class="absolute inset-0 bg-gradient-to-b from-surface/30 via-transparent to-surface/80 pointer-events-none"></div>
+<!-- Live GPS User Pulse Indicator -->
+<div class="absolute top-[48%] left-[28%] -translate-x-1/2 -translate-y-1/2 pointer-events-none flex items-center justify-center">
+<div class="w-8 h-8 rounded-full bg-secondary/20 animate-ping absolute"></div>
+<div class="w-4 h-4 rounded-full bg-secondary shadow-md flex items-center justify-center">
+<div class="w-1.5 h-1.5 rounded-full bg-surface-container-lowest"></div>
+</div>
+</div>
+<!-- Custom Map Pin 2: Ngự Uyển -->
+<button class="absolute top-[22%] right-[18%] z-10 transition-transform active:scale-95 flex flex-col items-center group cursor-pointer" id="pin-ngu-uyen" onclick="selectPin('ngu-uyen')" type="button">
+<div class="bg-surface-container-lowest px-2.5 py-1 rounded-full shadow-md flex items-center gap-1 text-on-surface">
+<span class="font-label-md text-label-md font-bold">Ngự Uyển</span>
+<span class="font-label-sm text-label-sm text-primary font-bold">50k</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant flex items-center">★4.6</span>
+</div>
+<div class="w-2 h-2 bg-surface-container-lowest rotate-45 -mt-1 shadow-sm"></div>
+</button>
+<!-- Custom Map Pin 3: Cố Đô -->
+<button class="absolute bottom-[28%] right-[22%] z-10 transition-transform active:scale-95 flex flex-col items-center group cursor-pointer" id="pin-co-do" onclick="selectPin('co-do')" type="button">
+<div class="bg-surface-container-lowest px-2.5 py-1 rounded-full shadow-md flex items-center gap-1 text-on-surface">
+<span class="font-label-md text-label-md font-bold">Cố Đô</span>
+<span class="font-label-sm text-label-sm text-primary font-bold">60k</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant flex items-center">★4.7</span>
+</div>
+<div class="w-2 h-2 bg-surface-container-lowest rotate-45 -mt-1 shadow-sm"></div>
+</button>
+<!-- Custom Map Pin 1 (Selected): O Xuân -->
+<button class="absolute top-[42%] left-[45%] -translate-x-1/2 z-20 transition-transform flex flex-col items-center cursor-pointer scale-105" id="pin-o-xuan" onclick="selectPin('o-xuan')" type="button">
+<div class="bg-primary text-on-primary px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5 ring-2 ring-primary-fixed">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">restaurant</span>
+<span class="font-label-md text-label-md font-bold whitespace-nowrap">O Xuân • 55k</span>
+<span class="bg-primary-container text-on-primary-container px-1 rounded font-label-sm text-label-sm">4.8★</span>
+</div>
+<div class="w-2.5 h-2.5 bg-primary rotate-45 -mt-1 shadow-sm"></div>
+</button>
+<!-- Street Label Badges for Orientation -->
+<div class="absolute bottom-2 left-2 bg-surface/85 backdrop-blur-sm px-2 py-1 rounded text-on-surface-variant font-label-sm text-label-sm shadow-sm flex items-center gap-1 pointer-events-none">
+<span class="material-symbols-outlined text-[13px]">signpost</span>
+        Phố Duy Tân x Trần Thái Tông
+      </div>
+<!-- Quick Route Info Chip -->
+<div class="absolute top-2 left-2 bg-surface-container-lowest/90 backdrop-blur-md px-2.5 py-1 rounded-full text-secondary font-label-sm text-label-sm shadow-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px]">directions_walk</span>
+        Cách 850m (12 phút đi bộ)
+      </div>
+</div>
+<!-- Active Pin Highlight Popover Card -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-md flex flex-col gap-space-sm -mt-2 relative z-20" id="pin-popup-card">
+<div class="flex items-start justify-between gap-3">
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<h4 class="font-headline-sm text-headline-sm text-on-surface font-bold" id="store-title">Bún Bò Huế O Xuân</h4>
+<span class="material-symbols-outlined text-tertiary text-[18px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant pt-0.5" id="store-meta">
+            Số 3 Duy Tân, Cầu Giấy • Mở cửa đến 22:00
+          </p>
+</div>
+<div class="flex flex-col items-end shrink-0">
+<span class="px-2 py-0.5 rounded-full bg-tertiary-container/20 text-tertiary font-label-sm text-label-sm font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">bolt</span>
+            12 phút giao
+          </span>
+<span class="font-label-sm text-label-sm text-outline pt-1">Đánh giá 4.8★ (320+)</span>
+</div>
+</div>
+<!-- Action Buttons Row -->
+<div class="grid grid-cols-2 gap-space-sm pt-1">
+<button class="flex items-center justify-center gap-1.5 py-2 px-3 rounded-full bg-surface-container text-on-surface font-label-md text-label-md active:bg-surface-container-high transition-colors" onclick="triggerDirections()" type="button">
+<span class="material-symbols-outlined text-[18px] text-secondary">turn_right</span>
+<span>Chỉ đường</span>
+</button>
+<button class="flex items-center justify-center gap-1.5 py-2 px-3 rounded-full bg-surface-container text-on-surface font-label-md text-label-md active:bg-surface-container-high transition-colors" onclick="scrollToReviews()" type="button">
+<span class="material-symbols-outlined text-[18px] text-primary">chat_bubble</span>
+<span>Xem review (320)</span>
+</button>
+</div>
+</div>
+</div>
+<!-- AI Review Synthesis Summary Card -->
+<div class="px-gutter pt-space-lg">
+<div class="relative overflow-hidden rounded-xl bg-gradient-to-br from-surface-container-low via-surface-container to-surface-variant p-space-md shadow-sm">
+<!-- Ambient Glow Behind Sparkle -->
+<div class="absolute -right-6 -bottom-6 w-24 h-24 bg-secondary-fixed-dim/40 rounded-full blur-2xl pointer-events-none"></div>
+<div class="flex items-center gap-2 mb-space-xs">
+<div class="w-6 h-6 rounded-full bg-secondary flex items-center justify-center text-on-secondary shadow-xs">
+<span class="material-symbols-outlined text-[16px]">auto_awesome</span>
+</div>
+<span class="font-label-lg text-label-lg text-secondary font-bold">AI Review Summary</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant bg-surface-container-lowest/80 px-2 py-0.5 rounded-full">
+          320 đánh giá Google Maps
+        </span>
+</div>
+<p class="font-body-md text-body-md text-on-surface leading-relaxed mt-1">
+        Khách đánh giá cao <strong class="text-primary font-semibold">thịt bò bắp hoa tươi mềm</strong>, nước dùng ngọt thanh đậm vị sả ớt tự nhiên, <span class="text-tertiary font-medium">không dùng mì chính nhiều</span>.
+      </p>
+<!-- Smart AI Timing Note -->
+<div class="mt-space-sm p-space-sm rounded-lg bg-surface-container-lowest/90 backdrop-blur-sm flex items-start gap-2 shadow-xs">
+<span class="material-symbols-outlined text-primary-container text-[20px] shrink-0 mt-0.5">schedule</span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-bold">Khuyến nghị thời gian:</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">
+            Giờ trưa (11h45 - 12h30) rất đông khách. Bạn nên nhờ AI đặt trước để nhận suất ưu tiên không phải chờ.
+          </span>
+</div>
+</div>
+</div>
+</div>
+<!-- Customer Real Reviews Feed -->
+<div class="px-gutter pt-space-lg flex flex-col gap-space-md" id="reviews-feed">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Đánh giá từ thực khách</h3>
+<span class="font-label-md text-label-md text-outline">(4.8/5.0)</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-primary-container text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary-container text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary-container text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary-container text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary-container text-[18px]" style="font-variation-settings: 'FILL' 1;">star_half</span>
+</div>
+</div>
+<!-- Review Card 1 -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-full bg-secondary-fixed flex items-center justify-center text-on-secondary-fixed font-headline-sm font-bold">
+            TL
+          </div>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg text-on-surface font-bold">Trần Thùy Linh</span>
+<span class="font-body-sm text-body-sm text-outline">Đã ghé hôm qua • Ăn tại quán</span>
+</div>
+</div>
+<div class="px-2 py-0.5 rounded-full bg-tertiary-container/15 text-tertiary flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<span class="font-label-sm text-label-sm font-semibold">Đã xác thực thực khách</span>
+</div>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-primary-container" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px] text-primary-container" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px] text-primary-container" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px] text-primary-container" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px] text-primary-container" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant ml-1 font-bold">5.0</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface">
+        Bát bún bò 55k đầy đặn bất ngờ! Thịt bắp bò thái dày, mềm và thơm nức. Thích nhất là không có váng mỡ ngấy hay vị mì chính gắt. Ớt chưng thơm lừng chuẩn vị Huế. Sẽ ủng hộ lâu dài!
+      </p>
+<!-- Real customer review photo -->
+<div class="w-24 h-24 rounded-lg overflow-hidden mt-1 shadow-xs">
+<img class="w-full h-full object-cover" data-alt="Real customer smartphone photo of a Bun Bo Hue bowl on a wooden table, showing rich slices of beef shank, scallions, and red chili broth, authentic food review style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCuDpUlncawqlWxUkH-_ZAC3PF4QtdVMvP_1yyKfjlQvu95s6FZrUIoiDa8Eb3En7qsdcR3-ixBrt3JIurRQ6qwZtyH7GvWp4M9_CbsovaTcV16oHGoAV-pj8Z4K7Mp6GJEu2KWqfDLxVwJruZQ9ohZQ8VJPB4sd3B1fUVZTOEbXwE7JWd9UTxjsAkrWhkI8HtxvvkASvki7sIG8sUWrgdTd0zPaHDVLPznGVuyKT_LxAYYSHjPFq3Low"/>
+</div>
+</div>
+<!-- Review Card 2 -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center text-on-primary-fixed font-headline-sm font-bold">
+            HA
+          </div>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg text-on-surface font-bold">Hoàng Tuấn Anh</span>
+<span class="font-body-sm text-body-sm text-outline">3 ngày trước • Đặt qua EatWise AI</span>
+</div>
+</div>
+<div class="px-2 py-0.5 rounded-full bg-tertiary-container/15 text-tertiary flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<span class="font-label-sm text-label-sm font-semibold">Đã xác thực thực khách</span>
+</div>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-primary-container" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px] text-primary-container" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px] text-primary-container" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px] text-primary-container" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px] text-outline-variant" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant ml-1 font-bold">4.5</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface">
+        Quán làm đồ cực nhanh, nước dùng nóng hổi khi ship đến tận tòa CMC Duy Tân. Mình bị dị ứng đồ tôm cua dặn AI ghi chú quán làm chuẩn chỉ không hề có chả cua pha tạp. Điểm 10 an tâm!
+      </p>
+</div>
+</div>
+<!-- Sticky Bottom Order & Call Action Dock -->
+<div class="fixed bottom-0 left-0 right-0 z-40 bg-surface/90 backdrop-blur-xl px-gutter py-space-sm shadow-[0_-4px_20px_rgba(0,0,0,0.06)] pb-safe">
+<div class="max-w-md mx-auto flex items-center gap-space-sm">
+<!-- Call Hotline Button -->
+<a class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-on-surface hover:bg-surface-container-high transition-transform active:scale-95 shrink-0 shadow-sm" href="tel:0981234567" title="Gọi điện hotline quán">
+<span class="material-symbols-outlined text-[22px] text-primary">call</span>
+</a>
+<!-- Primary AI Autonomous Order Button -->
+<button class="flex-1 h-12 rounded-full bg-gradient-to-r from-primary-container to-primary text-on-primary font-label-lg text-label-lg flex items-center justify-between px-4 shadow-[0_8px_20px_-2px_rgba(249,115,22,0.35)] transition-all active:scale-[0.98]" onclick="triggerAiOrder()" type="button">
+<div class="flex items-center gap-1.5 min-w-0">
+<span class="material-symbols-outlined text-[20px] animate-pulse">smart_toy</span>
+<span class="truncate font-bold">Nhờ AI đặt quán này ngay</span>
+</div>
+<div class="flex items-center gap-1.5 shrink-0">
+<span class="bg-surface-container-lowest text-primary font-label-sm text-label-sm font-bold px-2 py-0.5 rounded-full shadow-xs">
+            -15.000đ Freeship
+          </span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</div>
+</button>
+</div>
+</div>
+</div>
+<script>
+  let isFavorite = false;
+  function toggleFavorite() {
+    isFavorite = !isFavorite;
+    const icon = document.getElementById('fav-icon');
+    if (isFavorite) {
+      icon.style.fontVariationSettings = "'FILL' 1";
+      showToast('Đã lưu Bún Bò Huế vào món ưa thích ❤️');
+    } else {
+      icon.style.fontVariationSettings = "'FILL' 0";
+      showToast('Đã bỏ lưu món ăn');
+    }
+  }
+
+  function selectPin(pinId) {
+    const titleEl = document.getElementById('store-title');
+    const metaEl = document.getElementById('store-meta');
+    
+    // reset pin visual styles
+    const pins = ['pin-o-xuan', 'pin-ngu-uyen', 'pin-co-do'];
+    pins.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('scale-105');
+    });
+
+    const activeEl = document.getElementById('pin-' + pinId);
+    if (activeEl) activeEl.classList.add('scale-105');
+
+    if (pinId === 'o-xuan') {
+      titleEl.innerText = 'Bún Bò Huế O Xuân';
+      metaEl.innerText = 'Số 3 Duy Tân, Cầu Giấy • Mở cửa đến 22:00';
+      showToast('Đang chọn: Bún Bò Huế O Xuân (55k - 4.8★)');
+    } else if (pinId === 'ngu-uyen') {
+      titleEl.innerText = 'Bún Bò Ngự Uyển';
+      metaEl.innerText = 'Số 102 Trần Thái Tông, Cầu Giấy • Mở cửa đến 21:30';
+      showToast('Đang chọn: Bún Bò Ngự Uyển (50k - Cách 1.4km)');
+    } else if (pinId === 'co-do') {
+      titleEl.innerText = 'Bún Bò Huế Cố Đô';
+      metaEl.innerText = 'Số 85 Xuân Thủy, Cầu Giấy • Mở cửa đến 22:30';
+      showToast('Đang chọn: Bún Bò Cố Đô (60k - Cách 2.1km)');
+    }
+  }
+
+  function triggerDirections() {
+    showToast('Đang mở bản đồ dẫn đường tới Bún Bò Huế O Xuân (850m)...');
+  }
+
+  function scrollToReviews() {
+    const target = document.getElementById('reviews-feed');
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+
+  function triggerAiOrder() {
+    showToast('🤖 AI đang phân tích giỏ hàng, áp mã giảm giá 15k & kết nối quán O Xuân...');
+  }
+
+  function showToast(message) {
+    const container = document.getElementById('eatwise-toast-container');
+    if (!container) return;
+    
+    const toast = document.createElement('div');
+    toast.className = 'bg-inverse-surface text-inverse-on-surface px-4 py-2.5 rounded-full shadow-lg font-body-sm text-body-sm flex items-center justify-between gap-2 transform transition-all duration-300 translate-y-2 opacity-0 pointer-events-auto';
+    toast.innerHTML = '<span>' + message + '</span>';
+    
+    container.appendChild(toast);
+    
+    // Animation frame for entrance
+    requestAnimationFrame(() => {
+      toast.classList.remove('translate-y-2', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+    });
+
+    // Auto removal
+    setTimeout(() => {
+      toast.classList.remove('translate-y-0', 'opacity-100');
+      toast.classList.add('translate-y-2', 'opacity-0');
+      setTimeout(() => toast.remove(), 300);
+    }, 2800);
+  }
+</script></main><div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-[92%] max-w-sm pointer-events-none flex flex-col gap-2" id="eatwise-toast-container"></div></body></html>

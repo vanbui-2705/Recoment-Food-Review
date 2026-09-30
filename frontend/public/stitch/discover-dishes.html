@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><title>EatWise AI</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;background-color:#faf8ff;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}*{-ms-overflow-style:none;scrollbar-width:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "error": "#ba1a1a", "inverse-surface": "#283044", "on-error": "#ffffff", "on-primary-fixed": "#341100", "inverse-primary": "#ffb690", "surface-bright": "#faf8ff", "on-secondary-container": "#fffbff", "tertiary-container": "#00b07a", "on-secondary-fixed": "#07006c", "on-tertiary": "#ffffff", "surface": "#faf8ff", "outline-variant": "#e0c0b1", "on-background": "#131b2e", "tertiary-fixed": "#6ffbbe", "secondary-container": "#6063ee", "surface-container-lowest": "#ffffff", "on-primary-fixed-variant": "#783200", "on-primary": "#ffffff", "primary-fixed": "#ffdbca", "primary": "#9d4300", "secondary-fixed-dim": "#c0c1ff", "primary-fixed-dim": "#ffb690", "surface-variant": "#dae2fd", "surface-container": "#eaedff", "secondary": "#4648d4", "on-surface-variant": "#584237", "inverse-on-surface": "#eef0ff", "on-tertiary-fixed": "#002113", "error-container": "#ffdad6", "surface-dim": "#d2d9f4", "surface-container-low": "#f2f3ff", "on-secondary-fixed-variant": "#2f2ebe", "on-error-container": "#93000a", "on-tertiary-fixed-variant": "#005236", "outline": "#8c7164", "tertiary": "#006c49", "on-tertiary-container": "#003b26", "secondary-fixed": "#e1e0ff", "background": "#faf8ff", "tertiary-fixed-dim": "#4edea3", "surface-container-highest": "#dae2fd", "on-secondary": "#ffffff", "on-surface": "#131b2e", "primary-container": "#f97316", "on-primary-container": "#582200", "surface-tint": "#9d4300", "surface-container-high": "#e2e7ff" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "space-md": "1rem", "margin-lg": "3rem", "gutter-md": "1.5rem", "gutter": "1rem", "space-xl": "2.25rem", "gutter-lg": "2rem", "margin-md": "2rem", "space-xs": "0.25rem", "margin": "1rem", "space-sm": "0.5rem", "space-lg": "1.5rem" }, fontFamily: { "label-sm": ["Plus Jakarta Sans"], "display-lg-mobile": ["Plus Jakarta Sans"], "body-md": ["Plus Jakarta Sans"], "headline-sm": ["Plus Jakarta Sans"], "body-sm": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "display-lg": ["Plus Jakarta Sans"], "label-lg": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"], "label-md": ["Plus Jakarta Sans"] }, fontSize: { "label-sm": ["10px", { "lineHeight": "12px", "letterSpacing": "0.04em", "fontWeight": "700" }], "display-lg-mobile": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.025em", "fontWeight": "800" }], "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }], "headline-sm": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }], "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "400" }], "display-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.03em", "fontWeight": "800" }], "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }], "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.015em", "fontWeight": "700" }], "headline-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }] } } } };</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-body-md text-on-surface antialiased min-h-screen flex flex-col selection:bg-primary-container selection:text-on-primary-container"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.03)]"><div class="h-20 px-gutter flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-sm min-w-0"><div class="w-11 h-11 rounded-full bg-primary-container flex items-center justify-center shadow-[0_8px_20px_-2px_rgba(249,115,22,0.35)] shrink-0"><span class="material-symbols-outlined text-white text-[22px]">restaurant</span></div><div class="flex flex-col min-w-0"><div class="flex items-center gap-1"><span class="font-headline-sm text-headline-sm text-on-surface tracking-tight truncate font-bold">EatWise</span><span class="font-label-sm text-label-sm px-1.5 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed uppercase tracking-wider font-extrabold">AI</span></div><div class="flex items-center gap-1 text-on-surface-variant"><span class="material-symbols-outlined text-[14px] text-primary shrink-0">near_me</span><span class="font-body-sm text-body-sm truncate font-medium">Cầu Giấy, Hà Nội</span><span class="material-symbols-outlined text-[14px] text-outline shrink-0">expand_more</span></div></div></div><div class="flex items-center gap-space-xs shrink-0"><button class="min-w-[44px] min-h-[44px] rounded-full flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors" type="button"><span class="material-symbols-outlined text-[22px]">search</span></button><button class="min-w-[44px] min-h-[44px] rounded-full flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors relative" type="button"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-primary"></span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center ml-1"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex-1 flex flex-col relative w-full pt-20 bg-surface pb-28"><div class="flex flex-col w-full px-gutter pb-6 gap-space-md">
+<!-- Smart Context & Dietary Constraint Bar -->
+<section class="flex flex-col gap-space-sm pt-2">
+<!-- Weather & Culinary Mood Recommendation -->
+<div class="flex items-center gap-space-sm bg-surface-container-low p-space-sm rounded-xl shadow-sm">
+<div class="w-10 h-10 rounded-full bg-secondary-fixed flex items-center justify-center text-on-secondary-fixed shrink-0">
+<span class="material-symbols-outlined text-[20px]">partly_cloudy_day</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1.5">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-secondary font-bold">Gợi ý thời tiết</span>
+<span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+<span class="font-body-sm text-body-sm text-on-surface font-semibold">24°C se mát</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">
+          Rất hợp xì xụp bún bò nóng hổi hoặc lẩu riêu ấm bụng!
+        </p>
+</div>
+</div>
+<!-- Location & Persistent Constraint Chips -->
+<div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+<div class="flex items-center gap-1 bg-surface-container-lowest px-2.5 py-1.5 rounded-full shadow-sm shrink-0">
+<span class="material-symbols-outlined text-primary text-[14px]">distance</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">Cầu Giấy • 3.5km</span>
+</div>
+<div class="flex items-center gap-1 bg-error-container/70 text-on-error-container px-2.5 py-1.5 rounded-full shrink-0">
+<span class="material-symbols-outlined text-[14px]">block</span>
+<span class="font-label-md text-label-md font-bold">Không hải sản</span>
+</div>
+<div class="flex items-center gap-1 bg-error-container/70 text-on-error-container px-2.5 py-1.5 rounded-full shrink-0">
+<span class="material-symbols-outlined text-[14px]">no_food</span>
+<span class="font-label-md text-label-md font-bold">Không hành lá</span>
+</div>
+<button aria-label="Tùy chỉnh kiêng khem" class="w-7 h-7 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant shrink-0" type="button">
+<span class="material-symbols-outlined text-[16px]">tune</span>
+</button>
+</div>
+</section>
+<!-- Smart Natural Language Search & AI Trigger Bar -->
+<section class="flex items-center gap-space-xs bg-surface-container-lowest rounded-full p-1.5 shadow-[0_8px_24px_-4px_rgba(15,23,42,0.06)]">
+<div class="w-9 h-9 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant shrink-0">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</div>
+<input class="bg-transparent font-body-md text-body-md text-on-surface placeholder:text-outline/70 focus:outline-none flex-1 min-w-0" placeholder="Bạn đang thèm vị gì? Ví dụ: Phở bò nhiều thịt..." type="text"/>
+<button aria-label="Tìm kiếm bằng giọng nói" class="w-9 h-9 rounded-full bg-surface-container hover:bg-surface-variant flex items-center justify-center text-secondary transition-colors shrink-0" type="button">
+<span class="material-symbols-outlined text-[20px]">mic</span>
+</button>
+<button aria-label="Quét món ăn bằng camera" class="w-9 h-9 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center shadow-sm shrink-0" type="button">
+<span class="material-symbols-outlined text-[20px]">document_scanner</span>
+</button>
+</section>
+<!-- Quick Mood Filters -->
+<section class="flex items-center gap-2 overflow-x-auto no-scrollbar -mx-gutter px-gutter">
+<button class="h-9 px-3.5 rounded-full bg-on-surface text-surface-bright flex items-center gap-1.5 shrink-0 shadow-sm transition-transform active:scale-95" type="button">
+<span class="material-symbols-outlined text-[16px] text-primary-container">bolt</span>
+<span class="font-label-md text-label-md font-bold">Đang vội (&lt; 15p)</span>
+</button>
+<button class="h-9 px-3.5 rounded-full bg-surface-container-lowest text-on-surface flex items-center gap-1.5 shrink-0 shadow-sm hover:bg-surface-container transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px] text-tertiary">savings</span>
+<span class="font-label-md text-label-md font-semibold">Dưới 50k</span>
+</button>
+<button class="h-9 px-3.5 rounded-full bg-surface-container-lowest text-on-surface flex items-center gap-1.5 shrink-0 shadow-sm hover:bg-surface-container transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px] text-secondary">bedtime</span>
+<span class="font-label-md text-label-md font-semibold">Ăn đêm</span>
+</button>
+<button class="h-9 px-3.5 rounded-full bg-surface-container-lowest text-on-surface flex items-center gap-1.5 shrink-0 shadow-sm hover:bg-surface-container transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px] text-primary">auto_awesome</span>
+<span class="font-label-md text-label-md font-semibold">Đổi gió món mới</span>
+</button>
+</section>
+<!-- AI Discovery Bento Grid Header -->
+<section class="flex items-center justify-between mt-1">
+<div class="flex items-center gap-2">
+<div class="w-2.5 h-6 rounded-full bg-primary-container"></div>
+<div class="flex flex-col">
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-bold tracking-tight">AI Chọn Riêng Cho Bạn</h2>
+<span class="font-body-sm text-body-sm text-on-surface-variant font-medium">Khớp 100% tiêu chí dị ứng &amp; thời tiết</span>
+</div>
+</div>
+<span class="font-label-sm text-label-sm text-secondary bg-secondary-fixed/50 px-2 py-1 rounded-full font-bold">
+      4 Món Top
+    </span>
+</section>
+<!-- Hero Bento Card 1: Bún Bò Huế Đặc Biệt -->
+<div class="flex flex-col bg-surface-container-lowest rounded-xl overflow-hidden shadow-[0_12px_32px_-6px_rgba(15,23,42,0.08)]">
+<!-- Image Hero Container -->
+<div class="relative w-full aspect-[16/10] overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="A steaming, premium ceramic bowl of authentic Vietnamese Bun Bo Hue beef noodle soup viewed from high angle. Tender braised beef brisket slices, rich deep aromatic red-orange broth with subtle chili oil drops, thick rice noodles, fresh herbs, banana blossom, and lime on a dark wooden lacquer table. Warm ambient natural daylight, restaurant quality food photography, vibrant contrast, hyper-detailed." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBOSTA7hDbuk_rGP1tQEJ90IZXS5i4R2vr7dHMZ43z1TLBmPYcPJ9nn6l0Dz62ir2-T8SN_gVHHv5lBSh9QXENMs_9hRwYdubwBpScaTciClmU9koFVCtBL3U8B6D3wGUXhnkNUCwn3-wofoCXuKCDB06NawF3HV9tIVfUuO_lNhuhF4zbWr-dRuvPuPQFvBS8XOB8ZGJgmopoxl3Uwo2kh7QR3KbBPYXwgj8MGBZZXdVy2qst7E6rIUA"/>
+<div class="absolute inset-0 bg-gradient-to-t from-inverse-surface/80 via-transparent to-transparent"></div>
+<!-- Top Badges -->
+<div class="absolute top-3 left-3 right-3 flex items-center justify-between">
+<div class="flex items-center gap-1 bg-surface-bright/95 backdrop-blur-md px-2.5 py-1 rounded-full text-tertiary shadow-sm">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="font-label-md text-label-md font-bold">98% Hợp khẩu vị</span>
+</div>
+<button aria-label="Lưu món yêu thích" class="w-8 h-8 rounded-full bg-surface-bright/90 backdrop-blur-md flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors shadow-sm" type="button">
+<span class="material-symbols-outlined text-[18px]">bookmark</span>
+</button>
+</div>
+<!-- Quick Metrics inside Hero Overlay -->
+<div class="absolute bottom-3 left-3 right-3 flex items-center justify-between text-surface-bright">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-headline-sm font-extrabold text-surface-bright">55.000đ</span>
+<span class="font-body-sm text-body-sm text-surface-variant font-medium">• 480 kcal</span>
+</div>
+<div class="flex items-center gap-1 bg-surface-bright/20 backdrop-blur-md px-2 py-0.5 rounded-full text-surface-bright font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[12px]">schedule</span>
+<span>12 phút</span>
+</div>
+</div>
+</div>
+<!-- Card Content & AI Reasoning -->
+<div class="p-space-md flex flex-col gap-space-sm">
+<div class="flex flex-col">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">
+          Bún Bò Huế Đặc Biệt Nước Trong
+        </h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant font-medium">
+          Bún Bò O Xuân • 850m (7 phút đi xe)
+        </p>
+</div>
+<!-- AI Thought Box -->
+<div class="bg-secondary-fixed/30 rounded-lg p-2.5 flex items-start gap-2">
+<span class="material-symbols-outlined text-secondary text-[18px] shrink-0 mt-0.5">neurology</span>
+<p class="font-body-sm text-body-sm text-on-surface leading-snug">
+<strong class="font-semibold text-secondary">Lý do gợi ý:</strong> Thơm cay tự nhiên, quán có tùy chọn bỏ sạch hành lá &amp; 100% không hải sản theo hồ sơ của bạn.
+        </p>
+</div>
+<!-- Action Buttons -->
+<div class="grid grid-cols-2 gap-2 mt-1">
+<button class="h-10 rounded-full bg-surface-container text-on-surface font-label-md text-label-md font-semibold flex items-center justify-center gap-1 hover:bg-surface-variant transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px] text-outline">storefront</span>
+<span>Xem quán (850m)</span>
+</button>
+<button class="h-10 rounded-full bg-primary-container text-on-primary font-label-md text-label-md font-bold flex items-center justify-center gap-1 shadow-[0_6px_16px_-2px_rgba(249,115,22,0.35)] hover:opacity-95 transition-transform active:scale-95" type="button">
+<span class="material-symbols-outlined text-[16px]">smart_toy</span>
+<span>AI Đặt ngay</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Food Card 2: Phở Bò Tái Lăn Hà Nội -->
+<div class="flex bg-surface-container-lowest rounded-xl p-space-sm gap-space-sm shadow-sm hover:shadow-md transition-shadow">
+<div class="relative w-28 h-28 rounded-lg overflow-hidden shrink-0 bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="Close up photography of Hanoi Pho Bo Tai Lan beef noodle soup. Tender wok-seared sliced beef, rich and clear aromatic bone broth with ginger and star anise scent, flat soft rice noodles in a traditional blue-patterned ceramic bowl on Vietnamese rustic bamboo tray, soft morning sunlight, appetizing culinary style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBzsEFS927aTNSeVnrSKK9Y9AZbE6XLzVY-44TLi7WELhBJ1P5sgch2uGQSKXfymOBaL5f6FZKR7A6HO0noMj64gRks7r0WW7fT98M7KgcAykduV4dCbQwhVwRVEIGlLD6RWZakRY0-rr2wWuRTkbix9xKu5cLe3aSjMMLlYJFcQqzTZkcTuebcdw5Iih_faCF-tVog5mRO0hVIByhCLWuMEkIusR8vZftEhObxfENQZWdjX2WddaxHiA"/>
+<div class="absolute top-1.5 left-1.5 bg-surface-bright/95 backdrop-blur-md px-1.5 py-0.5 rounded-full text-tertiary flex items-center gap-0.5 shadow-sm">
+<span class="material-symbols-outlined text-[10px]" style="font-variation-settings: 'FILL' 1;">bolt</span>
+<span class="font-label-sm text-label-sm font-bold">96%</span>
+</div>
+</div>
+<div class="flex flex-col justify-between flex-1 min-w-0">
+<div class="flex flex-col">
+<div class="flex items-start justify-between gap-1">
+<h4 class="font-label-lg text-label-lg text-on-surface font-bold truncate">
+            Phở Bò Tái Lăn Hà Nội
+          </h4>
+<span class="font-label-lg text-label-lg text-primary font-bold shrink-0">60k</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant font-medium">
+          Phở Gia Truyền Bát Đàn • 520 kcal
+        </span>
+<div class="flex items-center gap-1 text-tertiary font-label-sm text-label-sm mt-1">
+<span class="material-symbols-outlined text-[12px]">check_circle</span>
+<span class="truncate">Cam kết chuẩn ghi chú "Không Hành"</span>
+</div>
+</div>
+<div class="flex items-center justify-between mt-1">
+<span class="font-body-sm text-body-sm text-outline font-medium">1.2km • 15p</span>
+<button aria-label="Thêm vào giỏ" class="w-8 h-8 rounded-full bg-surface-container-low text-primary hover:bg-primary-container hover:text-on-primary transition-colors flex items-center justify-center" type="button">
+<span class="material-symbols-outlined text-[18px]">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Food Card 3: Cơm Tấm Sườn Bì Chả Nướng Than Hoa -->
+<div class="flex bg-surface-container-lowest rounded-xl p-space-sm gap-space-sm shadow-sm hover:shadow-md transition-shadow">
+<div class="relative w-28 h-28 rounded-lg overflow-hidden shrink-0 bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="Vietnamese Com Tam broken rice platter with caramelized grilled pork chop glazed with savory honey scallion-free oil, steamed egg meatloaf slice, shredded pork skin, pickled carrots and daikon, crispy sunny side egg with runny yolk on a vintage white plate. Warm golden dining lighting, commercial gourmet food styling." src="https://lh3.googleusercontent.com/aida-public/AB6AXuADf4981ZUGHmBB2FhQbxqqAxS7sTRY4hC79A_gPixa56Z0V3EbWdfmjA7Z4HcM8Y8pX_QHnV9pTF0eZLwR2N1YAj6Px-F7qVVT5CNwILacXFopn_EdyGRSfClle8GF2QjfhdXyAKzTSQtAMBYO4wsB-Ms1N9Lp0pN3Rj4xCrY7YD5csT22BUu4KqTBxnTa4RoaH-XCXEi1g8g5QJZJ4L5hmwC8zgAwSKPmmO3d4-Uo4kezZDMPWV-mdQ"/>
+<div class="absolute top-1.5 left-1.5 bg-surface-bright/95 backdrop-blur-md px-1.5 py-0.5 rounded-full text-tertiary flex items-center gap-0.5 shadow-sm">
+<span class="material-symbols-outlined text-[10px]" style="font-variation-settings: 'FILL' 1;">bolt</span>
+<span class="font-label-sm text-label-sm font-bold">94%</span>
+</div>
+</div>
+<div class="flex flex-col justify-between flex-1 min-w-0">
+<div class="flex flex-col">
+<div class="flex items-start justify-between gap-1">
+<h4 class="font-label-lg text-label-lg text-on-surface font-bold truncate">
+            Cơm Tấm Sườn Bì Chả Nướng
+          </h4>
+<span class="font-label-lg text-label-lg text-primary font-bold shrink-0">50k</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant font-medium">
+          Cơm Tấm Ba Ghiền • 610 kcal
+        </span>
+<div class="flex items-center gap-1 text-tertiary font-label-sm text-label-sm mt-1">
+<span class="material-symbols-outlined text-[12px]">outdoor_grill</span>
+<span class="truncate">Sườn ướp mật ong nướng than củi</span>
+</div>
+</div>
+<div class="flex items-center justify-between mt-1">
+<span class="font-body-sm text-body-sm text-outline font-medium">1.8km • 20p</span>
+<button aria-label="Thêm vào giỏ" class="w-8 h-8 rounded-full bg-surface-container-low text-primary hover:bg-primary-container hover:text-on-primary transition-colors flex items-center justify-center" type="button">
+<span class="material-symbols-outlined text-[18px]">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Food Card 4: Miến Gà Ta Nước Dùng Thanh Ngọt -->
+<div class="flex bg-surface-container-lowest rounded-xl p-space-sm gap-space-sm shadow-sm hover:shadow-md transition-shadow">
+<div class="relative w-28 h-28 rounded-lg overflow-hidden shrink-0 bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="Vietnamese glass noodle soup with shredded free-range chicken Mien Ga Ta in a light golden clear poultry broth. Topped with fragrant lime leaves, dried shiitake mushrooms, served in ceramic bowl with chili dip and lime on wooden restaurant table, soft warm lighting, appetizing high clarity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD5yypFSv-r1eV4mLb9Ntf6RhdFXZ0LaKn2luRyMjdxdrho0t2U7XFwc51Zs7oNvCHs7CKjltI91tAbTtazaasGwTReX2-DihBR6a5gJJGNqOln_Zp1d021a8fjs-8Fm77j9UcaNJ60c-QnLn7mNQ0TYHLM058fff1Yenxp0GRYCf2dhUZ77kAcpTRIRDO_JcWLGy5gW7kVE5wdcUTBTrVpzo4DglrnuRJyF5tb56wdmlglm-PvJLxM1g"/>
+<div class="absolute top-1.5 left-1.5 bg-surface-bright/95 backdrop-blur-md px-1.5 py-0.5 rounded-full text-tertiary flex items-center gap-0.5 shadow-sm">
+<span class="material-symbols-outlined text-[10px]" style="font-variation-settings: 'FILL' 1;">shield_with_heart</span>
+<span class="font-label-sm text-label-sm font-bold">100% An toàn</span>
+</div>
+</div>
+<div class="flex flex-col justify-between flex-1 min-w-0">
+<div class="flex flex-col">
+<div class="flex items-start justify-between gap-1">
+<h4 class="font-label-lg text-label-lg text-on-surface font-bold truncate">
+            Miến Gà Ta Nước Dùng Thanh
+          </h4>
+<span class="font-label-lg text-label-lg text-primary font-bold shrink-0">45k</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant font-medium">
+          Gà Ta Quán • 390 kcal (Ít béo)
+        </span>
+<div class="flex items-center gap-1 text-secondary font-label-sm text-label-sm mt-1">
+<span class="material-symbols-outlined text-[12px]">eco</span>
+<span class="truncate">Gà đồi thả vườn, nước dùng không phụ gia</span>
+</div>
+</div>
+<div class="flex items-center justify-between mt-1">
+<span class="font-body-sm text-body-sm text-outline font-medium">600m • 10p</span>
+<button aria-label="Thêm vào giỏ" class="w-8 h-8 rounded-full bg-surface-container-low text-primary hover:bg-primary-container hover:text-on-primary transition-colors flex items-center justify-center" type="button">
+<span class="material-symbols-outlined text-[18px]">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Interactive AI Concierge Banner -->
+<section class="mt-2 relative overflow-hidden rounded-xl bg-gradient-to-r from-secondary-container via-secondary to-primary-container p-4 text-on-secondary-container shadow-[0_12px_28px_-6px_rgba(70,72,212,0.35)]">
+<!-- Ambient micro sparkles -->
+<div class="absolute -right-4 -bottom-4 w-28 h-28 rounded-full bg-white/10 blur-xl pointer-events-none"></div>
+<div class="absolute -left-2 -top-2 w-16 h-16 rounded-full bg-primary-fixed/20 blur-lg pointer-events-none"></div>
+<div class="relative z-10 flex items-center gap-3.5">
+<div class="w-12 h-12 rounded-full bg-surface-bright/20 backdrop-blur-md flex items-center justify-center shrink-0 border border-white/20">
+<span class="material-symbols-outlined text-[26px] text-surface-bright">smart_toy</span>
+</div>
+<div class="flex flex-col min-w-0 flex-1">
+<div class="flex items-center gap-1">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-secondary-fixed font-extrabold">EatWise Concierge</span>
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary-fixed animate-ping"></span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-surface-bright font-bold leading-snug">
+          Vẫn chưa biết ăn gì trưa nay?
+        </h3>
+<p class="font-body-sm text-body-sm text-surface-bright/90 mt-0.5 line-clamp-1 font-medium">
+          Chạm để AI gợi ý &amp; tự động lên đơn trong 30 giây!
+        </p>
+</div>
+</div>
+<!-- Action Bar -->
+<div class="relative z-10 mt-3 flex items-center justify-between pt-2 border-t border-white/15">
+<div class="flex items-center gap-1.5 text-surface-bright/90">
+<span class="material-symbols-outlined text-[14px]">psychology</span>
+<span class="font-label-sm text-label-sm font-semibold">Tự động loại bỏ hành &amp; hải sản</span>
+</div>
+<button class="h-8 px-3 rounded-full bg-surface-bright text-on-surface font-label-md text-label-md font-bold flex items-center gap-1 shadow-md hover:bg-surface-variant transition-transform active:scale-95" id="btn-open-concierge" type="button">
+<span>Mở Trợ Lý</span>
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</button>
+</div>
+</section>
+</div>
+<script>
+  (function() {
+    const conciergeBtn = document.getElementById('btn-open-concierge');
+    if (conciergeBtn) {
+      conciergeBtn.addEventListener('click', function() {
+        const toastContainer = document.getElementById('eatwise-toast-container');
+        if (toastContainer) {
+          const toast = document.createElement('div');
+          toast.className = 'bg-inverse-surface text-inverse-on-surface p-3 rounded-xl shadow-xl flex items-center gap-2 font-body-sm text-body-sm animate-bounce';
+          toast.innerHTML = '<span class="material-symbols-outlined text-secondary-fixed text-[18px]">neurology</span><span>AI Trợ lý đang phân tích thực đơn khu vực Cầu Giấy...</span>';
+          toastContainer.appendChild(toast);
+          setTimeout(() => {
+            toast.remove();
+          }, 2600);
+        }
+      });
+    }
+  })();
+</script></main><div class="fixed bottom-24 left-1/2 -translate-x-1/2 z-40 w-[92%] max-w-sm pointer-events-none flex flex-col gap-2" id="eatwise-toast-container"></div><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/85 backdrop-blur-xl shadow-[0_-4px_24px_rgba(15,23,42,0.06)]" data-active-classes="text-primary font-label-md"><div class="flex justify-around items-center h-20 px-2 max-w-md mx-auto"><a aria-current="page" class="flex flex-col items-center justify-center gap-1 min-w-[56px] min-h-[44px] transition-all text-primary font-label-md" data-path="kham-pha" href="#"><span class="material-symbols-outlined text-[24px]">explore</span><span class="font-label-md text-label-md">Khám Phá</span></a><a class="flex flex-col items-center justify-center gap-1 min-w-[56px] min-h-[44px] text-on-surface-variant hover:text-on-surface transition-all" data-path="ban-do" href="#"><span class="material-symbols-outlined text-[24px]">map</span><span class="font-label-md text-label-md">Bản Đồ</span></a><a class="flex flex-col items-center justify-center gap-1 min-w-[56px] min-h-[44px] -mt-5 group relative" data-path="ai-tro-ly" href="#"><div class="w-13 h-13 p-3 rounded-full bg-secondary-container text-on-secondary-container shadow-[0_12px_24px_-4px_rgba(96,99,238,0.4)] flex items-center justify-center ring-4 ring-surface"><span class="material-symbols-outlined text-[26px] animate-pulse">neurology</span></div><span class="font-label-md text-label-md text-secondary mt-0.5 font-bold">AI Trợ Lý</span></a><a class="flex flex-col items-center justify-center gap-1 min-w-[56px] min-h-[44px] text-on-surface-variant hover:text-on-surface transition-all" data-path="ho-so" href="#"><span class="material-symbols-outlined text-[24px]">account_circle</span><span class="font-label-md text-label-md">Hồ Sơ</span></a></div></nav></body></html>

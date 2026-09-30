@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><title>EatWise AI</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;background-color:#faf8ff;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}*{-ms-overflow-style:none;scrollbar-width:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "error": "#ba1a1a", "inverse-surface": "#283044", "on-error": "#ffffff", "on-primary-fixed": "#341100", "inverse-primary": "#ffb690", "surface-bright": "#faf8ff", "on-secondary-container": "#fffbff", "tertiary-container": "#00b07a", "on-secondary-fixed": "#07006c", "on-tertiary": "#ffffff", "surface": "#faf8ff", "outline-variant": "#e0c0b1", "on-background": "#131b2e", "tertiary-fixed": "#6ffbbe", "secondary-container": "#6063ee", "surface-container-lowest": "#ffffff", "on-primary-fixed-variant": "#783200", "on-primary": "#ffffff", "primary-fixed": "#ffdbca", "primary": "#9d4300", "secondary-fixed-dim": "#c0c1ff", "primary-fixed-dim": "#ffb690", "surface-variant": "#dae2fd", "surface-container": "#eaedff", "secondary": "#4648d4", "on-surface-variant": "#584237", "inverse-on-surface": "#eef0ff", "on-tertiary-fixed": "#002113", "error-container": "#ffdad6", "surface-dim": "#d2d9f4", "surface-container-low": "#f2f3ff", "on-secondary-fixed-variant": "#2f2ebe", "on-error-container": "#93000a", "on-tertiary-fixed-variant": "#005236", "outline": "#8c7164", "tertiary": "#006c49", "on-tertiary-container": "#003b26", "secondary-fixed": "#e1e0ff", "background": "#faf8ff", "tertiary-fixed-dim": "#4edea3", "surface-container-highest": "#dae2fd", "on-secondary": "#ffffff", "on-surface": "#131b2e", "primary-container": "#f97316", "on-primary-container": "#582200", "surface-tint": "#9d4300", "surface-container-high": "#e2e7ff" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "space-md": "1rem", "margin-lg": "3rem", "gutter-md": "1.5rem", "gutter": "1rem", "space-xl": "2.25rem", "gutter-lg": "2rem", "margin-md": "2rem", "space-xs": "0.25rem", "margin": "1rem", "space-sm": "0.5rem", "space-lg": "1.5rem" }, fontFamily: { "label-sm": ["Plus Jakarta Sans"], "display-lg-mobile": ["Plus Jakarta Sans"], "body-md": ["Plus Jakarta Sans"], "headline-sm": ["Plus Jakarta Sans"], "body-sm": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "display-lg": ["Plus Jakarta Sans"], "label-lg": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"], "label-md": ["Plus Jakarta Sans"] }, fontSize: { "label-sm": ["10px", { "lineHeight": "12px", "letterSpacing": "0.04em", "fontWeight": "700" }], "display-lg-mobile": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.025em", "fontWeight": "800" }], "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }], "headline-sm": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }], "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "400" }], "display-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.03em", "fontWeight": "800" }], "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }], "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.015em", "fontWeight": "700" }], "headline-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }] } } } };</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-body-md text-on-surface antialiased min-h-screen flex flex-col selection:bg-primary-container selection:text-on-primary-container"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.03)]"><div class="h-20 px-gutter flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-sm min-w-0"><div class="w-11 h-11 rounded-full bg-primary-container flex items-center justify-center shadow-[0_8px_20px_-2px_rgba(249,115,22,0.35)] shrink-0"><span class="material-symbols-outlined text-white text-[22px]">restaurant</span></div><div class="flex flex-col min-w-0"><div class="flex items-center gap-1"><span class="font-headline-sm text-headline-sm text-on-surface tracking-tight truncate font-bold">EatWise</span><span class="font-label-sm text-label-sm px-1.5 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed uppercase tracking-wider font-extrabold">AI</span></div><div class="flex items-center gap-1 text-on-surface-variant"><span class="material-symbols-outlined text-[14px] text-primary shrink-0">near_me</span><span class="font-body-sm text-body-sm truncate font-medium">Cầu Giấy, Hà Nội</span><span class="material-symbols-outlined text-[14px] text-outline shrink-0">expand_more</span></div></div></div><div class="flex items-center gap-space-xs shrink-0"><button class="min-w-[44px] min-h-[44px] rounded-full flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors" type="button"><span class="material-symbols-outlined text-[22px]">search</span></button><button class="min-w-[44px] min-h-[44px] rounded-full flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors relative" type="button"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-primary"></span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center ml-1"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex-1 flex flex-col relative w-full pt-20 bg-surface pb-28"><div class="flex flex-col w-full pb-8">
+<div class="px-gutter pt-2 pb-4">
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-[0_8px_24px_-4px_rgba(15,23,42,0.05)] relative overflow-hidden">
+<div class="absolute -right-10 -top-10 w-36 h-36 bg-gradient-to-br from-primary-container/15 via-secondary/10 to-transparent rounded-full blur-2xl pointer-events-none"></div>
+<div class="flex items-center gap-space-md relative">
+<div class="relative shrink-0">
+<div class="w-16 h-16 rounded-full overflow-hidden shadow-[0_4px_16px_rgba(157,67,0,0.18)]">
+<img class="w-full h-full object-cover" data-alt="Warm lifestyle portrait of a handsome Vietnamese young man in his late 20s smiling gently, cozy ambient cafe lighting, rich warm orange and natural indigo tones, sharp focus, photography style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCLkTrn7_VIiIQO8Yh9cPtUeUb5eI52qNODxYGPBqizEhZqEbbFEjmz18_0mPW9VjkTUDvUhtFbrrVCCHokBmCT4u1RXfgB_fad-CoaVDftDiMpn1jxyXeIITXxGxctBckSvFdEbb6n6hv9AaxE0PGSYYE9ynIz_VDun2hTSgS314oam9gOe55AqNjZPeGc-LXD5ysuIVPigMuhkP6UECm4sM8_TB_ELhGhvMjLHivrqz7RUyQ5G1kzVQ"/>
+</div>
+<div class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center shadow-md">
+<span class="material-symbols-outlined text-[15px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<div class="flex flex-col min-w-0 flex-1">
+<div class="flex items-center gap-1.5 flex-wrap">
+<h1 class="font-headline-md text-headline-md text-on-surface truncate">Nguyễn Tuấn Khang</h1>
+</div>
+<div class="flex items-center gap-2 mt-0.5">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm font-bold shadow-sm">
+<span class="material-symbols-outlined text-[13px]" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+              EatWise Gold
+            </span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">ID: #EW-9821</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-transparent bg-surface-container-low/70 rounded-lg p-2.5">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-full bg-secondary-fixed text-on-secondary-fixed flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[18px]">stars</span>
+</div>
+<div class="min-w-0">
+<div class="font-label-sm text-label-sm text-on-surface-variant">Điểm tích lũy</div>
+<div class="font-headline-sm text-headline-sm text-secondary font-bold">1.420 <span class="font-label-sm text-label-sm text-on-surface-variant font-normal">pts</span></div>
+</div>
+</div>
+<div class="flex items-center gap-2.5 pl-2">
+<div class="w-8 h-8 rounded-full bg-primary-fixed text-on-primary-fixed flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[18px]">savings</span>
+</div>
+<div class="min-w-0">
+<div class="font-label-sm text-label-sm text-on-surface-variant">Tiết kiệm AI</div>
+<div class="font-headline-sm text-headline-sm text-primary font-bold">340.000đ</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="px-gutter mb-4">
+<div class="bg-surface-container-high p-1 rounded-full flex items-center shadow-inner relative">
+<button class="flex-1 py-2 px-3 rounded-full font-label-md text-label-md transition-all flex items-center justify-center gap-1.5 bg-surface-container-lowest text-primary shadow-sm font-bold" id="tab-taste-btn" onclick="switchProfileTab('taste')" type="button">
+<span class="material-symbols-outlined text-[18px]">restaurant_menu</span>
+<span>Hồ Sơ Khẩu Vị</span>
+</button>
+<button class="flex-1 py-2 px-3 rounded-full font-label-md text-label-md transition-all flex items-center justify-center gap-1.5 text-on-surface-variant font-medium" id="tab-history-btn" onclick="switchProfileTab('history')" type="button">
+<span class="material-symbols-outlined text-[18px]">receipt_long</span>
+<span>Đơn Hàng AI</span>
+<span class="w-2 h-2 rounded-full bg-primary-container"></span>
+</button>
+</div>
+</div>
+<div class="flex flex-col gap-4 px-gutter" id="taste-profile-section">
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-[0_8px_24px_-4px_rgba(15,23,42,0.05)]">
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-error-container text-on-error-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">shield</span>
+</div>
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Khóa Dị Ứng (Allergies Guard)</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">AI từ chối quét &amp; tự động chặn các món chứa chất này</p>
+</div>
+</div>
+</div>
+<div class="space-y-2 mt-2">
+<div class="flex items-center justify-between p-3 rounded-lg bg-error-container/40">
+<div class="flex items-center gap-2.5 min-w-0 pr-2">
+<span class="material-symbols-outlined text-error text-[20px]">set_meal</span>
+<div class="min-w-0">
+<div class="font-label-lg text-label-lg text-on-surface font-semibold flex items-center gap-1.5">
+                Hải sản &amp; Giáp xác
+                <span class="px-1.5 py-0.5 rounded-full bg-error text-on-error font-label-sm text-label-sm">Khóa tuyệt đối</span>
+</div>
+<div class="font-body-sm text-body-sm text-error font-medium truncate">Tôm, cua, ốc, mực, nước mắm cốt đậm</div>
+</div>
+</div>
+<button class="w-12 h-6 rounded-full bg-error p-0.5 transition-colors duration-200 ease-in-out shrink-0 relative flex items-center" onclick="toggleSwitch(this)" type="button">
+<div class="w-5 h-5 rounded-full bg-on-error shadow-sm transform translate-x-6 transition-transform duration-200"></div>
+</button>
+</div>
+<div class="flex items-center justify-between p-3 rounded-lg bg-surface-container-low">
+<div class="flex items-center gap-2.5 min-w-0 pr-2">
+<span class="material-symbols-outlined text-outline text-[20px]">nutrition</span>
+<div class="min-w-0">
+<div class="font-label-lg text-label-lg text-on-surface font-semibold">Đậu phộng (Lạc)</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant truncate">Sốt đậu phộng, dầu đậu phộng ép</div>
+</div>
+</div>
+<button class="w-12 h-6 rounded-full bg-surface-dim p-0.5 transition-colors duration-200 ease-in-out shrink-0 relative flex items-center" onclick="toggleSwitch(this)" type="button">
+<div class="w-5 h-5 rounded-full bg-on-secondary shadow-sm transform translate-x-0 transition-transform duration-200"></div>
+</button>
+</div>
+<div class="flex items-center justify-between p-3 rounded-lg bg-surface-container-low">
+<div class="flex items-center gap-2.5 min-w-0 pr-2">
+<span class="material-symbols-outlined text-outline text-[20px]">water_drop</span>
+<div class="min-w-0">
+<div class="font-label-lg text-label-lg text-on-surface font-semibold">Sữa &amp; Lactose</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant truncate">Bơ thực vật, kem béo, phô mai lát</div>
+</div>
+</div>
+<button class="w-12 h-6 rounded-full bg-surface-dim p-0.5 transition-colors duration-200 ease-in-out shrink-0 relative flex items-center" onclick="toggleSwitch(this)" type="button">
+<div class="w-5 h-5 rounded-full bg-on-secondary shadow-sm transform translate-x-0 transition-transform duration-200"></div>
+</button>
+</div>
+<div class="flex items-center justify-between p-3 rounded-lg bg-surface-container-low">
+<div class="flex items-center gap-2.5 min-w-0 pr-2">
+<span class="material-symbols-outlined text-outline text-[20px]">bakery_dining</span>
+<div class="min-w-0">
+<div class="font-label-lg text-label-lg text-on-surface font-semibold">Gluten</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant truncate">Bột mì, quẩy chiên giòn, mì trứng</div>
+</div>
+</div>
+<button class="w-12 h-6 rounded-full bg-surface-dim p-0.5 transition-colors duration-200 ease-in-out shrink-0 relative flex items-center" onclick="toggleSwitch(this)" type="button">
+<div class="w-5 h-5 rounded-full bg-on-secondary shadow-sm transform translate-x-0 transition-transform duration-200"></div>
+</button>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-[0_8px_24px_-4px_rgba(15,23,42,0.05)]">
+<div class="flex items-center gap-2 mb-3">
+<div class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">edit_note</span>
+</div>
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Tự Động Dặn Quán (Auto Chef Notes)</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Tự động gắn vào mỗi đơn đặt qua Agent</p>
+</div>
+</div>
+<div class="space-y-2.5 mt-2">
+<div class="flex items-center justify-between p-3 rounded-lg bg-surface-container-low">
+<div class="flex items-center gap-2 min-w-0 pr-2">
+<span class="material-symbols-outlined text-primary text-[20px]">nature</span>
+<span class="font-body-md text-body-md text-on-surface font-medium truncate">Luôn tự dặn: Không hành lá</span>
+</div>
+<button class="w-12 h-6 rounded-full bg-primary-container p-0.5 transition-colors duration-200 ease-in-out shrink-0 relative flex items-center" onclick="toggleSwitch(this)" type="button">
+<div class="w-5 h-5 rounded-full bg-on-primary shadow-sm transform translate-x-6 transition-transform duration-200"></div>
+</button>
+</div>
+<div class="flex items-center justify-between p-3 rounded-lg bg-surface-container-low">
+<div class="flex items-center gap-2 min-w-0 pr-2">
+<span class="material-symbols-outlined text-primary text-[20px]">local_fire_department</span>
+<span class="font-body-md text-body-md text-on-surface font-medium truncate">Không ăn cay vượt mức 3 (Ít cay)</span>
+</div>
+<button class="w-12 h-6 rounded-full bg-primary-container p-0.5 transition-colors duration-200 ease-in-out shrink-0 relative flex items-center" onclick="toggleSwitch(this)" type="button">
+<div class="w-5 h-5 rounded-full bg-on-primary shadow-sm transform translate-x-6 transition-transform duration-200"></div>
+</button>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-[0_8px_24px_-4px_rgba(15,23,42,0.05)]">
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-tertiary-container text-on-tertiary flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">psychology</span>
+</div>
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">AI Machine Learning Taste Graph</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Phân tích từ 48 bữa ăn gần nhất của bạn</p>
+</div>
+</div>
+<span class="font-label-sm text-label-sm text-tertiary font-bold bg-tertiary-fixed px-2 py-0.5 rounded-full">Độ tin cậy 96%</span>
+</div>
+<div class="flex flex-wrap gap-2 mt-2">
+<div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container text-on-surface font-label-md text-label-md">
+<span class="material-symbols-outlined text-[16px] text-primary">ramen_dining</span>
+<span>Món nước nóng hổi</span>
+<span class="font-bold text-primary ml-1">92%</span>
+</div>
+<div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container text-on-surface font-label-md text-label-md">
+<span class="material-symbols-outlined text-[16px] text-primary-container">outdoor_grill</span>
+<span>Đồ nướng đậm vị</span>
+<span class="font-bold text-primary-container ml-1">84%</span>
+</div>
+<div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container text-on-surface font-label-md text-label-md">
+<span class="material-symbols-outlined text-[16px] text-tertiary">spa</span>
+<span>Healthy &amp; Ít Dầu</span>
+<span class="font-bold text-tertiary ml-1">70%</span>
+</div>
+<div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container text-on-surface font-label-md text-label-md">
+<span class="material-symbols-outlined text-[16px] text-secondary">lunch_dining</span>
+<span>Cơm văn phòng chuẩn vị</span>
+<span class="font-bold text-secondary ml-1">68%</span>
+</div>
+<div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container text-on-surface font-label-md text-label-md opacity-80">
+<span class="material-symbols-outlined text-[16px] text-outline">local_cafe</span>
+<span>Cà phê muối ít ngọt</span>
+<span class="font-bold text-on-surface-variant ml-1">61%</span>
+</div>
+</div>
+</div>
+</div>
+<div class="hidden flex-col gap-4 px-gutter" id="order-history-section">
+<div class="bg-gradient-to-r from-secondary-container to-secondary rounded-xl p-space-md text-on-secondary shadow-[0_12px_28px_-6px_rgba(70,72,212,0.35)] relative overflow-hidden">
+<div class="flex items-start gap-3 relative z-10">
+<div class="w-10 h-10 rounded-full bg-on-secondary/20 backdrop-blur-md flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[24px]">smart_toy</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="font-label-lg text-label-lg font-bold flex items-center gap-1.5 text-on-secondary">
+            Báo cáo Vệ Tinh AI Tháng Này
+            <span class="material-symbols-outlined text-[16px] animate-pulse">auto_awesome</span>
+</div>
+<p class="font-body-md text-body-md text-on-secondary/90 mt-1 leading-relaxed">
+            AI đã giúp bạn tiết kiệm <span class="font-bold text-tertiary-fixed underline underline-offset-2">125.000đ</span> và chủ động ngăn chặn thành công <span class="font-bold text-tertiary-fixed underline underline-offset-2">3 lần nguy cơ</span> tiếp xúc dị ứng hải sản từ nước dùng!
+          </p>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-[0_8px_24px_-4px_rgba(15,23,42,0.05)] flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<span class="px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+          Vừa hoàn thành • 12:45
+        </span>
+<span class="font-headline-sm text-headline-sm text-primary font-bold">58.000đ</span>
+</div>
+<div class="flex gap-3">
+<div class="w-16 h-16 rounded-lg overflow-hidden shrink-0">
+<img class="w-full h-full object-cover" data-alt="Traditional delicious Hue beef noodle soup Bun Bo Hue, spicy fragrant broth with tender beef shank and pork knuckle, fresh herbs on table, photorealistic, cinematic food photography" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYotZj67wSGbLl7N5ZiB8BIJUJl0ZZJg4jfHIAqbUDtXN0tzbbsZqqYAbOk1uUlGt4A9J_EkX3s9gAbphc6E7pHG_6Kc3GWW4T4T3182xY5_LAMXkonDtSecpUN5MWl0GY8EC1WyE9QBMi2ctEj7JdV2DPNJhzGVC3Gtl9v2QK2WlqzNo9RyQwOHydXhfusCluU_ORaRD_FkFuhiU1Q5Byb9319IxqO-_YmPD6LMqXKH09k1uAJjh5Nw"/>
+</div>
+<div class="flex-1 min-w-0">
+<h3 class="font-headline-sm text-headline-sm text-on-surface truncate">Bún Bò Huế Đặc Biệt</h3>
+<div class="flex items-center gap-1 text-on-surface-variant font-body-sm text-body-sm truncate mt-0.5">
+<span class="material-symbols-outlined text-[14px]">storefront</span>
+<span>Bún Bò O Xuân - 107 Trung Kính</span>
+</div>
+<div class="mt-2 p-1.5 rounded bg-surface-container-low flex items-start gap-1.5">
+<span class="material-symbols-outlined text-[15px] text-secondary shrink-0 mt-0.5">smart_toy</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant leading-snug">
+              AI đã tự note: <strong class="text-on-surface">Không hành &amp; Nước lèo ninh bò thuần túy (Không cua/chả tôm)</strong>
+</span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between pt-2 border-t border-transparent bg-surface-container-lowest">
+<div class="flex items-center gap-1 text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]">credit_score</span>
+<span>Thanh toán tự động • Apple Pay</span>
+</div>
+<button class="px-3 py-1 rounded-full bg-primary-fixed text-on-primary-fixed font-label-md text-label-md font-semibold hover:bg-primary hover:text-on-primary transition-all" onclick="showEatWiseToast('Đã đặt lại đơn Bún Bò Huế Đặc Biệt!')" type="button">
+          Đặt lại đơn này
+        </button>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-[0_8px_24px_-4px_rgba(15,23,42,0.05)] flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<span class="px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">history</span>
+          Hôm qua • 19:15
+        </span>
+<div class="flex items-center gap-1.5">
+<span class="font-body-sm text-body-sm line-through text-outline">65.000đ</span>
+<span class="font-headline-sm text-headline-sm text-primary font-bold">45.000đ</span>
+</div>
+</div>
+<div class="flex gap-3">
+<div class="w-16 h-16 rounded-lg overflow-hidden shrink-0">
+<img class="w-full h-full object-cover" data-alt="Hanoi traditional stir-fried beef noodle soup Pho Bo Tai Lan with clear savory broth, tender sliced beef, steamed rice noodles, spring onions, photorealistic studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNwrfcs_M6SFU200KmxZiRDdF7TDxVl_L0w_AdJLkDAk3pcOJfSDADB63F3-CgHUxA7kDid3Fa9m0C86jqpLGW_vS_ojiQ4TyK9wqMfoD_1OxOTinxQiCwRy5eZHp_8rU6OkrobEHcWsyrd0qCYLb5XZBjqE6v5xT2DISkmg4dG91SAuhqGRMvhEgk-vwT_WpJYv2hpzwAwGm3RQvAqfYNfaOiFmnnZxBso6AEEdXP94kr1NTivDdVIA"/>
+</div>
+<div class="flex-1 min-w-0">
+<h3 class="font-headline-sm text-headline-sm text-on-surface truncate">Phở Bò Tái Lăn Hà Nội</h3>
+<div class="flex items-center gap-1 text-on-surface-variant font-body-sm text-body-sm truncate mt-0.5">
+<span class="material-symbols-outlined text-[14px]">storefront</span>
+<span>Phở Bát Đàn - Cầu Giấy</span>
+</div>
+<div class="mt-2 p-1.5 rounded bg-surface-container-low flex items-start gap-1.5">
+<span class="material-symbols-outlined text-[15px] text-tertiary shrink-0 mt-0.5">local_offer</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant leading-snug">
+              AI tối ưu Voucher: <strong class="text-tertiary">Đã tự động áp mã độc quyền -20.000đ</strong>
+</span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between pt-2 border-t border-transparent bg-surface-container-lowest">
+<div class="flex items-center gap-1 text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]">thumb_up</span>
+<span>Đánh giá 5 sao cho shipper</span>
+</div>
+<button class="px-3 py-1 rounded-full bg-primary-fixed text-on-primary-fixed font-label-md text-label-md font-semibold hover:bg-primary hover:text-on-primary transition-all" onclick="showEatWiseToast('Đã thêm Phở Bò Tái Lăn vào giỏ hàng!')" type="button">
+          Đặt lại đơn này
+        </button>
+</div>
+</div>
+</div>
+<div class="px-gutter mt-5 flex flex-col gap-2.5">
+<button class="w-full py-3.5 px-4 rounded-full bg-gradient-to-r from-primary-container to-primary text-on-primary font-label-lg text-label-lg font-bold flex items-center justify-center gap-2 shadow-[0_8px_20px_-2px_rgba(249,115,22,0.35)] active:scale-[0.99] transition-transform" onclick="showEatWiseToast('Khởi động AI Wizard khảo sát khẩu vị...')" type="button">
+<span class="material-symbols-outlined text-[20px]">magic_button</span>
+<span>Cập Nhật Lại Khẩu Vị Với AI Wizard</span>
+</button>
+<button class="w-full py-3 px-4 rounded-full bg-surface-container text-on-surface font-label-lg text-label-lg font-semibold flex items-center justify-center gap-2 hover:bg-surface-container-high transition-colors" onclick="showEatWiseToast('Mở trung tâm cài đặt tài khoản bảo mật...')" type="button">
+<span class="material-symbols-outlined text-[20px] text-outline">settings</span>
+<span>Cài Đặt Tài Khoản &amp; Phương Thức Thanh Toán</span>
+</button>
+</div>
+</div>
+<script>
+  function switchProfileTab(tab) {
+    const tasteSection = document.getElementById('taste-profile-section');
+    const historySection = document.getElementById('order-history-section');
+    const tasteBtn = document.getElementById('tab-taste-btn');
+    const historyBtn = document.getElementById('tab-history-btn');
+
+    if (tab === 'taste') {
+      tasteSection.classList.remove('hidden');
+      tasteSection.classList.add('flex');
+      historySection.classList.add('hidden');
+      historySection.classList.remove('flex');
+
+      tasteBtn.className = 'flex-1 py-2 px-3 rounded-full font-label-md text-label-md transition-all flex items-center justify-center gap-1.5 bg-surface-container-lowest text-primary shadow-sm font-bold';
+      historyBtn.className = 'flex-1 py-2 px-3 rounded-full font-label-md text-label-md transition-all flex items-center justify-center gap-1.5 text-on-surface-variant font-medium';
+    } else {
+      historySection.classList.remove('hidden');
+      historySection.classList.add('flex');
+      tasteSection.classList.add('hidden');
+      tasteSection.classList.remove('flex');
+
+      historyBtn.className = 'flex-1 py-2 px-3 rounded-full font-label-md text-label-md transition-all flex items-center justify-center gap-1.5 bg-surface-container-lowest text-primary shadow-sm font-bold';
+      tasteBtn.className = 'flex-1 py-2 px-3 rounded-full font-label-md text-label-md transition-all flex items-center justify-center gap-1.5 text-on-surface-variant font-medium';
+    }
+  }
+
+  function toggleSwitch(btn) {
+    const knob = btn.firstElementChild;
+    const isChecked = knob.classList.contains('translate-x-6');
+    if (isChecked) {
+      knob.classList.remove('translate-x-6');
+      knob.classList.add('translate-x-0');
+      btn.classList.remove('bg-error', 'bg-primary-container');
+      btn.classList.add('bg-surface-dim');
+      showEatWiseToast('Đã tắt tùy chọn khẩu vị.');
+    } else {
+      knob.classList.remove('translate-x-0');
+      knob.classList.add('translate-x-6');
+      btn.classList.remove('bg-surface-dim');
+      btn.classList.add('bg-primary-container');
+      showEatWiseToast('Đã kích hoạt và lưu vào AI Profile!');
+    }
+  }
+
+  function showEatWiseToast(message) {
+    const container = document.getElementById('eatwise-toast-container');
+    if (!container) return;
+    const toast = document.createElement('div');
+    toast.className = 'pointer-events-auto bg-inverse-surface text-inverse-on-surface px-4 py-2.5 rounded-full shadow-xl flex items-center gap-2 font-body-sm text-body-sm transition-all duration-300 opacity-0 translate-y-3';
+    toast.innerHTML = '<span class="material-symbols-outlined text-tertiary-fixed text-[18px]">verified</span><span class="truncate flex-1 font-medium">' + message + '</span>';
+    container.appendChild(toast);
+    
+    requestAnimationFrame(() => {
+      toast.classList.remove('opacity-0', 'translate-y-3');
+    });
+
+    setTimeout(() => {
+      toast.classList.add('opacity-0', '-translate-y-2');
+      setTimeout(() => toast.remove(), 300);
+    }, 2400);
+  }
+</script></main><div class="fixed bottom-24 left-1/2 -translate-x-1/2 z-40 w-[92%] max-w-sm pointer-events-none flex flex-col gap-2" id="eatwise-toast-container"></div><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/85 backdrop-blur-xl shadow-[0_-4px_24px_rgba(15,23,42,0.06)]" data-active-classes="text-primary font-label-md"><div class="flex justify-around items-center h-20 px-2 max-w-md mx-auto"><a class="flex flex-col items-center justify-center gap-1 min-w-[56px] min-h-[44px] text-on-surface-variant hover:text-on-surface transition-all" data-path="kham-pha" href="#"><span class="material-symbols-outlined text-[24px]">explore</span><span class="font-label-md text-label-md">Khám Phá</span></a><a class="flex flex-col items-center justify-center gap-1 min-w-[56px] min-h-[44px] text-on-surface-variant hover:text-on-surface transition-all" data-path="ban-do" href="#"><span class="material-symbols-outlined text-[24px]">map</span><span class="font-label-md text-label-md">Bản Đồ</span></a><a class="flex flex-col items-center justify-center gap-1 min-w-[56px] min-h-[44px] -mt-5 group relative" data-path="ai-tro-ly" href="#"><div class="w-13 h-13 p-3 rounded-full bg-secondary-container text-on-secondary-container shadow-[0_12px_24px_-4px_rgba(96,99,238,0.4)] flex items-center justify-center ring-4 ring-surface"><span class="material-symbols-outlined text-[26px] animate-pulse">neurology</span></div><span class="font-label-md text-label-md text-secondary mt-0.5 font-bold">AI Trợ Lý</span></a><a aria-current="page" class="flex flex-col items-center justify-center gap-1 min-w-[56px] min-h-[44px] transition-all text-primary font-label-md" data-path="ho-so" href="#"><span class="material-symbols-outlined text-[24px]">account_circle</span><span class="font-label-md text-label-md">Hồ Sơ</span></a></div></nav></body></html>

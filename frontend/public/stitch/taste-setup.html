@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_blank" name="shell-type"/><title>EatWise AI</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;background-color:#faf8ff;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}*{-ms-overflow-style:none;scrollbar-width:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "error": "#ba1a1a", "inverse-surface": "#283044", "on-error": "#ffffff", "on-primary-fixed": "#341100", "inverse-primary": "#ffb690", "surface-bright": "#faf8ff", "on-secondary-container": "#fffbff", "tertiary-container": "#00b07a", "on-secondary-fixed": "#07006c", "on-tertiary": "#ffffff", "surface": "#faf8ff", "outline-variant": "#e0c0b1", "on-background": "#131b2e", "tertiary-fixed": "#6ffbbe", "secondary-container": "#6063ee", "surface-container-lowest": "#ffffff", "on-primary-fixed-variant": "#783200", "on-primary": "#ffffff", "primary-fixed": "#ffdbca", "primary": "#9d4300", "secondary-fixed-dim": "#c0c1ff", "primary-fixed-dim": "#ffb690", "surface-variant": "#dae2fd", "surface-container": "#eaedff", "secondary": "#4648d4", "on-surface-variant": "#584237", "inverse-on-surface": "#eef0ff", "on-tertiary-fixed": "#002113", "error-container": "#ffdad6", "surface-dim": "#d2d9f4", "surface-container-low": "#f2f3ff", "on-secondary-fixed-variant": "#2f2ebe", "on-error-container": "#93000a", "on-tertiary-fixed-variant": "#005236", "outline": "#8c7164", "tertiary": "#006c49", "on-tertiary-container": "#003b26", "secondary-fixed": "#e1e0ff", "background": "#faf8ff", "tertiary-fixed-dim": "#4edea3", "surface-container-highest": "#dae2fd", "on-secondary": "#ffffff", "on-surface": "#131b2e", "primary-container": "#f97316", "on-primary-container": "#582200", "surface-tint": "#9d4300", "surface-container-high": "#e2e7ff" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "space-md": "1rem", "margin-lg": "3rem", "gutter-md": "1.5rem", "gutter": "1rem", "space-xl": "2.25rem", "gutter-lg": "2rem", "margin-md": "2rem", "space-xs": "0.25rem", "margin": "1rem", "space-sm": "0.5rem", "space-lg": "1.5rem" }, fontFamily: { "label-sm": ["Plus Jakarta Sans"], "display-lg-mobile": ["Plus Jakarta Sans"], "body-md": ["Plus Jakarta Sans"], "headline-sm": ["Plus Jakarta Sans"], "body-sm": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "display-lg": ["Plus Jakarta Sans"], "label-lg": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"], "label-md": ["Plus Jakarta Sans"] }, fontSize: { "label-sm": ["10px", { "lineHeight": "12px", "letterSpacing": "0.04em", "fontWeight": "700" }], "display-lg-mobile": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.025em", "fontWeight": "800" }], "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }], "headline-sm": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }], "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "400" }], "display-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.03em", "fontWeight": "800" }], "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }], "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.015em", "fontWeight": "700" }], "headline-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }] } } } };</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-body-md text-on-surface antialiased min-h-screen flex flex-col pt-safe pb-safe selection:bg-primary-container selection:text-on-primary-container"><main class="flex-1 flex flex-col relative w-full bg-surface"><div class="flex flex-col w-full pb-10">
+<div class="px-gutter pt-space-md flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container shadow-sm">
+<span class="material-symbols-outlined text-[18px]">smart_toy</span>
+</div>
+<div>
+<span class="font-label-sm text-secondary block uppercase tracking-wider">Taste Profile Wizard</span>
+<span class="font-headline-sm text-on-surface">Khởi tạo Hồ sơ Vị giác</span>
+</div>
+</div>
+<div class="flex items-center gap-1.5 px-3 py-1 bg-surface-container-high rounded-full shadow-sm">
+<span class="w-2 h-2 rounded-full bg-tertiary-container animate-ping"></span>
+<span class="font-label-md text-on-surface">Bước 1/3</span>
+</div>
+</div>
+<div class="px-gutter mt-space-md">
+<div class="bg-gradient-to-r from-secondary/10 via-primary-container/15 to-secondary/5 rounded-2xl p-space-md relative overflow-hidden shadow-sm">
+<div class="relative z-10 flex items-start gap-space-md">
+<div class="w-12 h-12 rounded-2xl bg-surface-container-lowest flex items-center justify-center text-primary-container shadow-md shrink-0">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">psychology_alt</span>
+</div>
+<div class="flex-1">
+<div class="flex items-center gap-1.5 mb-1">
+<span class="font-headline-sm text-on-surface">EatWise AI Match Engine</span>
+<span class="px-2 py-0.5 rounded-full bg-tertiary-container text-on-tertiary font-label-sm">Độ chính xác 99.4%</span>
+</div>
+<p class="font-body-sm text-on-surface-variant leading-relaxed">
+            Học sâu thói quen ăn uống, tự động loại trừ chất gây dị ứng và tính toán bán kính giao nhanh nóng sốt nhất!
+          </p>
+</div>
+</div>
+</div>
+</div>
+<div class="px-gutter mt-space-lg flex flex-col gap-space-lg">
+<div class="bg-surface-container-lowest rounded-2xl p-space-md shadow-sm">
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-container" style="font-variation-settings: 'FILL' 1;">near_me</span>
+<h2 class="font-headline-sm text-on-surface">1. Vị trí &amp; Bán kính giao</h2>
+</div>
+<button class="flex items-center gap-1 px-3 py-1 bg-secondary text-on-secondary rounded-full font-label-md shadow-sm" type="button">
+<span class="material-symbols-outlined text-[14px]">my_location</span>
+<span>Định vị tự động</span>
+</button>
+</div>
+<div class="p-3 bg-surface-container-low rounded-xl flex items-center gap-3">
+<div class="w-9 h-9 rounded-lg bg-surface-container-lowest flex items-center justify-center text-primary shadow-sm shrink-0">
+<span class="material-symbols-outlined text-[20px]">pin_drop</span>
+</div>
+<div class="flex-1 min-w-0">
+<p class="font-label-lg text-on-surface truncate">Số 18 Duy Tân, Cầu Giấy, Hà Nội</p>
+<p class="font-body-sm text-on-surface-variant flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary-container inline-block"></span>
+            Tín hiệu GPS chính xác cao • Tòa nhà FPT
+          </p>
+</div>
+</div>
+<div class="mt-4 pt-2">
+<div class="flex items-center justify-between mb-2">
+<span class="font-label-md text-on-surface-variant">Bán kính quét quán ngon:</span>
+<span class="font-headline-sm text-primary px-2.5 py-0.5 rounded-lg bg-primary-fixed" id="radius-val">3.5 km</span>
+</div>
+<div class="relative flex items-center">
+<input class="w-full h-2 bg-surface-container rounded-lg appearance-none cursor-pointer accent-primary-container" id="radius-slider" max="10" min="1" step="0.5" type="range" value="3.5"/>
+</div>
+<div class="flex justify-between font-label-sm text-on-surface-variant mt-1.5">
+<span>Siêu tốc (1 km)</span>
+<span>Tiêu chuẩn (5 km)</span>
+<span>Mở rộng (10 km)</span>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-2xl p-space-md shadow-sm">
+<div class="flex items-center justify-between mb-1">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-container" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<h2 class="font-headline-sm text-on-surface">2. Sở thích ẩm thực</h2>
+</div>
+<span class="font-label-sm px-2.5 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed">Đã chọn 3 món</span>
+</div>
+<p class="font-body-sm text-on-surface-variant mb-3">AI sẽ ưu tiên tổng hợp hương vị kích thích khẩu vị của bạn</p>
+<div class="flex flex-wrap gap-2" id="likes-container">
+<button class="taste-pill active flex items-center gap-1.5 px-3.5 py-2 rounded-full font-label-md transition-all shadow-sm bg-inverse-surface text-on-primary shadow-md" type="button">
+<span>🍜</span>
+<span>Món nước</span>
+<span class="material-symbols-outlined text-[16px]">check</span>
+</button>
+<button class="taste-pill active flex items-center gap-1.5 px-3.5 py-2 rounded-full font-label-md transition-all shadow-sm bg-inverse-surface text-on-primary shadow-md" type="button">
+<span>🌶️</span>
+<span>Đồ cay</span>
+<span class="material-symbols-outlined text-[16px]">check</span>
+</button>
+<button class="taste-pill active flex items-center gap-1.5 px-3.5 py-2 rounded-full font-label-md transition-all shadow-sm bg-inverse-surface text-on-primary shadow-md" type="button">
+<span>🇻🇳</span>
+<span>Ẩm thực Việt</span>
+<span class="material-symbols-outlined text-[16px]">check</span>
+</button>
+<button class="taste-pill flex items-center gap-1.5 px-3.5 py-2 rounded-full font-label-md transition-all bg-surface-container-low text-on-surface hover:bg-surface-container" type="button">
+<span>🥩</span>
+<span>Đồ nướng</span>
+</button>
+<button class="taste-pill flex items-center gap-1.5 px-3.5 py-2 rounded-full font-label-md transition-all bg-surface-container-low text-on-surface hover:bg-surface-container" type="button">
+<span>🥗</span>
+<span>Healthy &amp; Salad</span>
+</button>
+<button class="taste-pill flex items-center gap-1.5 px-3.5 py-2 rounded-full font-label-md transition-all bg-surface-container-low text-on-surface hover:bg-surface-container" type="button">
+<span>🇰🇷</span>
+<span>Hàn Quốc</span>
+</button>
+<button class="taste-pill flex items-center gap-1.5 px-3.5 py-2 rounded-full font-label-md transition-all bg-surface-container-low text-on-surface hover:bg-surface-container" type="button">
+<span>🇯🇵</span>
+<span>Nhật Bản</span>
+</button>
+<button class="taste-pill flex items-center gap-1.5 px-3.5 py-2 rounded-full font-label-md transition-all bg-surface-container-low text-on-surface hover:bg-surface-container" type="button">
+<span>🍲</span>
+<span>Đậm đà chuẩn vị</span>
+</button>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-2xl p-space-md shadow-sm">
+<div class="flex items-center justify-between mb-1">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-error" style="font-variation-settings: 'FILL' 1;">shield_with_heart</span>
+<h2 class="font-headline-sm text-on-surface">3. Cảnh báo Dị ứng &amp; An toàn</h2>
+</div>
+<span class="font-label-sm px-2 py-0.5 rounded-full bg-error-container text-on-error-container uppercase">Khóa tuyệt đối</span>
+</div>
+<p class="font-body-sm text-on-surface-variant mb-3">AI sẽ tự động lọc bỏ món và ghi chú đặc biệt cho đầu bếp</p>
+<div class="flex flex-wrap gap-2">
+<button class="flex items-center gap-1.5 px-3.5 py-2 rounded-full font-label-md bg-error text-on-error shadow-md shadow-error/20" type="button">
+<span class="material-symbols-outlined text-[16px]">gpp_maybe</span>
+<span>Hải sản 🦐</span>
+<span class="material-symbols-outlined text-[16px]">close</span>
+</button>
+<button class="flex items-center gap-1.5 px-3.5 py-2 rounded-full font-label-md bg-surface-container-low text-on-surface hover:bg-error-container hover:text-on-error-container transition-all" type="button">
+<span>🥜</span>
+<span>Đậu phộng</span>
+</button>
+<button class="flex items-center gap-1.5 px-3.5 py-2 rounded-full font-label-md bg-surface-container-low text-on-surface hover:bg-error-container hover:text-on-error-container transition-all" type="button">
+<span>🥛</span>
+<span>Sữa / Lactose</span>
+</button>
+<button class="flex items-center gap-1.5 px-3.5 py-2 rounded-full font-label-md bg-surface-container-low text-on-surface hover:bg-error-container hover:text-on-error-container transition-all" type="button">
+<span>🌾</span>
+<span>Gluten</span>
+</button>
+<button class="flex items-center gap-1.5 px-3.5 py-2 rounded-full font-label-md bg-surface-container-low text-on-surface hover:bg-error-container hover:text-on-error-container transition-all" type="button">
+<span>🥚</span>
+<span>Trứng gà/vịt</span>
+</button>
+</div>
+<div class="mt-3 flex items-center gap-2 p-2.5 rounded-xl bg-error-container/40 text-on-error-container">
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+<span class="font-label-md">Đã kích hoạt: Tự động từ chối mọi nước dùng hoặc sốt chiết xuất từ Tôm, Cua, Mực.</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-2xl p-space-md shadow-sm">
+<div class="flex items-center justify-between mb-1">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline" style="font-variation-settings: 'FILL' 1;">block</span>
+<h2 class="font-headline-sm text-on-surface">4. Món &amp; Nguyên liệu ghét (Dislikes)</h2>
+</div>
+</div>
+<p class="font-body-sm text-on-surface-variant mb-3">Tự động thêm vào ghi chú đơn hàng của bạn</p>
+<div class="flex flex-wrap gap-2 mb-3">
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-full font-label-md bg-surface-variant text-on-surface-variant shadow-sm" type="button">
+<span>🚫🧅</span>
+<span>Không ăn hành lá</span>
+<span class="material-symbols-outlined text-[16px] text-primary">check_circle</span>
+</button>
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-full font-label-md bg-surface-container-low text-on-surface hover:bg-surface-container" type="button">
+<span>🚫🥓</span>
+<span>Ghét nhiều mỡ</span>
+</button>
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-full font-label-md bg-surface-container-low text-on-surface hover:bg-surface-container" type="button">
+<span>🚫🥩</span>
+<span>Không ăn nội tạng</span>
+</button>
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-full font-label-md bg-surface-container-low text-on-surface hover:bg-surface-container" type="button">
+<span>🚫</span>
+<span>Ghét mắm tôm</span>
+</button>
+</div>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-outline text-[20px]">edit_note</span>
+<input class="w-full bg-surface-container-low pl-10 pr-24 py-2.5 rounded-xl font-body-md text-on-surface placeholder:text-on-surface-variant/60 focus:bg-surface-container-lowest focus:outline-none" placeholder="Thêm nguyên liệu khác (vd: ngò rí, tiêu hạt, ớt bột...)" type="text"/>
+<button class="absolute right-2 px-3 py-1 rounded-lg bg-surface-container text-on-surface font-label-md hover:bg-secondary-fixed" type="button">
+          Thêm
+        </button>
+</div>
+</div>
+<div class="bg-surface-container-high rounded-2xl p-space-md flex items-center justify-between shadow-sm">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-tertiary-container flex items-center justify-center text-on-tertiary">
+<span class="material-symbols-outlined text-[24px]">verified</span>
+</div>
+<div>
+<span class="font-label-lg text-on-surface block">Chỉ số Khớp Khẩu vị</span>
+<span class="font-body-sm text-on-surface-variant">Dựa trên 3 lượt chọn &amp; 1 bộ lọc dị ứng</span>
+</div>
+</div>
+<div class="text-right">
+<span class="font-headline-lg text-tertiary">100%</span>
+<span class="font-label-sm text-tertiary block">Tối ưu</span>
+</div>
+</div>
+<div class="pt-2">
+<button class="w-full py-4 rounded-full bg-gradient-to-r from-primary-container via-primary to-primary-container text-on-primary font-headline-sm shadow-xl shadow-primary-container/30 flex items-center justify-center gap-2 transform active:scale-95 transition-all" id="cta-analyze" type="button">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<span>Phân tích khẩu vị &amp; Gợi ý ngay</span>
+</button>
+<p class="text-center font-body-sm text-on-surface-variant mt-2">
+        Hệ thống AI xử lý theo thời gian thực • Miễn phí thiết lập
+      </p>
+</div>
+<div class="fixed inset-0 z-50 bg-inverse-surface/60 backdrop-blur-sm hidden items-center justify-center p-gutter" id="ai-modal">
+<div class="bg-surface-container-lowest w-full max-w-sm rounded-3xl p-6 shadow-2xl flex flex-col items-center text-center">
+<div class="w-16 h-16 rounded-2xl bg-primary-fixed flex items-center justify-center text-primary-container mb-4 shadow-inner animate-bounce">
+<span class="material-symbols-outlined text-[36px]" style="font-variation-settings: 'FILL' 1;">electric_bolt</span>
+</div>
+<h3 class="font-headline-md text-on-surface mb-2">AI Match Engine Sẵn Sàng!</h3>
+<p class="font-body-md text-on-surface-variant mb-5">
+          Đã loại bỏ hoàn toàn quán có nguy cơ hải sản, ưu tiên bún/phở/mỳ cay nóng sốt chuẩn vị Việt quanh bán kính 3.5km số 18 Duy Tân!
+        </p>
+<div class="w-full bg-surface-container-low rounded-xl p-3 mb-5 flex items-center justify-between text-left">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary">check_circle</span>
+<span class="font-label-md text-on-surface">Độ trùng khớp thực đơn</span>
+</div>
+<span class="font-headline-sm text-tertiary">100% Match</span>
+</div>
+<button class="w-full py-3 rounded-full bg-secondary text-on-secondary font-label-lg shadow-md active:scale-95 transition-all" id="close-modal" type="button">
+          Xem 8 món đề xuất cho bữa trưa
+        </button>
+</div>
+</div>
+</div>
+</div>
+<script>
+  const slider = document.getElementById('radius-slider');
+  const valDisplay = document.getElementById('radius-val');
+  if (slider && valDisplay) {
+    slider.addEventListener('input', (e) => {
+      valDisplay.textContent = `${parseFloat(e.target.value).toFixed(1)} km`;
+    });
+  }
+
+  const ctaBtn = document.getElementById('cta-analyze');
+  const modal = document.getElementById('ai-modal');
+  const closeModal = document.getElementById('close-modal');
+
+  if (ctaBtn && modal) {
+    ctaBtn.addEventListener('click', () => {
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    });
+  }
+
+  if (closeModal && modal) {
+    closeModal.addEventListener('click', () => {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    });
+  }
+</script></main></body></html>
