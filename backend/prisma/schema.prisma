@@ -144,6 +144,10 @@ model TasteProfile {
   budgetMin           Int      @map("budget_min")
   budgetMax           Int      @map("budget_max")
   maxDistanceMeters   Int      @map("max_distance_meters")
+  latitude            Float?   @db.DoublePrecision
+  longitude           Float?   @db.DoublePrecision
+  areaLabel           String?  @map("area_label") @db.VarChar(200)
+  mealPeriod          MealPeriod? @map("meal_period")
   onboardingCompleted Boolean  @default(false) @map("onboarding_completed")
   createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt           DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
@@ -237,6 +241,9 @@ model Dish {
   sweetLevel            Int                    @map("sweet_level") @db.SmallInt
   sourLevel             Int                    @map("sour_level") @db.SmallInt
   saltyLevel            Int                    @map("salty_level") @db.SmallInt
+  evidenceSource        String?                @map("evidence_source") @db.VarChar(500)
+  dietaryCodes          String[]               @default([]) @map("dietary_codes")
+  mealPeriods           MealPeriod[]           @default([]) @map("meal_periods")
   verificationStatus    VerificationStatus     @default(UNVERIFIED) @map("verification_status")
   createdAt             DateTime               @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt             DateTime               @updatedAt @map("updated_at") @db.Timestamptz(3)

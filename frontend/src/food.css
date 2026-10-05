@@ -1,0 +1,331 @@
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
+.food-shell {
+  --food-ink: #20372b;
+  --food-green: #286246;
+  --food-paper: #faf8f2;
+  --food-line: #dedfd5;
+  --food-muted: #606c62;
+  max-width: 1100px;
+  min-height: 100vh;
+  margin: auto;
+  background: var(--food-paper);
+  color: var(--food-ink);
+  font-family: "Plus Jakarta Sans", sans-serif;
+  padding-bottom: 96px;
+}
+.food-shell * {
+  box-sizing: border-box;
+}
+.food-shell h1 {
+  font-size: clamp(30px, 5vw, 48px);
+  line-height: 1.2;
+  letter-spacing: -1.5px;
+  margin: 12px 0 20px;
+}
+.food-shell h2 {
+  font-size: 23px;
+  line-height: 1.4;
+  margin: 8px 0 16px;
+}
+.food-shell p {
+  line-height: 1.7;
+  text-wrap: pretty;
+}
+.food-shell button,
+.food-shell input,
+.food-shell select {
+  font: inherit;
+}
+.food-shell button {
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 1px solid var(--food-line);
+  border-radius: 10px;
+  color: var(--food-ink);
+  background: white;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.food-shell button:hover {
+  background: #e9eee4;
+}
+.food-shell button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+.food-shell :focus-visible {
+  outline: 3px solid #b87c36;
+  outline-offset: 3px;
+}
+.food-shell a {
+  color: var(--food-green);
+  text-underline-offset: 4px;
+}
+.food-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 22px 32px;
+  border-bottom: 1px solid var(--food-line);
+}
+.food-shell .food-brand {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font-size: 26px;
+  font-weight: 800;
+  text-align: left;
+}
+.food-brand span {
+  display: block;
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--food-muted);
+}
+.food-main {
+  padding: 32px;
+}
+.food-eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 1.6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--food-green);
+}
+.food-muted {
+  color: var(--food-muted);
+}
+.food-shell .food-primary {
+  background: var(--food-green);
+  color: white;
+  border-color: var(--food-green);
+  font-weight: 600;
+}
+.food-shell .food-primary:hover {
+  background: #1e4d36;
+}
+.food-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  margin-top: 24px;
+}
+.food-card {
+  padding: 24px;
+  background: white;
+  border: 1px solid var(--food-line);
+  border-radius: 18px;
+}
+.food-card small {
+  display: block;
+  margin-top: 8px;
+  line-height: 1.5;
+  color: var(--food-muted);
+}
+.food-reason {
+  background: #eef2e9;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+.food-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+.food-section {
+  margin-top: 28px;
+  padding: 24px;
+  border-top: 1px solid var(--food-line);
+}
+.food-shell label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 16px 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+.food-shell input:not([type="checkbox"]):not([type="range"]),
+.food-shell select {
+  width: 100%;
+  min-height: 46px;
+  padding: 12px;
+  color: var(--food-ink);
+  background: white;
+  border: 1px solid var(--food-line);
+  border-radius: 8px;
+}
+.food-shell input[type="range"] {
+  width: 100%;
+  accent-color: var(--food-green);
+  min-height: 32px;
+}
+.food-shell input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--food-green);
+  flex-shrink: 0;
+}
+.food-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.food-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.food-shell .food-options label,
+.food-shell .food-check,
+.food-allergy > label {
+  flex-direction: row;
+  align-items: center;
+  min-height: 44px;
+  font-weight: 400;
+}
+.food-allergy {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--food-line);
+}
+.food-allergy > label {
+  display: flex;
+  flex-direction: row;
+}
+.food-save {
+  width: 100%;
+  margin-top: 24px;
+}
+.food-nav {
+  position: fixed;
+  z-index: 5;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(100%, 1100px);
+  display: flex;
+  justify-content: space-around;
+  gap: 8px;
+  background: #faf8f2f5;
+  border-top: 1px solid var(--food-line);
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+}
+.food-nav button {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  font-size: 14px;
+}
+.food-nav button[aria-current="page"] {
+  background: #e5ebdd;
+  color: var(--food-green);
+  font-weight: 700;
+}
+.food-auth {
+  max-width: 550px;
+  margin: auto;
+  padding: 60px 28px;
+}
+.food-auth form {
+  margin: 32px 0 16px;
+}
+.food-auth .food-primary {
+  width: 100%;
+}
+.food-notice,
+.food-error,
+.food-empty {
+  padding: 20px;
+  border-radius: 12px;
+  background: #eef2e9;
+  overflow-wrap: anywhere;
+}
+.food-error {
+  background: #f8e9e3;
+  color: #8c3523;
+}
+.food-pill {
+  display: inline-block;
+  padding: 8px 14px;
+  border: 1px solid var(--food-line);
+  border-radius: 30px;
+  font-size: 13px;
+}
+.food-search {
+  display: flex;
+  gap: 12px;
+}
+.food-search input {
+  min-width: 0;
+}
+.food-catalog-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--food-line);
+}
+.food-catalog-row small {
+  display: block;
+  margin-top: 8px;
+  color: var(--food-muted);
+}
+.food-place {
+  padding: 24px 0;
+  border-bottom: 1px solid var(--food-line);
+}
+.food-place h3 {
+  font-size: 20px;
+}
+.food-legal {
+  padding: 24px 32px;
+  font-size: 13px;
+}
+@media (max-width: 650px) {
+  .food-header {
+    padding: 18px;
+  }
+  .food-main {
+    padding: 24px 18px;
+  }
+  .food-grid {
+    grid-template-columns: 1fr;
+  }
+  .food-section {
+    padding: 20px 0;
+  }
+  .food-fields {
+    gap: 12px;
+  }
+  .food-catalog-row {
+    align-items: flex-start;
+  }
+  .food-nav {
+    gap: 2px;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+  .food-nav button {
+    font-size: 12px;
+    padding: 10px 6px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .food-shell * {
+    transition: none !important;
+  }
+}
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+}
+body {
+  background: #e8e9e0;
+  min-width: 320px;
+}

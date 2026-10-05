@@ -10,6 +10,10 @@ export type CatalogRecord = {
 
 export type StoredProfile = {
   profile: {
+    latitude?: number | null;
+    longitude?: number | null;
+    areaLabel?: string | null;
+    mealPeriod?: Exclude<ProfilePayload["mealPeriod"], undefined>;
     spicyLevel: number;
     sweetLevel: number;
     sourLevel: number;
@@ -50,12 +54,11 @@ const dietaryInclude = { dietaryRestriction: true } as const;
 const cuisineInclude = { cuisine: true } as const;
 
 async function findStoredProfile(db: ProfileDatabase, userId: string): Promise<StoredProfile | null> {
-  const [profile, allergies, dietaryRestrictions, cuisinePreferences] = await Promise.all([
-    db.tasteProfile.findUnique({ where: { userId } }),
-    db.userAllergy.findMany({ where: { userId }, include: allergyInclude }),
-    db.userDietaryRestriction.findMany({ where: { userId }, include: dietaryInclude }),
-    db.userCuisinePreference.findMany({ where: { userId }, include: cuisineInclude }),
-  ]);
+  // A transaction uses one connection; execute its queries sequentially.
+  const profile = await db.tasteProfile.findUnique({ where: { userId } });
+  const allergies = await db.userAllergy.findMany({ where: { userId }, include: allergyInclude });
+  const dietaryRestrictions = await db.userDietaryRestriction.findMany({ where: { userId }, include: dietaryInclude });
+  const cuisinePreferences = await db.userCuisinePreference.findMany({ where: { userId }, include: cuisineInclude });
 
   if (!profile) {
     return null;
@@ -126,6 +129,10 @@ export function createTasteProfileRepository(prisma: PrismaClient) {
         await transaction.tasteProfile.upsert({
           where: { userId },
           update: {
+            latitude: input.latitude ?? null,
+            longitude: input.longitude ?? null,
+            areaLabel: input.areaLabel?.trim() || null,
+            mealPeriod: input.mealPeriod ?? null,
             spicyLevel: input.spicyLevel,
             sweetLevel: input.sweetLevel,
             sourLevel: input.sourLevel,
@@ -137,6 +144,10 @@ export function createTasteProfileRepository(prisma: PrismaClient) {
           },
           create: {
             userId,
+            latitude: input.latitude ?? null,
+            longitude: input.longitude ?? null,
+            areaLabel: input.areaLabel?.trim() || null,
+            mealPeriod: input.mealPeriod ?? null,
             spicyLevel: input.spicyLevel,
             sweetLevel: input.sweetLevel,
             sourLevel: input.sourLevel,

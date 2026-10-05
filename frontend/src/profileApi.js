@@ -1,4 +1,4 @@
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001').replace(/\/$/, '');
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '');
 export const ACCESS_TOKEN_KEY = 'eatwise_access_token';
 
 export class ProfileApiError extends Error {
@@ -19,7 +19,8 @@ export function hasLiveSession() {
   return Boolean(getAccessToken());
 }
 
-async function apiRequest(path, options = {}) {
+let refreshing = null;
+export async function apiRequest(path, options = {}, retry = true) {
   const token = getAccessToken();
   const headers = new Headers(options.headers || {});
   headers.set('Accept', 'application/json');
@@ -34,6 +35,27 @@ async function apiRequest(path, options = {}) {
   }
 
   const payload = response.status === 204 ? null : await response.json().catch(() => null);
+  if (response.status === 401 && retry && !path.startsWith('/auth/')) {
+    const refreshToken = window.sessionStorage.getItem('food_refresh_token');
+    if (refreshToken) {
+      refreshing ||= apiRequest('/auth/refresh', { method: 'POST', body: JSON.stringify({ refreshToken }) }, false)
+        .then((session) => {
+          window.localStorage.setItem(ACCESS_TOKEN_KEY, session.data.accessToken);
+          window.sessionStorage.setItem('food_refresh_token', session.data.refreshToken);
+        }).finally(() => { refreshing = null; });
+      try { await refreshing; return await apiRequest(path, options, false); }
+      catch (error) {
+        if (error.status === 401) {
+          window.localStorage.removeItem(ACCESS_TOKEN_KEY);
+          window.sessionStorage.removeItem('food_refresh_token');
+          window.dispatchEvent(new Event('food-session-expired'));
+        }
+        throw error;
+      }
+    }
+    window.localStorage.removeItem(ACCESS_TOKEN_KEY);
+    window.dispatchEvent(new Event('food-session-expired'));
+  }
   if (!response.ok) {
     throw new ProfileApiError(
       payload?.error?.message || 'Không thể xử lý yêu cầu hồ sơ',
@@ -73,6 +95,10 @@ export function replaceProfile(profile) {
 export function profileToPayload(profile, overrides = {}) {
   const source = profile || {};
   return {
+    latitude: source.latitude ?? null,
+    longitude: source.longitude ?? null,
+    areaLabel: source.areaLabel ?? null,
+    mealPeriod: source.mealPeriod ?? null,
     spicyLevel: source.spicyLevel ?? 30,
     sweetLevel: source.sweetLevel ?? 45,
     sourLevel: source.sourLevel ?? 30,

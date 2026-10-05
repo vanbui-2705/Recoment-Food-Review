@@ -5,6 +5,10 @@ import type { CatalogRecord, StoredProfile, TasteProfileRepository } from "./tas
 export type CatalogKind = "allergens" | "dietary-restrictions" | "cuisines";
 
 export type ProfileResponse = {
+  latitude?: number | null;
+  longitude?: number | null;
+  areaLabel?: string | null;
+  mealPeriod?: Exclude<ProfilePayload["mealPeriod"], undefined>;
   spicyLevel: number;
   sweetLevel: number;
   sourLevel: number;
@@ -43,6 +47,9 @@ function assertUniqueCodes(field: string, selections: Array<{ code: string }>): 
 }
 
 function validateBusinessRules(input: ProfilePayload): void {
+  if ((input.latitude == null) !== (input.longitude == null)) {
+    throw new AppError(400, "INVALID_LOCATION", "Cần cung cấp cả vĩ độ và kinh độ");
+  }
   if (input.budgetMin > input.budgetMax) {
     throw new AppError(400, "INVALID_BUDGET_RANGE", "Ngân sách tối thiểu không được lớn hơn ngân sách tối đa", [
       { field: "budgetMin", message: "budgetMin must be less than or equal to budgetMax" },
@@ -77,6 +84,10 @@ function toResponse(stored: StoredProfile | null): ProfileResponse | null {
   }
 
   return {
+    latitude: stored.profile.latitude ?? null,
+    longitude: stored.profile.longitude ?? null,
+    areaLabel: stored.profile.areaLabel ?? null,
+    mealPeriod: stored.profile.mealPeriod ?? null,
     spicyLevel: stored.profile.spicyLevel,
     sweetLevel: stored.profile.sweetLevel,
     sourLevel: stored.profile.sourLevel,

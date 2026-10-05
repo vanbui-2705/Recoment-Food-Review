@@ -5,7 +5,7 @@
 ## Cấu trúc
 
 - `backend`: Fastify API viết bằng TypeScript.
-- `frontend`: Web client, chưa triển khai.
+- `frontend`: React/Vite client với onboarding, gợi ý hôm nay, lịch sử và tìm quán.
 - `docs`: Kiến trúc, roadmap và system prompt.
 
 ## Chạy backend
@@ -68,9 +68,9 @@ docker compose down -v
 Có thể đặt `POSTGRES_PASSWORD`, `SEED_ADMIN_EMAIL` và `SEED_ADMIN_PASSWORD` trong
 file `.env` ở root. Các giá trị mặc định trong `compose.yaml` chỉ dành cho local development.
 
-Frontend chưa có `package.json` hoặc ứng dụng có thể build nên chưa được khai báo trong
-Compose. Khi frontend Vite/Next được triển khai, thêm service `frontend` với build context
-`./frontend` vào cùng file `compose.yaml`.
+Frontend Nginx chạy tại `http://localhost:8080`, proxy `/api` sang backend. Production seed chỉ tạo catalog chuẩn và ADMIN nếu được cấu hình; nhập ngân hàng món có nguồn qua ADMIN API. Local development chạy `cd frontend`, `npm ci`, `npm run dev` sau khi backend hoạt động.
+
+Đặt `GOOGLE_PLACES_API_KEY` ở backend để bật tìm quán thật. Chi tiết rule 4 ngày, API kiến thức, giới hạn Google Places và cách kiểm tra: [Food Discovery implementation](docs/FOOD_DISCOVERY_IMPLEMENTATION.md).
 
 ## Kiểm tra chất lượng
 

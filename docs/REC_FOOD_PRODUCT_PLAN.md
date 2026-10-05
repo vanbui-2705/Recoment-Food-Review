@@ -87,7 +87,7 @@ GET  /catalogs/cuisines
 GET  /catalogs/dietary-restrictions
 ```
 
-Đây là module nên triển khai tiếp theo.
+Trạng thái: đã triển khai API và onboarding thật, gồm vị trí, bữa ăn, ngân sách, khoảng cách, bốn vị và các catalog constraint. Món thích/không thích được lưu theo ID món. Xem [implementation và giới hạn dữ liệu](FOOD_DISCOVERY_IMPLEMENTATION.md).
 
 ### 3.3. Food Knowledge Base
 
@@ -103,7 +103,9 @@ Quản lý:
 - trạng thái xác minh;
 - món người dùng thích/ghét.
 
-Schema database đã có nền tảng, nhưng API và business service chưa hoàn chỉnh.
+Trạng thái: đã có API tìm kiếm/chi tiết món và ADMIN tạo/cập nhật kiến thức trong transaction, gồm nguồn, alias, ingredient, allergen, cuisine, giá tham khảo, bốn vị, dietary và bữa ăn. Google Places là nguồn tìm quán trực tiếp; không tự coi kết quả tìm quán là thực đơn món đã xác minh.
+
+Trang chủ tự tải gợi ý hôm nay. Món đã chọn hoặc đã ăn bị loại trong đủ 96 giờ, kể cả món ghi nhận đã ăn hôm qua; lần chọn/ăn mới đặt lại thời gian chờ. Không tự nới bộ lọc khi hết món. Hồ sơ có dị ứng hiện trả thiếu dữ liệu an toàn vì chưa có bằng chứng theo từng quán. Chi tiết vận hành, API và test nằm trong [implementation](FOOD_DISCOVERY_IMPLEMENTATION.md).
 
 ### 3.4. Restaurants & Google Places
 
@@ -416,13 +418,14 @@ Không xác nhận đơn hoặc thanh toán nếu chưa có hành động đồn
 - phân quyền;
 - taste profile/database foundation;
 - dish, restaurant và recommendation-history database foundation.
+- frontend onboarding, profile, gợi ý hôm nay, tra cứu món và lịch sử thật;
+- food knowledge API và ADMIN write API có nguồn;
+- Google Places Text Search adapter backend và link Maps.
 
 Chưa có implementation hoàn chỉnh:
 
-- frontend;
-- taste profile API;
-- recommendation API;
-- Google Places integration;
+- nguồn thực đơn/giá món trực tiếp từ merchant;
+- bằng chứng an toàn dị ứng theo từng quán;
 - LLM integration;
 - chat assistant;
 - cart/order;
@@ -437,4 +440,4 @@ Change tiếp theo nên là:
 taste-profile-api-and-onboarding
 ```
 
-Mục tiêu của change này là hoàn thành bước đầu tiên mà người dùng nhìn thấy: nhập sở thích, vị trí, dị ứng, món ghét và lưu thành profile để làm đầu vào cho recommendation engine.
+Taste profile và daily discovery đã triển khai. Bước tiếp theo là tích hợp nguồn thực đơn merchant và xác minh dữ liệu theo quán để mở rộng gợi ý cho hồ sơ có dị ứng; không dùng Google Text Search thay bằng chứng thực đơn hoặc an toàn.

@@ -291,9 +291,18 @@ async function seedDishKnowledgeBase(): Promise<void> {
   );
 
   for (const item of dishes) {
+    const existing = await prisma.dish.findUnique({ where: { slug: item.slug } });
+    // Re-running development seed must never overwrite editorial or merchant evidence.
+    if (
+      existing?.verificationStatus === VerificationStatus.VERIFIED ||
+      (existing?.evidenceSource && !existing.evidenceSource.startsWith("Rec-Food reference seed"))
+    )
+      continue;
     const dish = await prisma.dish.upsert({
       where: { slug: item.slug },
       update: {
+        evidenceSource:
+          "Rec-Food reference seed v1: recipe composition; price and taste are estimates, not a merchant menu",
         name: item.name,
         description: item.description,
         cuisineId: vietnameseCuisine.id,
@@ -306,6 +315,8 @@ async function seedDishKnowledgeBase(): Promise<void> {
         verificationStatus: VerificationStatus.REVIEWED,
       },
       create: {
+        evidenceSource:
+          "Rec-Food reference seed v1: recipe composition; price and taste are estimates, not a merchant menu",
         slug: item.slug,
         name: item.name,
         description: item.description,
@@ -447,8 +458,10 @@ async function seedRestaurants(): Promise<void> {
 
 async function main(): Promise<void> {
   await seedCatalogs();
-  await seedDishKnowledgeBase();
-  await seedRestaurants();
+  if (process.env.NODE_ENV !== "production") {
+    await seedDishKnowledgeBase();
+    await seedRestaurants();
+  }
 
   const email = process.env.SEED_ADMIN_EMAIL?.trim().toLowerCase();
   const password = process.env.SEED_ADMIN_PASSWORD;

@@ -1,5 +1,26 @@
 import { Type, type Static } from "@fastify/type-provider-typebox";
 
+const LocationFields = {
+  latitude: Type.Optional(
+    Type.Unsafe<number | null>({ type: ["number", "null"], minimum: -90, maximum: 90 }),
+  ),
+  longitude: Type.Optional(
+    Type.Unsafe<number | null>({ type: ["number", "null"], minimum: -180, maximum: 180 }),
+  ),
+  areaLabel: Type.Optional(
+    Type.Unsafe<string | null>({ type: ["string", "null"], maxLength: 200 }),
+  ),
+  mealPeriod: Type.Optional(
+    Type.Union([
+      Type.Literal("BREAKFAST"),
+      Type.Literal("LUNCH"),
+      Type.Literal("DINNER"),
+      Type.Literal("SNACK"),
+      Type.Literal("LATE_NIGHT"),
+      Type.Null(),
+    ]),
+  ),
+};
 const CatalogCodeSchema = Type.String({ minLength: 1, maxLength: 50 });
 const DescriptionSchema = Type.Union([Type.String(), Type.Null()]);
 const AllergySeveritySchema = Type.Union([
@@ -36,6 +57,7 @@ export const CuisinePreferenceSelectionSchema = Type.Object(
 
 export const ProfilePayloadSchema = Type.Object(
   {
+    ...LocationFields,
     spicyLevel: Type.Integer({ minimum: 0, maximum: 100 }),
     sweetLevel: Type.Integer({ minimum: 0, maximum: 100 }),
     sourLevel: Type.Integer({ minimum: 0, maximum: 100 }),
@@ -92,6 +114,7 @@ export const CuisinePreferenceResponseSchema = Type.Object(
 
 export const TasteProfileResponseSchema = Type.Object(
   {
+    ...LocationFields,
     spicyLevel: Type.Integer({ minimum: 0, maximum: 100 }),
     sweetLevel: Type.Integer({ minimum: 0, maximum: 100 }),
     sourLevel: Type.Integer({ minimum: 0, maximum: 100 }),
@@ -119,7 +142,10 @@ export const ProfileResponseSchema = Type.Object(
 
 export const CatalogResponseSchema = Type.Object(
   {
-    data: Type.Object({ items: Type.Array(CatalogItemSchema, { maxItems: 500 }) }, { additionalProperties: false }),
+    data: Type.Object(
+      { items: Type.Array(CatalogItemSchema, { maxItems: 500 }) },
+      { additionalProperties: false },
+    ),
   },
   { additionalProperties: false },
 );
