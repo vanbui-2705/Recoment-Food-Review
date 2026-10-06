@@ -1,0 +1,14 @@
+# Disposable project only: no host database/API ports and no production credentials.
+services:
+  postgres:
+    ports: !reset []
+  migrate:
+    image: rec-food-migrate:plan-ops
+  backend:
+    image: rec-food-backend:plan-content
+    ports: !reset []
+  worker:
+    image: rec-food-backend:plan-content
+  frontend:
+    image: rec-food-frontend:plan-content
+    ports: !override ["127.0.0.1::80"]
