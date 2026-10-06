@@ -8,6 +8,11 @@ const row = {
   eligibleAgainAt: new Date(Date.now() + 86400000).toISOString(),
 };
 test.beforeEach(async ({ page }) => {
+  await page.route("**/api/users/me/data-reports?**", (route) =>
+    route.fulfill({
+      json: { data: { items: [], total: 0, page: 1, limit: 10 } },
+    }),
+  );
   await page.addInitScript(() =>
     localStorage.setItem("eatwise_access_token", "test-token"),
   );

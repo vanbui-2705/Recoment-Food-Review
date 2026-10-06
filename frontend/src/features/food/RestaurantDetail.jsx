@@ -3,6 +3,7 @@ import { apiRequest } from "../../profileApi";
 import { money, date } from "./foodUtils";
 import PlacePhoto from "./PlacePhoto";
 import UserNotice from "./UserNotice";
+import ReportData from "./ReportData";
 import { sourceNames } from "./Discovery";
 
 export function restaurantTarget() {
@@ -139,6 +140,12 @@ export default function RestaurantDetail({
             </p>
           ))}
           <div className="food-actions">
+            {target.kind === "place" && (
+              <ReportData
+                target={{ kind: "PLACE", source: target.source, id: target.id }}
+                title={restaurant.name}
+              />
+            )}
             {restaurant.mapsUrl && (
               <a href={restaurant.mapsUrl} target="_blank" rel="noreferrer">
                 Chỉ đường ↗
@@ -240,6 +247,10 @@ export default function RestaurantDetail({
                     {date(offer.expiresAt)}
                   </small>
                   <div className="food-actions">
+                    <ReportData
+                      target={{ kind: "OFFER", id: offer.id }}
+                      title={offer.title}
+                    />
                     {offer.dishId && offer.fresh && offer.isAvailable && (
                       <button disabled={busy} onClick={() => choose(offer)}>
                         Ghi nhận chọn món

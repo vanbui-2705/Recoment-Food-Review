@@ -12,7 +12,7 @@ import Discovery from "./features/food/Discovery";
 import RecipeDetail from "./features/food/RecipeDetail";
 import LuckyWheel from "./features/food/LuckyWheel";
 import UserNotice from "./features/food/UserNotice";
-import AdminMenu from "./features/food/AdminMenu";
+import AdminPanel from "./features/food/AdminPanel";
 import RestaurantDetail, {
   restaurantTarget,
 } from "./features/food/RestaurantDetail";
@@ -252,7 +252,7 @@ export default function FoodApp() {
         </button>
       </header>
       <main className="food-main">
-        {screen === "admin" && <AdminMenu />}
+        {screen === "admin" && <AdminPanel />}
         {connectionNotice}
         {message && (
           <UserNotice tone="success" onDismiss={() => setMessage("")}>

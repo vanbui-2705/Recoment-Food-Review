@@ -116,6 +116,7 @@ model User {
   tasteAnalysisJobs      TasteAnalysisJob[]
   discoverySettings      DiscoverySettings?
   conversations          Conversation[]
+  dataReports            DataReport[]
 
   @@map("users")
 }
@@ -784,4 +785,40 @@ model AdminAudit {
   @@index([createdAt])
   @@index([targetId])
   @@map("admin_audit")
+}
+
+model DataReport {
+  id             String         @id @default(uuid()) @db.Uuid
+  userId         String?        @map("user_id") @db.Uuid
+  targetKind     String         @map("target_kind") @db.VarChar(10)
+  targetSource   String?        @map("target_source") @db.VarChar(30)
+  targetId       String         @map("target_id") @db.VarChar(255)
+  reason         String         @db.VarChar(30)
+  note           String         @db.VarChar(2000)
+  status         String         @default("OPEN") @db.VarChar(12)
+  idempotencyKey String         @unique @map("idempotency_key") @db.VarChar(255)
+  inputHash      String         @map("input_hash") @db.VarChar(64)
+  createdAt      DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
+  user           User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  reviews        ReportReview[]
+
+  @@index([userId, createdAt(sort: Desc), id])
+  @@index([status, createdAt, id])
+  @@index([targetKind, targetId])
+  @@map("data_reports")
+}
+
+model ReportReview {
+  id         String     @id @default(uuid()) @db.Uuid
+  reportId   String     @map("report_id") @db.Uuid
+  actorId    String?    @map("actor_id") @db.Uuid
+  fromStatus String     @map("from_status") @db.VarChar(12)
+  toStatus   String     @map("to_status") @db.VarChar(12)
+  reason     String     @db.VarChar(1000)
+  createdAt  DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  report     DataReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@index([reportId, createdAt])
+  @@map("report_reviews")
 }

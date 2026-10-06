@@ -17,6 +17,7 @@ import { restaurantRoutes } from "./modules/restaurant-details/restaurant.route.
 import { recommendationRoutes } from "./modules/recommendations/recommendation.route.js";
 import { historyRoutes } from "./modules/history/history.route.js";
 import { chatRoutes } from "./modules/chat/chat.route.js";
+import { reportRoutes } from "./modules/reports/report.route.js";
 import { authPlugin } from "./plugins/auth.plugin.js";
 import { databasePlugin } from "./plugins/database.plugin.js";
 
@@ -28,6 +29,7 @@ export type BuildAppOptions = {
 export function buildApp(options: BuildAppOptions = {}) {
   const app = Fastify({
     logger: options.logger ?? true,
+    ajv: { customOptions: { removeAdditional: false } },
   }).withTypeProvider<TypeBoxTypeProvider>();
 
   registerErrorHandlers(app);
@@ -49,6 +51,7 @@ export function buildApp(options: BuildAppOptions = {}) {
     app.register(recommendationRoutes);
     app.register(historyRoutes);
     app.register(chatRoutes);
+    app.register(reportRoutes);
   }
 
   app.register(healthRoutes);

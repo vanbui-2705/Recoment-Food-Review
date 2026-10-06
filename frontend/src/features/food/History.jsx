@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { apiRequest } from "../../profileApi";
 import { date } from "./foodUtils";
+import ReportHistory from "./ReportHistory";
 
 export default function History() {
   const [items, setItems] = useState([]),
@@ -195,6 +196,7 @@ export default function History() {
           Xem thêm nhật ký
         </button>
       )}
+      <ReportHistory />
       <dialog
         className="food-wheel-dialog"
         ref={dialog}

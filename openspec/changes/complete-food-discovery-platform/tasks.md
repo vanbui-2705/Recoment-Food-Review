@@ -81,7 +81,7 @@
 - [ ] 9.1 Thêm offer/recipe feedback linkage tương thích foundation và API cũ; migration/tests rating semantics.
 - [ ] 9.2 Xây feedback endpoint validate owned results/types/rating/idempotency; test replay/conflict/isolation.
 - [x] 9.3 Thêm cursor history/filter/deletion API; test ownership và preview tác động cooldown.
-- [ ] 9.4 Xây data-report schema/API/rate limit/status với source reference; test spam và malformed references.
+- [x] 9.4 Xây data-report schema/API/rate limit/status với source reference; test spam và malformed references.
 - [ ] 9.5 Gắn rating/skip/report/history controls vào frontend; test Google rating tách app rating.
 - [ ] 9.6 Đưa feedback vào soft ranking và test không sửa allergy/diet; regression cooldown sau xóa được xác nhận.
 
@@ -90,7 +90,7 @@
 - [x] 10.1 Migration immutable/redacted admin audit và transactional writer; test rollback/no secret fields.
 - [ ] 10.2 Hoàn thiện content/catalog/restaurant/offer APIs với soft deactivate; test referenced history bảo toàn.
 - [ ] 10.3 Thêm user list/block/unblock/session revocation và last-admin guard; test access/refresh sau khóa.
-- [ ] 10.4 Thêm report triage/resolve/reopen reason và audit; test lifecycle/race.
+- [x] 10.4 Thêm report triage/resolve/reopen reason và audit; test lifecycle/race.
 - [ ] 10.5 Tạo ADMIN layout và views content/users/restaurants/reports/audit với pagination/error states.
 - [ ] 10.6 Gắn provider health/quota và retry sync vào admin, không render key; test USER bị 403 ở mọi write.
 - [ ] 10.7 Chạy admin E2E review mapping/evidence/report/block/deactivate và cập nhật hướng dẫn vận hành.

@@ -1,4 +1,15 @@
 const messages = {
+  REPORT_NOT_FOUND:
+    "Báo cáo không còn trong danh sách. Hãy tải lại để kiểm tra.",
+  REPORT_TARGET_NOT_FOUND:
+    "Dữ liệu món không còn ở nguồn hiện tại. Hãy tải lại trước khi báo cáo.",
+  REPORT_REVIEW_CONFLICT:
+    "Báo cáo đã được xử lý ở phiên khác. Tải lại báo cáo để kiểm tra trước khi lưu.",
+  REPORT_STATUS_CONFLICT:
+    "Trạng thái báo cáo đã thay đổi hoặc thao tác không hợp lệ. Hãy tải lại báo cáo.",
+  INVALID_REPORT_NOTE:
+    "Hãy mô tả thông tin cần kiểm tra trước khi gửi báo cáo.",
+  INVALID_REVIEW_REASON: "Hãy nhập lý do xử lý hoặc mở lại báo cáo.",
   CHAT_RUN_ACTIVE:
     "Có lượt tìm đang xử lý. Hãy chờ kết quả hoặc hủy lượt trước khi gửi tiếp.",
   CHAT_DEADLINE: "Lượt tìm món quá thời gian. Bạn có thể gửi lại câu hỏi.",

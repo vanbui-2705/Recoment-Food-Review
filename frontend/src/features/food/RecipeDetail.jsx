@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { apiRequest } from "../../profileApi";
+import ReportData from "./ReportData";
 import { sourceNames } from "./Discovery";
 
 export default function RecipeDetail({
@@ -182,6 +183,10 @@ export default function RecipeDetail({
             </div>
           </section>
           <div className="food-actions">
+            <ReportData
+              target={{ kind: "RECIPE", source: recipe.source, id: recipe.id }}
+              title={recipe.title}
+            />
             <button
               className="food-primary"
               disabled={busy}
