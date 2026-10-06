@@ -1,0 +1,6 @@
+services:
+  edge:
+    environment:
+      APP_DOMAIN: localhost
+      TLS_CONTACT_EMAIL: synthetic@drill.invalid
+    ports: !override ["127.0.0.1::443"]

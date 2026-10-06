@@ -1,5 +1,6 @@
 import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import Fastify from "fastify";
+import { trustedProxyIps } from "./config/env.js";
 import { safeError, safeRequest } from "./common/observability/logging.js";
 
 import { registerErrorHandlers } from "./common/errors/error-handler.js";
@@ -34,6 +35,7 @@ export type BuildAppOptions = {
 
 export function buildApp(options: BuildAppOptions = {}) {
   const app = Fastify({
+    trustProxy: trustedProxyIps(),
     logger:
       (options.logger ?? true)
         ? {

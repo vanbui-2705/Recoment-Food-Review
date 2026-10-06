@@ -1,4 +1,16 @@
+import { isIP } from "node:net";
 const NODE_ENV_VALUES = ["development", "test", "production"] as const;
+
+export function trustedProxyIps(environment: NodeJS.ProcessEnv = process.env): string[] | false {
+  const ips = (environment.TRUST_PROXY_IPS || "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+  if (!ips.length) return false;
+  if (ips.length > 8 || ips.some((ip) => !isIP(ip) || ["0.0.0.0", "::"].includes(ip)))
+    throw new Error("TRUST_PROXY_IPS requires explicit proxy IP addresses (maximum 8)");
+  return [...new Set(ips)];
+}
 
 type NodeEnv = (typeof NODE_ENV_VALUES)[number];
 

@@ -1,0 +1,48 @@
+# TLS edge for a Docker host. Apply only with reviewed images and operator-owned domain.
+services:
+  postgres:
+    ports: !reset []
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set a unique database password}
+  backend:
+    image: ${BACKEND_IMAGE:?Set reviewed backend image digest}
+    ports: !reset []
+    environment:
+      WORKER_ENABLED: ${WORKER_ENABLED:-true}
+      TRUST_PROXY_IPS: "172.30.5.20"
+    networks:
+      default: { ipv4_address: 172.30.5.30 }
+  migrate:
+    image: ${MIGRATION_IMAGE:?Set matching migration image digest}
+  worker:
+    image: ${BACKEND_IMAGE:?Set reviewed backend image digest}
+    environment:
+      WORKER_ENABLED: ${WORKER_ENABLED:-true}
+  frontend:
+    image: ${FRONTEND_IMAGE:?Set reviewed frontend image digest}
+    ports: !reset []
+    volumes:
+      - ./deploy/nginx-staging.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      default: { ipv4_address: 172.30.5.20 }
+  edge:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:?Set a domain whose DNS points to this host}
+      TLS_CONTACT_EMAIL: ${TLS_CONTACT_EMAIL:?Set operator certificate contact email}
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - rec_food_tls_data:/data
+      - rec_food_tls_config:/config
+    networks:
+      default: { ipv4_address: 172.30.5.10 }
+    depends_on: [frontend]
+networks:
+  default:
+    ipam:
+      config: [{ subnet: "172.30.5.0/24" }]
+volumes:
+  rec_food_tls_data:
+  rec_food_tls_config:

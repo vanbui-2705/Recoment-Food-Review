@@ -113,7 +113,7 @@
 - [x] 12.3 Thêm DB-aware readiness, redacted request logging và metrics endpoint/access controls.
 - [x] 12.4 Instrument provider quota/errors, job backlog, LLM fallback/cost và no-match/latency; test sensitive data không xuất log.
 - [x] 12.5 Xây atomic shared rate/quota counters và benchmark concurrency nhiều replica.
-- [ ] 12.6 Chuẩn bị TLS/CORS/secrets wiring và staging release scripts theo môi trường thực tế; không hardcode cloud credentials.
+- [x] 12.6 Chuẩn bị TLS/CORS/secrets wiring và staging release scripts theo môi trường thực tế; không hardcode cloud credentials.
 - [x] 12.7 Viết và chạy isolated backup/restore drill, đo RPO/RTO và verify ownership/history.
 - [x] 12.8 Viết/run rollback rehearsal về image tương thích, worker pause/lease recovery, không drop additive data.
 - [x] 12.9 Load test discovery/analysis/chat và lập dashboard/alert thresholds từ số đo.
