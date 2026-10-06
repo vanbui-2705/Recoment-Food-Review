@@ -59,8 +59,40 @@ services:
       ACCESS_TOKEN_TTL_SECONDS: ${ACCESS_TOKEN_TTL_SECONDS:-900}
       REFRESH_TOKEN_TTL_DAYS: ${REFRESH_TOKEN_TTL_DAYS:-30}
       GOOGLE_PLACES_API_KEY: ${GOOGLE_PLACES_API_KEY:-}
+      THEMEALDB_API_KEY: ${THEMEALDB_API_KEY:-}
+      SPOONACULAR_API_KEY: ${SPOONACULAR_API_KEY:-}
+      GOONG_API_KEY: ${GOONG_API_KEY:-}
+      FOURSQUARE_API_KEY: ${FOURSQUARE_API_KEY:-}
+      GEOAPIFY_API_KEY: ${GEOAPIFY_API_KEY:-}
+      LLM_PROVIDER: gemini
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-gemini-3.8-flash}
     ports:
       - "3001:3001"
+    depends_on:
+      seed:
+        condition: service_completed_successfully
+
+  worker:
+    build:
+      context: ./backend
+      target: production
+    command: ["node", "dist/worker.js"]
+    profiles: ["ai"]
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://rec_food:${POSTGRES_PASSWORD:-rec_food_dev_password}@postgres:5432/rec_food?schema=public
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?JWT_ACCESS_SECRET must be set for production}
+      LLM_PROVIDER: gemini
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-gemini-3.8-flash}
+      LLM_TIMEOUT_MS: ${LLM_TIMEOUT_MS:-20000}
+      LLM_MAX_TOKENS: ${LLM_MAX_TOKENS:-4096}
+      LLM_DAILY_REQUEST_LIMIT: ${LLM_DAILY_REQUEST_LIMIT:-200}
+      WORKER_ENABLED: "true"
+      JOB_MAX_ATTEMPTS: ${JOB_MAX_ATTEMPTS:-3}
+      JOB_LEASE_SECONDS: ${JOB_LEASE_SECONDS:-90}
     depends_on:
       seed:
         condition: service_completed_successfully

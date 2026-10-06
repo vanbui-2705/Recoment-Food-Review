@@ -1,6 +1,6 @@
 # Kế hoạch hoàn thiện Rec-Food
 
-Ngày chốt phạm vi: 06/10/2026. Trạng thái: kế hoạch thực hiện, chưa phải chức năng đã triển khai.
+Ngày chốt phạm vi: 06/10/2026. Đã bắt đầu thực hiện P0/P1; nghiệm thu và giới hạn hiện tại ở [bản ghi validation](PLAN_P0_P1_VALIDATION.md). Các mục còn lại tiếp tục là kế hoạch, chưa phải chức năng đã triển khai.
 
 ## 1. Phạm vi phát hành
 
@@ -8,7 +8,7 @@ Giữ số nhóm của bản rà soát để theo dõi:
 
 | Nhóm | Phạm vi | Đợt | Trạng thái |
 |---|---|---|---|
-| 1 | AI đọc mô tả khẩu vị | P1 | Cần xây |
+| 1 | AI đọc mô tả khẩu vị | P1 | Đã xây analysis/worker/review/UI; chờ AI key để nghiệm thu live |
 | 2 | Thực đơn/giá/ảnh món từ nguồn thật | P2 | Cần adapter và nguồn merchant |
 | 3 | Gợi ý cá nhân hóa, tự tải quanh vị trí | P3 | Hoàn thiện phần hiện có |
 | 4 | LLM xếp hạng và giải thích | P3 | Cần xây |

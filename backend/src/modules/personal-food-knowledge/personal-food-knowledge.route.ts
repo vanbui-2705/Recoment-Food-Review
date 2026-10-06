@@ -1,6 +1,7 @@
 import { Type, type FastifyPluginAsyncTypebox } from "@fastify/type-provider-typebox";
 import { AppError } from "../../common/errors/app-error.js";
 import { createRateLimitHook } from "../../common/security/rate-limit.js";
+import { enqueueTasteAnalysis } from "../taste-analysis/taste-analysis.service.js";
 
 const publicNote = (
   note: { description: string; revision: number; analyzedRevision: number; updatedAt: Date } | null,
@@ -57,24 +58,39 @@ export const personalFoodKnowledgeRoutes: FastifyPluginAsyncTypebox = async (app
         );
       const note = await app.prisma
         .$transaction(async (tx) => {
+          // Serialize saves with analysis apply/confirmation before taking a job lock.
+          await tx.$queryRaw`SELECT user_id FROM personal_food_knowledge WHERE user_id = ${userId}::uuid FOR UPDATE`;
           const current = await tx.personalFoodKnowledge.findUnique({ where: { userId } });
           if ((current?.revision ?? 0) !== req.body.expectedRevision) {
             if (
               current &&
               current.revision === req.body.expectedRevision + 1 &&
               current.description === description
-            )
+            ) {
+              await enqueueTasteAnalysis(tx, userId, current.revision);
               return current;
+            }
             throw conflict();
           }
-          if (current?.description === description) return current;
-          if (!current) return tx.personalFoodKnowledge.create({ data: { userId, description } });
+          if (current?.description === description) {
+            await enqueueTasteAnalysis(tx, userId, current.revision);
+            return current;
+          }
+          if (!current) {
+            const created = await tx.personalFoodKnowledge.create({
+              data: { userId, description },
+            });
+            await enqueueTasteAnalysis(tx, userId, created.revision);
+            return created;
+          }
           const result = await tx.personalFoodKnowledge.updateMany({
             where: { userId, revision: req.body.expectedRevision },
             data: { description, revision: { increment: 1 } },
           });
           if (!result.count) throw conflict();
-          return tx.personalFoodKnowledge.findUniqueOrThrow({ where: { userId } });
+          const updated = await tx.personalFoodKnowledge.findUniqueOrThrow({ where: { userId } });
+          await enqueueTasteAnalysis(tx, userId, updated.revision);
+          return updated;
         })
         .catch((error: unknown) => {
           if (error && typeof error === "object" && "code" in error && error.code === "P2002")

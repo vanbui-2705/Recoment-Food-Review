@@ -1,0 +1,14 @@
+.food-analysis {
+  margin: 20px 0;
+  padding: 18px;
+  border: 1px solid #dce5d9;
+  border-radius: 16px;
+  background: #f5f8f0;
+  overflow-wrap: anywhere;
+}
+.food-analysis p {
+  margin: 8px 0;
+}
+.food-analysis .food-actions {
+  flex-wrap: wrap;
+}

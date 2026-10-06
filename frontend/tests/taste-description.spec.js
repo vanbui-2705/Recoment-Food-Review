@@ -1,5 +1,8 @@
 import { test, expect } from "@playwright/test";
 test.beforeEach(async ({ page }) => {
+  await page.route("**/api/users/me/food-knowledge/analyses", (r) =>
+    r.fulfill({ json: { data: { configured: false, analysis: null } } }),
+  );
   await page.addInitScript(() =>
     localStorage.setItem("eatwise_access_token", "test-token"),
   );

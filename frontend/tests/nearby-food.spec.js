@@ -29,6 +29,9 @@ const restaurant = {
   mapsUrl: "https://www.google.com/maps/",
 };
 test.beforeEach(async ({ page }) => {
+  await page.route("**/api/users/me/food-knowledge/analyses", (r) =>
+    r.fulfill({ json: { data: { configured: false, analysis: null } } }),
+  );
   await page.addInitScript(() =>
     localStorage.setItem("eatwise_access_token", "test-token"),
   );
@@ -91,10 +94,6 @@ test("finds nearby budget-matching dishes without AI, spins and records only a c
     page.getByRole("dialog").getByRole("heading", { name: "Phở bò" }),
   ).toBeVisible();
   expect(chosen).toBe(false);
-  await page.screenshot({
-    path: `test-results/nearby-wheel-${test.info().project.name}.png`,
-    fullPage: true,
-  });
   await page
     .getByRole("dialog")
     .getByRole("button", { name: "Chọn món này" })

@@ -216,6 +216,9 @@ export default function FoodApp() {
         }}
       />
       <footer className="food-legal">
+        <p>
+          Đặt món · Thanh toán · Giao hàng — <span lang="en">Coming soon</span>
+        </p>
         <a
           href="#terms"
           onClick={(e) => {

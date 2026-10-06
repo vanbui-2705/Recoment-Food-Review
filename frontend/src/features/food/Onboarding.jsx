@@ -1,8 +1,10 @@
 ﻿import { useEffect, useState } from "react";
 import { apiRequest } from "../../profileApi";
+import TasteAnalysis from "./TasteAnalysis";
 
 export default function Onboarding({ onSaved }) {
   const [description, setDescription] = useState("");
+  const [savedDescription, setSavedDescription] = useState("");
   const [revision, setRevision] = useState(0);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState("");
@@ -18,6 +20,7 @@ export default function Onboarding({ onSaved }) {
         if (!active) return;
         const note = response.data.knowledge;
         setDescription(note?.description || "");
+        setSavedDescription(note?.description || "");
         setRevision(note?.revision || 0);
         setLoaded(true);
         setConflict(false);
@@ -42,6 +45,7 @@ export default function Onboarding({ onSaved }) {
         }),
       });
       setRevision(response.data.knowledge.revision);
+      setSavedDescription(response.data.knowledge.description);
       onSaved();
     } catch (err) {
       setError(err.message);
@@ -115,6 +119,12 @@ export default function Onboarding({ onSaved }) {
             {busy ? "Đang lưu…" : "Lưu mô tả khẩu vị"}
           </button>
         </form>
+      )}
+      {loaded && revision > 0 && description.trim() === savedDescription && (
+        <TasteAnalysis
+          revision={revision}
+          onEdit={() => document.getElementById("taste-description")?.focus()}
+        />
       )}
     </>
   );

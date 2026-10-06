@@ -89,7 +89,7 @@ GET  /catalogs/cuisines
 GET  /catalogs/dietary-restrictions
 ```
 
-Trạng thái: màn hình “Khẩu vị của tôi” hiện chỉ có một ô nhập mô tả tự do và nút lưu, không liệt kê catalog hoặc yêu cầu chọn từng mức vị. Mô tả lưu riêng theo tài khoản vào personal food knowledge; các API/hồ sơ cấu trúc và món thích/không thích đã có được giữ để AI sử dụng sau này. Chưa tích hợp AI trích xuất: mô tả mới có trạng thái chưa phân tích; không coi dữ liệu chưa phân tích là bộ lọc khẩu vị/dị ứng đã xác minh. Xem [luồng nhập khẩu vị](PERSONAL_FOOD_KNOWLEDGE.md).
+Trạng thái: màn hình “Khẩu vị của tôi” giữ một ô mô tả tự do. Đã bổ sung job/worker Gemini structured extraction, kiểm tra revision/schema/catalog, trạng thái phân tích và review thông tin an toàn; áp dụng hồ sơ và analyzedRevision atomically. Cần LLM_API_KEY và worker bật để phân tích live; không dùng fake analysis khi thiếu key. Xem [luồng nhập khẩu vị](PERSONAL_FOOD_KNOWLEDGE.md) và [P0/P1 implementation](TASTE_ANALYSIS_IMPLEMENTATION.md).
 
 ### 3.3. Food Knowledge Base
 

@@ -113,6 +113,7 @@ model User {
   interactions           UserInteraction[]
   recipeInteractions     RecipeInteraction[]
   foodKnowledge          PersonalFoodKnowledge?
+  tasteAnalysisJobs      TasteAnalysisJob[]
 
   @@map("users")
 }
@@ -462,4 +463,44 @@ model PersonalFoodKnowledge {
   user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("personal_food_knowledge")
+}
+
+enum TasteAnalysisStatus {
+  QUEUED
+  RUNNING
+  NEEDS_REVIEW
+  APPLIED
+  FAILED
+  SUPERSEDED
+
+  @@map("taste_analysis_status")
+}
+
+model TasteAnalysisJob {
+  id             String              @id @default(uuid()) @db.Uuid
+  userId         String              @map("user_id") @db.Uuid
+  sourceRevision Int                 @map("source_revision")
+  schemaVersion  Int                 @default(1) @map("schema_version")
+  status         TasteAnalysisStatus @default(QUEUED)
+  attempt        Int                 @default(0)
+  availableAt    DateTime            @default(now()) @map("available_at") @db.Timestamptz(3)
+  leaseUntil     DateTime?           @map("lease_until") @db.Timestamptz(3)
+  leaseToken     String?             @map("lease_token") @db.Uuid
+  result         Json?
+  model          String?             @db.VarChar(100)
+  errorCode      String?             @map("error_code") @db.VarChar(80)
+  createdAt      DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime            @updatedAt @map("updated_at") @db.Timestamptz(3)
+  user           User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, sourceRevision, schemaVersion])
+  @@index([status, availableAt, leaseUntil])
+  @@map("taste_analysis_jobs")
+}
+
+model AiRequestUsage {
+  day      String @id @db.VarChar(10)
+  requests Int    @default(0)
+
+  @@map("ai_request_usage")
 }

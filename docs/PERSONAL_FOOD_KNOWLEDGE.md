@@ -28,18 +28,21 @@ Optimistic revision checks prevent lost updates between tabs/devices. An immedia
 lost-response retry of identical content can return the already-saved revision.
 The UI retains a conflicting draft and offers an explicit reload of saved content.
 
-AI extraction is **not implemented yet**. New/changed descriptions return
+AI extraction now has a durable job/worker implementation; see
+[P0/P1 implementation](TASTE_ANALYSIS_IMPLEMENTATION.md) for configuration, API and review.
+Until a configured worker applies the exact revision, new/changed descriptions return
 `NOT_ANALYZED`. Both automatic dish and cooking recommendations return
 `PROFILE_PENDING_ANALYSIS` while the latest description remains unprocessed;
 explicit dish, restaurant and recipe searches continue to work. This prevents a
 new allergy description from being ignored in favor of stale structured constraints.
 
-The future extractor should read the raw text with its revision, produce validated
+The extractor reads the raw text with its revision, produces validated
 structured knowledge, and atomically write the structured profile plus analyzedRevision
 only if the source revision still matches. Allergens/diets must use validated catalog
 codes; ambiguous safety constraints need resolution rather than guessed absence.
-Never mark a newer revision analyzed using an older extraction result. No AI job,
-model request, API credential or artificial analysis result is introduced here.
+Never mark a newer revision analyzed using an older extraction result. The original
+free-text storage migration remains compatible; the additional job migration and
+separate configured worker introduce real model calls without artificial results.
 
 Apply the migration and generate Prisma Client before starting the updated backend.
 The frontend persists through the authenticated backend; it does not store the

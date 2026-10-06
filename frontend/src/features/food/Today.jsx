@@ -3,6 +3,7 @@ import { apiRequest } from "../../profileApi";
 import { money } from "./foodUtils";
 import RecipeIdeas from "./RecipeIdeas";
 import NearbyFood from "./NearbyFood";
+import TasteAnalysis from "./TasteAnalysis";
 
 export default function Today({
   navigate,
@@ -119,6 +120,9 @@ export default function Today({
         </div>
       )}
       {!data && !error && <p role="status">Đang chọn món phù hợp…</p>}
+      {data?.status === "PROFILE_PENDING_ANALYSIS" && (
+        <TasteAnalysis onApplied={load} onEdit={() => navigate("profile")} />
+      )}
       {data?.status === "ONBOARDING_REQUIRED" && (
         <section className="food-empty">
           <h2>Cho chúng mình biết khẩu vị của bạn</h2>
@@ -209,7 +213,7 @@ export default function Today({
           </article>
         ))}
       </div>
-      <RecipeIdeas onRecipe={onRecipe} navigate={navigate} />
+      <RecipeIdeas key={data?.status} onRecipe={onRecipe} navigate={navigate} />
       <section className="food-section">
         <h2>Tra cứu & ghi món đã ăn</h2>
         <p>

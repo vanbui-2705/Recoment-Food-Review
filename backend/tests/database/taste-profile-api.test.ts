@@ -51,7 +51,9 @@ describe("taste profile API", () => {
   });
 
   afterAll(async () => {
-    await app.prisma.user.deleteMany({ where: { email: { in: [firstEmail, secondEmail, invalidEmail] } } });
+    await app.prisma.user.deleteMany({
+      where: { email: { in: [firstEmail, secondEmail, invalidEmail] } },
+    });
     await app.close();
   });
 
@@ -114,8 +116,12 @@ describe("taste profile API", () => {
     expect(repeated.statusCode).toBe(200);
     firstUserId = (await app.prisma.user.findUniqueOrThrow({ where: { email: firstEmail } })).id;
     expect(await app.prisma.userAllergy.count({ where: { userId: firstUserId } })).toBe(1);
-    expect(await app.prisma.userDietaryRestriction.count({ where: { userId: firstUserId } })).toBe(1);
-    expect(await app.prisma.userCuisinePreference.count({ where: { userId: firstUserId } })).toBe(1);
+    expect(await app.prisma.userDietaryRestriction.count({ where: { userId: firstUserId } })).toBe(
+      1,
+    );
+    expect(await app.prisma.userCuisinePreference.count({ where: { userId: firstUserId } })).toBe(
+      1,
+    );
 
     const otherProfile = await app.inject({
       method: "GET",
@@ -164,7 +170,10 @@ describe("taste profile API", () => {
       method: "PUT",
       url: "/users/me/profile",
       headers: { authorization: `Bearer ${session.accessToken}` },
-      payload: { ...payload, cuisinePreferences: [{ code: "NOT_IN_CATALOG", preferenceScore: 100 }] },
+      payload: {
+        ...payload,
+        cuisinePreferences: [{ code: "NOT_IN_CATALOG", preferenceScore: 100 }],
+      },
     });
     expect(unknown.statusCode).toBe(400);
     expect(unknown.json().error.code).toBe("UNKNOWN_CATALOG_CODE");
@@ -174,6 +183,9 @@ describe("taste profile API", () => {
       url: "/users/me/profile",
       headers: { authorization: `Bearer ${session.accessToken}` },
     });
-    expect(afterInvalid.json().data.profile).toMatchObject({ budgetMin: 30_000, budgetMax: 70_000 });
+    expect(afterInvalid.json().data.profile).toMatchObject({
+      budgetMin: 30_000,
+      budgetMax: 70_000,
+    });
   });
 });

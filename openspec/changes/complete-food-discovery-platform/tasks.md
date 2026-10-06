@@ -1,21 +1,21 @@
 ## 1. P0 — Baseline và phạm vi
 
-- [ ] 1.1 Ghi baseline backend lint/typecheck/unit/DB, frontend browser/build và migration hiện tại; phân biệt test lịch sử với lần chạy mới.
-- [ ] 1.2 Chốt DTO restaurant/offer/evidence/candidate và error codes theo completion plan; thêm contract fixtures.
-- [ ] 1.3 Hiển thị Coming soon cho nhóm 9/10 ở UX phù hợp; test không có CTA/tool giao dịch hoạt động.
-- [ ] 1.4 Kiểm tra toolchain Node/lockfile/Docker/CI và sửa bất tương thích trước module mới.
+- [x] 1.1 Ghi baseline backend lint/typecheck/unit/DB, frontend browser/build và migration hiện tại; phân biệt test lịch sử với lần chạy mới.
+- [x] 1.2 Chốt DTO restaurant/offer/evidence/candidate và error codes theo completion plan; thêm contract fixtures.
+- [x] 1.3 Hiển thị Coming soon cho nhóm 9/10 ở UX phù hợp; test không có CTA/tool giao dịch hoạt động.
+- [x] 1.4 Kiểm tra toolchain Node/lockfile/Docker/CI và sửa bất tương thích trước module mới.
 
 ## 2. P1 — Provider AI và jobs
 
 - [ ] 2.1 Xác minh tài liệu provider được chọn; chốt adapter analysis/rerank/chat và config backend validated, không log key.
-- [ ] 2.2 Tạo migration analysis job/result, uniqueness user/revision/schema và job indexes; chạy migrate-from-empty.
-- [ ] 2.3 Xây claim/lease/retry worker PostgreSQL và graceful shutdown; test crash recovery và bounded attempts.
-- [ ] 2.4 Enqueue analysis cùng transaction lưu mô tả; test duplicate save và retry response.
-- [ ] 2.5 Viết schema extraction catalog-backed, source excerpts và unknown/ambiguous constraints; test malformed output/injection.
-- [ ] 2.6 Xây apply CAS revision/profile/analyzedRevision và SUPERSEDED; test concurrent edit không bị ghi đè.
-- [ ] 2.7 Xây review safety changes, giữ dị ứng cũ khi omission; test ambiguity và xác nhận revision stale.
-- [ ] 2.8 Thêm owner-only analysis start/status/confirm APIs và rate limit; test isolation/validation.
-- [ ] 2.9 Gắn status/retry/review vào màn hình một ô nhập; test desktop/mobile save-analysis-personalization.
+- [x] 2.2 Tạo migration analysis job/result, uniqueness user/revision/schema và job indexes; chạy migrate-from-empty.
+- [x] 2.3 Xây claim/lease/retry worker PostgreSQL và graceful shutdown; test crash recovery và bounded attempts.
+- [x] 2.4 Enqueue analysis cùng transaction lưu mô tả; test duplicate save và retry response.
+- [x] 2.5 Viết schema extraction catalog-backed, source excerpts và unknown/ambiguous constraints; test malformed output/injection.
+- [x] 2.6 Xây apply CAS revision/profile/analyzedRevision và SUPERSEDED; test concurrent edit không bị ghi đè.
+- [x] 2.7 Xây review safety changes, giữ dị ứng cũ khi omission; test ambiguity và xác nhận revision stale.
+- [x] 2.8 Thêm owner-only analysis start/status/confirm APIs và rate limit; test isolation/validation.
+- [x] 2.9 Gắn status/retry/review vào màn hình một ô nhập; test desktop/mobile save-analysis-personalization.
 - [ ] 2.10 Chạy AI live smoke khi có key, ghi code-ready/live-ready riêng và cập nhật docs/config.
 
 ## 3. P2 — Menu identity và ingest
@@ -108,7 +108,7 @@
 
 ## 12. P6a/P6b — Vận hành và phát hành
 
-- [ ] 12.1 Thêm frontend build/Playwright desktop-mobile và Docker checks vào CI; migration-from-empty regression.
+- [x] 12.1 Thêm frontend build/Playwright desktop-mobile và Docker checks vào CI; migration-from-empty regression.
 - [ ] 12.2 Tách web/worker/migration startup, flags và graceful shutdown; test deployment compatibility.
 - [ ] 12.3 Thêm DB-aware readiness, redacted request logging và metrics endpoint/access controls.
 - [ ] 12.4 Instrument provider quota/errors, job backlog, LLM fallback/cost và no-match/latency; test sensitive data không xuất log.
