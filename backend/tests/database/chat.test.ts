@@ -48,6 +48,34 @@ describe("durable private discovery chat", () => {
     await app.prisma.user.deleteMany({ where: { id: { in: ids } } });
     await app.close();
   });
+  it("row locks serialize same-conversation submits without interfering with other owners", async () => {
+    const first = await service.create(ids[0]!);
+    const second = await service.create(ids[1]!);
+    const key = randomUUID();
+    const results = await Promise.all([
+      service.submit(ids[0]!, first.id, "Same message", key, {}),
+      service.submit(ids[0]!, first.id, "Same message", key, {}),
+      service.submit(ids[1]!, second.id, "Independent message", randomUUID(), {}),
+    ]);
+    expect(results[0]!.id).toBe(results[1]!.id);
+    expect(
+      results
+        .slice(0, 2)
+        .map((row) => row.replay)
+        .sort(),
+    ).toEqual([false, true]);
+    expect(await app.prisma.chatRun.count({ where: { conversationId: first.id } })).toBe(1);
+    await service.tick(ids[0]);
+    const competing = await Promise.allSettled(
+      [1, 2].map(() => service.submit(ids[0]!, first.id, "Another message", randomUUID(), {})),
+    );
+    expect(competing.filter((row) => row.status === "fulfilled")).toHaveLength(1);
+    expect(competing.find((row) => row.status === "rejected")).toMatchObject({
+      reason: { code: "CHAT_RUN_ACTIVE" },
+    });
+    await service.remove(ids[0]!, first.id);
+    await service.remove(ids[1]!, second.id);
+  });
   it("rejects foreign conversation, replay conflict and double submit; resumes sequenced events", async () => {
     const conversation = await service.create(ids[0]!);
     const key = randomUUID();

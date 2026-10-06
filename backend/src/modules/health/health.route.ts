@@ -63,9 +63,17 @@ export const healthRoutes: FastifyPluginAsyncTypebox = async function healthRout
         reply.type("text/plain; version=0.0.4; charset=utf-8");
         const [analysis, chat, sync, usage, email, deletion, providers, quotas, cleanup, budget] =
           await app.prisma.$transaction([
-            app.prisma.tasteAnalysisJob.groupBy({ by: ["status"], _count: true }),
-            app.prisma.chatRun.groupBy({ by: ["status"], _count: true }),
-            app.prisma.menuSyncRun.groupBy({ by: ["status"], _count: true }),
+            app.prisma.tasteAnalysisJob.groupBy({
+              by: ["status"],
+              _count: true,
+              _min: { createdAt: true },
+            }),
+            app.prisma.chatRun.groupBy({ by: ["status"], _count: true, _min: { createdAt: true } }),
+            app.prisma.menuSyncRun.groupBy({
+              by: ["status"],
+              _count: true,
+              _min: { createdAt: true },
+            }),
             app.prisma.aiRequestCounter.findUnique({
               where: {
                 namespace_day: {
@@ -75,8 +83,16 @@ export const healthRoutes: FastifyPluginAsyncTypebox = async function healthRout
               },
               select: { requests: true },
             }),
-            app.prisma.emailOutbox.groupBy({ by: ["status"], _count: true }),
-            app.prisma.accountDeletionJob.groupBy({ by: ["status"], _count: true }),
+            app.prisma.emailOutbox.groupBy({
+              by: ["status"],
+              _count: true,
+              _min: { createdAt: true },
+            }),
+            app.prisma.accountDeletionJob.groupBy({
+              by: ["status"],
+              _count: true,
+              _min: { createdAt: true },
+            }),
             app.prisma.providerObservation.findMany({ where: { namespace: securityNamespace() } }),
             app.prisma.sharedQuotaBucket.findMany({
               where: {
@@ -113,7 +129,7 @@ export const healthRoutes: FastifyPluginAsyncTypebox = async function healthRout
           "PROCESSING",
           "SENT",
         ]);
-        const jobLines = ["# TYPE food_jobs gauge"];
+        const jobLines = ["# TYPE food_jobs gauge", "# TYPE food_oldest_job_seconds gauge"];
         for (const [kind, rows] of [
           ["analysis", analysis],
           ["chat", chat],
@@ -121,10 +137,18 @@ export const healthRoutes: FastifyPluginAsyncTypebox = async function healthRout
           ["email", email],
           ["deletion", deletion],
         ] as const)
-          for (const row of rows)
-            if (statuses.has(row.status))
-              jobLines.push(`food_jobs{kind="${kind}",status="${row.status}"} ${row._count}`);
+          for (const status of statuses) {
+            const row = rows.find((row) => row.status === status);
+            jobLines.push(`food_jobs{kind="${kind}",status="${status}"} ${row?._count ?? 0}`);
+            jobLines.push(
+              `food_oldest_job_seconds{kind="${kind}",status="${status}"} ${row?._min.createdAt ? Math.max(0, Math.floor((Date.now() - row._min.createdAt.getTime()) / 1000)) : 0}`,
+            );
+          }
         const providerLines = [
+          "# TYPE food_background_enabled gauge",
+          `food_background_enabled ${workerEnabled ? 1 : 0}`,
+          "# TYPE food_ai_configured gauge",
+          `food_ai_configured ${loadAiConfig().apiKey ? 1 : 0}`,
           "# TYPE food_ai_budget_reserved_usd gauge",
           `food_ai_budget_reserved_usd ${Number(budget?.reservedMicros ?? 0n) / 1000000}`,
           "# TYPE food_ai_budget_limit_usd gauge",

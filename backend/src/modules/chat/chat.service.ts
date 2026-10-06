@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from "node:crypto";
 import type { Prisma, PrismaClient } from "../../generated/prisma/client.js";
 import { AppError } from "../../common/errors/app-error.js";
-import { serializableWrite } from "../../common/security/transaction-retry.js";
+import { lockedWrite } from "../../common/security/transaction-retry.js";
 import { securityNamespace } from "../../common/security/shared-quota.js";
 import { loadAiConfig } from "../ai/ai.config.js";
 import { AiError, type StructuredAiProvider } from "../ai/ai.provider.js";
@@ -199,7 +199,7 @@ export function createChatService(
           }),
         )
         .digest("hex");
-      return serializableWrite(
+      return lockedWrite(
         prisma,
         async (tx) => {
           await tx.$queryRaw`SELECT id FROM conversations WHERE id=${id}::uuid AND user_id=${userId}::uuid FOR UPDATE`;

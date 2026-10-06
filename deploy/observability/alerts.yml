@@ -1,0 +1,56 @@
+groups:
+  - name: rec-food
+    rules:
+      - alert: FoodMetricsUnavailable
+        expr: up{job="rec-food"} == 0
+        for: 2m
+        labels: { severity: critical }
+        annotations:
+          {
+            summary: "Metrics unavailable: check backend, database, network and scrape token expiry.",
+          }
+      - alert: FoodDiscoveryLatency
+        expr: histogram_quantile(0.95, sum by (le) (rate(food_recommendation_duration_ms_bucket{job="rec-food"}[5m]))) > 2000 and sum(rate(food_recommendation_duration_ms_count{job="rec-food"}[5m])) > 0.1
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          {
+            summary: "Discovery p95 exceeds 2 seconds; inspect DB saturation and provider latency.",
+          }
+      - alert: FoodProviderErrors
+        expr: max by (source) (rate(food_provider_failures_total{job="rec-food"}[5m])) / clamp_min(max by (source) (rate(food_provider_requests_total{job="rec-food"}[5m])), 0.001) > 0.1
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          {
+            summary: "A provider has over 10 percent failures; inspect availability and credentials.",
+          }
+      - alert: FoodProviderQuota
+        expr: max by (source) (food_provider_quota_used{job="rec-food"}) / clamp_min(max by (source) (food_provider_quota_limit{job="rec-food"}), 1) > 0.8
+        for: 2m
+        labels: { severity: warning }
+        annotations: { summary: "Provider request quota exceeds 80 percent." }
+      - alert: FoodAiBudget
+        expr: max(food_ai_budget_reserved_usd{job="rec-food"}) / clamp_min(max(food_ai_budget_limit_usd{job="rec-food"}), 0.001) > 0.8 and max(food_ai_configured{job="rec-food"}) == 1
+        for: 2m
+        labels: { severity: warning }
+        annotations:
+          {
+            summary: "AI reserved budget exceeds 80 percent; reservation is not invoiced spend.",
+          }
+      - alert: FoodQueueStalled
+        expr: max by (kind) (food_oldest_job_seconds{job="rec-food",status=~"QUEUED|PENDING|RUNNING|PROCESSING"}) > 300 and on() max(food_background_enabled{job="rec-food"}) == 1
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          {
+            summary: "An active job is over 5 minutes old; inspect worker health, leases and retry backlog.",
+          }
+      - alert: FoodRetentionStalled
+        expr: (time() - max(food_retention_last_success_seconds{job="rec-food"})) > 7200 and max(food_background_enabled{job="rec-food"}) == 1
+        for: 10m
+        labels: { severity: critical }
+        annotations:
+          {
+            summary: "No successful privacy cleanup in 2 hours while background processing is enabled.",
+          }

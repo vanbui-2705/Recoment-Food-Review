@@ -5,6 +5,8 @@ import console from "node:console";
 import process from "node:process";
 import assert from "node:assert/strict";
 import { setTimeout as delay } from "node:timers/promises";
+import { readFile } from "node:fs/promises";
+import { URL } from "node:url";
 
 // All resources are newly created, synthetic and labeled. Never connects to DATABASE_URL.
 const suffix = randomBytes(8).toString("hex");
@@ -198,6 +200,14 @@ try {
   results.recoveryReadyMs = Math.round(performance.now() - restoreStart);
   results.rollback = JSON.parse(run(previous, "restored", verify));
   results.leaseRecovery = JSON.parse(run(current, "restored", recover));
+  if (process.env.DRILL_LOAD === "true")
+    results.load = JSON.parse(
+      run(
+        current,
+        "restored",
+        await readFile(new URL("./load-workload.mjs", import.meta.url), "utf8"),
+      ),
+    );
   console.log(JSON.stringify(results, null, 2));
 } finally {
   if (createdContainer) {

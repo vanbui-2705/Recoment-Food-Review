@@ -39,7 +39,12 @@ it("checks the database and protects aggregate metrics without user identifiers"
   expect(metrics.headers["content-type"]).toContain("text/plain");
   expect(metrics.body).toContain("food_ai_requests_today");
   for (const id of ids) expect(metrics.body).not.toContain(id);
-  expect(metrics.body).not.toMatch(/email|password|token|api_key|description/);
+  expect(metrics.body).not.toMatch(
+    /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+|password|token|api_key|description/,
+  );
+  expect(metrics.body).toContain('food_jobs{kind="email",status="QUEUED"}');
+  expect(metrics.body).toContain('food_oldest_job_seconds{kind="chat",status="QUEUED"}');
+  expect(metrics.body).toContain("food_background_enabled");
 });
 it("reports a database failure with 503 without exposing credentials", async () => {
   const failure = vi

@@ -1,0 +1,47 @@
+rule_files: ["alerts.yml"]
+evaluation_interval: 1m
+tests:
+  - name: disabled background does not alert about intentional pauses
+    interval: 1m
+    input_series:
+      - series: 'food_background_enabled{job="rec-food",instance="a"}'
+        values: '0+0x20'
+      - series: 'food_oldest_job_seconds{job="rec-food",kind="chat",status="QUEUED",instance="a"}'
+        values: '1000+0x20'
+      - series: 'food_retention_last_success_seconds{job="rec-food",instance="a"}'
+        values: '0+0x20'
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: FoodQueueStalled
+        exp_alerts: []
+      - eval_time: 20m
+        alertname: FoodRetentionStalled
+        exp_alerts: []
+  - name: replica shared gauges are not added together
+    interval: 1m
+    input_series:
+      - series: 'food_provider_quota_used{job="rec-food",source="google",instance="a"}'
+        values: '90+0x10'
+      - series: 'food_provider_quota_used{job="rec-food",source="google",instance="b"}'
+        values: '90+0x10'
+      - series: 'food_provider_quota_limit{job="rec-food",source="google",instance="a"}'
+        values: '120+0x10'
+      - series: 'food_provider_quota_limit{job="rec-food",source="google",instance="b"}'
+        values: '120+0x10'
+    alert_rule_test:
+      - eval_time: 10m
+        alertname: FoodProviderQuota
+        exp_alerts: []
+  - name: old chat queue with enabled worker raises warning
+    interval: 1m
+    input_series:
+      - series: 'food_background_enabled{job="rec-food",instance="a"}'
+        values: '1+0x10'
+      - series: 'food_oldest_job_seconds{job="rec-food",kind="chat",status="QUEUED",instance="a"}'
+        values: '600+0x10'
+    alert_rule_test:
+      - eval_time: 6m
+        alertname: FoodQueueStalled
+        exp_alerts:
+          - exp_labels: { kind: chat, severity: warning }
+            exp_annotations: { summary: "An active job is over 5 minutes old; inspect worker health, leases and retry backlog." }

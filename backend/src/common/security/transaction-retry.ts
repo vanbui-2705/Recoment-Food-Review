@@ -6,9 +6,27 @@ export async function serializableWrite<T>(
   work: (tx: Prisma.TransactionClient) => Promise<T>,
   retryUnique = false,
 ): Promise<T> {
+  return retryTransaction(prisma, work, retryUnique, "Serializable");
+}
+
+// Use only when the caller locks the complete invariant scope before reading/writing it.
+export async function lockedWrite<T>(
+  prisma: PrismaClient,
+  work: (tx: Prisma.TransactionClient) => Promise<T>,
+  retryUnique = false,
+): Promise<T> {
+  return retryTransaction(prisma, work, retryUnique, "ReadCommitted");
+}
+
+async function retryTransaction<T>(
+  prisma: PrismaClient,
+  work: (tx: Prisma.TransactionClient) => Promise<T>,
+  retryUnique: boolean,
+  isolationLevel: Prisma.TransactionIsolationLevel,
+): Promise<T> {
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      return await prisma.$transaction(work, { isolationLevel: "Serializable" });
+      return await prisma.$transaction(work, { isolationLevel });
     } catch (error) {
       const cause =
         error instanceof Error
