@@ -2,8 +2,10 @@ import { createHash, randomUUID } from "node:crypto";
 import type { Prisma, PrismaClient } from "../../generated/prisma/client.js";
 import { AppError } from "../../common/errors/app-error.js";
 import { serializableWrite } from "../../common/security/transaction-retry.js";
+import { securityNamespace } from "../../common/security/shared-quota.js";
 import { loadAiConfig } from "../ai/ai.config.js";
-import { AiError, createGeminiProvider, type StructuredAiProvider } from "../ai/ai.provider.js";
+import { AiError, type StructuredAiProvider } from "../ai/ai.provider.js";
+import { createBudgetedGeminiProvider } from "../ai/ai.budget.js";
 import { createRecommendationService } from "../recommendations/recommendation.service.js";
 import { createDiscoveryService } from "../discovery/discovery.service.js";
 import {
@@ -35,7 +37,7 @@ export function createChatService(
   injectedDispatcher?: ChatDispatcher,
 ) {
   const config = loadAiConfig(env),
-    provider = injectedProvider ?? createGeminiProvider(config);
+    provider = injectedProvider ?? createBudgetedGeminiProvider(prisma, config);
   const timeoutMs = Number(env.CHAT_RUN_TIMEOUT_MS?.trim() || 90000);
   if (!Number.isInteger(timeoutMs) || timeoutMs < 1000 || timeoutMs > 90000)
     throw new Error("Invalid CHAT_RUN_TIMEOUT_MS");
@@ -364,7 +366,7 @@ export function createChatService(
         const day = new Date().toISOString().slice(0, 10);
         const reserved = await prisma.$queryRaw<
           Array<{ requests: number }>
-        >`INSERT INTO ai_request_usage(day,requests) VALUES (${day},1) ON CONFLICT(day) DO UPDATE SET requests=ai_request_usage.requests+1 WHERE ai_request_usage.requests < ${config.dailyRequests} RETURNING requests`;
+        >`INSERT INTO ai_request_counters(namespace,day,requests) VALUES (${securityNamespace()},${day},1) ON CONFLICT(namespace,day) DO UPDATE SET requests=ai_request_counters.requests+1 WHERE ai_request_counters.requests<${config.dailyRequests} RETURNING requests`;
         if (!reserved.length) throw new AiError("AI_QUOTA_EXCEEDED");
         const messages = await prisma.chatMessage.findMany({
           where: { conversationId: claimed.conversationId },
@@ -379,7 +381,8 @@ export function createChatService(
         )
           modelMessages.shift();
         const runProvider =
-          injectedProvider ?? createGeminiProvider(config, scopedFetch(controller.signal));
+          injectedProvider ??
+          createBudgetedGeminiProvider(prisma, config, scopedFetch(controller.signal));
         let plan = validateChatPlan(
           await bounded(
             runProvider.generate(

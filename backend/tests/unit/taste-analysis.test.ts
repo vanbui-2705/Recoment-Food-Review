@@ -61,6 +61,7 @@ describe("taste analysis contracts", () => {
     const provider = createGeminiProvider(
       loadAiConfig({ LLM_API_KEY: "test-private-key" }),
       fetcher,
+      async () => true,
     );
     expect(await provider.generate("extract", { text: "meal" }, {})).toEqual(empty);
     expect(fetcher.mock.calls[0]![0]).not.toContain("test-private-key");
@@ -86,6 +87,7 @@ describe("taste analysis contracts", () => {
         createGeminiProvider(
           loadAiConfig({ LLM_API_KEY: "key" }),
           vi.fn().mockResolvedValue(response),
+          async () => true,
         ).generate("", {}, {}),
       ).rejects.toThrow(code);
     }

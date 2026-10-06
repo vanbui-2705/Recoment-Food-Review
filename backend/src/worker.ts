@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { buildApp } from "./app.js";
 import { loadAiConfig } from "./modules/ai/ai.config.js";
-import { createGeminiProvider } from "./modules/ai/ai.provider.js";
+import { createBudgetedGeminiProvider } from "./modules/ai/ai.budget.js";
 import { createTasteAnalysisService } from "./modules/taste-analysis/taste-analysis.service.js";
 import { createChatService } from "./modules/chat/chat.service.js";
 import { loadEmailConfig } from "./modules/email/email.config.js";
@@ -24,7 +24,11 @@ process.once("SIGTERM", () => {
 });
 try {
   await app.ready();
-  const service = createTasteAnalysisService(app.prisma, config, createGeminiProvider(config));
+  const service = createTasteAnalysisService(
+    app.prisma,
+    config,
+    createBudgetedGeminiProvider(app.prisma, config),
+  );
   const chat = createChatService(app.prisma);
   const emailConfig = loadEmailConfig();
   const email = createEmailService(app.prisma, emailConfig, createEmailProvider(emailConfig));

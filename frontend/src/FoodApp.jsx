@@ -403,18 +403,22 @@ export default function FoodApp() {
           </button>
         ))}
       </nav>
-      <LuckyWheel
-        candidates={nearbyCandidates}
-        notice={notice}
-        onRestaurant={openRestaurant}
-        onFind={() => {
-          navigate("today");
-          setTimeout(
-            () => document.getElementById("nearby-budget")?.focus(),
-            0,
-          );
-        }}
-      />
+      {!["admin", "account", "profile", "terms", "privacy"].includes(
+        screen,
+      ) && (
+        <LuckyWheel
+          candidates={nearbyCandidates}
+          notice={notice}
+          onRestaurant={openRestaurant}
+          onFind={() => {
+            navigate("today");
+            setTimeout(
+              () => document.getElementById("nearby-budget")?.focus(),
+              0,
+            );
+          }}
+        />
+      )}
       <footer className="food-legal">
         <p>
           Đặt món · Thanh toán · Giao hàng — <span lang="en">Coming soon</span>

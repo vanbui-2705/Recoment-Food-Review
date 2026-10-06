@@ -19,10 +19,22 @@ export async function serializableWrite<T>(
         error.name === "DriverAdapterError" &&
         cause?.kind === "TransactionWriteConflict" &&
         ["40001", "40P01"].includes(String(cause.originalCode));
+      const rawCause =
+        error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2010"
+          ? (
+              error.meta?.driverAdapterError as
+                { cause?: { kind?: unknown; originalCode?: unknown } } | undefined
+            )?.cause
+          : undefined;
       const retry =
         adapterConflict ||
         (error instanceof Prisma.PrismaClientKnownRequestError &&
-          (error.code === "P2034" || (retryUnique && error.code === "P2002")));
+          (error.code === "P2034" ||
+            (error.code === "P2010" &&
+              (["40001", "40P01"].includes(String(error.meta?.code)) ||
+                (rawCause?.kind === "TransactionWriteConflict" &&
+                  ["40001", "40P01"].includes(String(rawCause.originalCode))))) ||
+            (retryUnique && error.code === "P2002")));
       if (!retry) throw error;
       if (attempt === 2)
         throw new AppError(

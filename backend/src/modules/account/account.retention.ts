@@ -154,6 +154,12 @@ export function createRetentionService(prisma: PrismaClient, enabled: boolean) {
             await tx.aiRequestUsage.deleteMany({
               where: { day: { lt: before(31).toISOString().slice(0, 10) } },
             });
+            await tx.aiBudgetUsage.deleteMany({
+              where: { day: { lt: before(31).toISOString().slice(0, 10) } },
+            });
+            await tx.aiRequestCounter.deleteMany({
+              where: { day: { lt: before(31).toISOString().slice(0, 10) } },
+            });
           }
           return more;
         });

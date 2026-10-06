@@ -7,7 +7,7 @@
 
 ## 2. P1 — Provider AI và jobs
 
-- [ ] 2.1 Xác minh tài liệu provider được chọn; chốt adapter analysis/rerank/chat và config backend validated, không log key.
+- [x] 2.1 Xác minh tài liệu provider được chọn; chốt adapter analysis/rerank/chat và config backend validated, không log key.
 - [x] 2.2 Tạo migration analysis job/result, uniqueness user/revision/schema và job indexes; chạy migrate-from-empty.
 - [x] 2.3 Xây claim/lease/retry worker PostgreSQL và graceful shutdown; test crash recovery và bounded attempts.
 - [x] 2.4 Enqueue analysis cùng transaction lưu mô tả; test duplicate save và retry response.
@@ -59,7 +59,7 @@
 
 ## 7. P3 — LLM ranking và giải thích
 
-- [ ] 7.1 Viết top-20 candidate prompt/structured result contract và token/deadline/cost limits.
+- [x] 7.1 Viết top-20 candidate prompt/structured result contract và token/deadline/cost limits.
 - [x] 7.2 Validate allowed/unique candidate IDs và reasons có căn cứ; test invented IDs/prices/allergy claims/injection.
 - [x] 7.3 Xây deterministic fallback và status/metrics cho timeout/JSON sai/quota; test không mất valid candidates.
 - [x] 7.4 Gắn reasons/fallback vào frontend và persisted snapshot; test no-match/no-safe-match/pending states.
@@ -111,7 +111,7 @@
 - [x] 12.1 Thêm frontend build/Playwright desktop-mobile và Docker checks vào CI; migration-from-empty regression.
 - [ ] 12.2 Tách web/worker/migration startup, flags và graceful shutdown; test deployment compatibility.
 - [x] 12.3 Thêm DB-aware readiness, redacted request logging và metrics endpoint/access controls.
-- [ ] 12.4 Instrument provider quota/errors, job backlog, LLM fallback/cost và no-match/latency; test sensitive data không xuất log.
+- [x] 12.4 Instrument provider quota/errors, job backlog, LLM fallback/cost và no-match/latency; test sensitive data không xuất log.
 - [x] 12.5 Xây atomic shared rate/quota counters và benchmark concurrency nhiều replica.
 - [ ] 12.6 Chuẩn bị TLS/CORS/secrets wiring và staging release scripts theo môi trường thực tế; không hardcode cloud credentials.
 - [ ] 12.7 Viết và chạy isolated backup/restore drill, đo RPO/RTO và verify ownership/history.

@@ -12,6 +12,8 @@ afterAll(async () => {
   try {
     await db.sharedQuotaBucket.deleteMany({ where: { namespace } });
     await db.providerObservation.deleteMany({ where: { namespace } });
+    await db.aiBudgetUsage.deleteMany({ where: { namespace } });
+    await db.aiRequestCounter.deleteMany({ where: { namespace } });
   } finally {
     await db.$disconnect();
   }

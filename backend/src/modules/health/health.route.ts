@@ -61,13 +61,18 @@ export const healthRoutes: FastifyPluginAsyncTypebox = async function healthRout
       async (_req, reply) => {
         reply.header("Cache-Control", "no-store");
         reply.type("text/plain; version=0.0.4; charset=utf-8");
-        const [analysis, chat, sync, usage, email, deletion, providers, quotas, cleanup] =
+        const [analysis, chat, sync, usage, email, deletion, providers, quotas, cleanup, budget] =
           await app.prisma.$transaction([
             app.prisma.tasteAnalysisJob.groupBy({ by: ["status"], _count: true }),
             app.prisma.chatRun.groupBy({ by: ["status"], _count: true }),
             app.prisma.menuSyncRun.groupBy({ by: ["status"], _count: true }),
-            app.prisma.aiRequestUsage.findUnique({
-              where: { day: new Date().toISOString().slice(0, 10) },
+            app.prisma.aiRequestCounter.findUnique({
+              where: {
+                namespace_day: {
+                  namespace: securityNamespace(),
+                  day: new Date().toISOString().slice(0, 10),
+                },
+              },
               select: { requests: true },
             }),
             app.prisma.emailOutbox.groupBy({ by: ["status"], _count: true }),
@@ -82,6 +87,14 @@ export const healthRoutes: FastifyPluginAsyncTypebox = async function healthRout
               select: { scope: true, count: true },
             }),
             app.prisma.maintenanceLease.findUnique({ where: { name: "retention-v1" } }),
+            app.prisma.aiBudgetUsage.findUnique({
+              where: {
+                namespace_day: {
+                  namespace: securityNamespace(),
+                  day: new Date().toISOString().slice(0, 10),
+                },
+              },
+            }),
           ]);
         const statuses = new Set([
           "QUEUED",
@@ -91,6 +104,7 @@ export const healthRoutes: FastifyPluginAsyncTypebox = async function healthRout
           "FAILED",
           "SUPERSEDED",
           "SUCCEEDED",
+          "COMPLETED",
           "CANCELLED",
           "STAGING",
           "COMMITTED",
@@ -111,6 +125,10 @@ export const healthRoutes: FastifyPluginAsyncTypebox = async function healthRout
             if (statuses.has(row.status))
               jobLines.push(`food_jobs{kind="${kind}",status="${row.status}"} ${row._count}`);
         const providerLines = [
+          "# TYPE food_ai_budget_reserved_usd gauge",
+          `food_ai_budget_reserved_usd ${Number(budget?.reservedMicros ?? 0n) / 1000000}`,
+          "# TYPE food_ai_budget_limit_usd gauge",
+          `food_ai_budget_limit_usd ${loadAiConfig().dailyBudgetMicros / 1000000}`,
           "# TYPE food_provider_requests_total counter",
           "# TYPE food_provider_failures_total counter",
           "# TYPE food_provider_quota_rejections_total counter",

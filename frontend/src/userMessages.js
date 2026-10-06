@@ -1,4 +1,6 @@
 const messages = {
+  AI_BUDGET_EXCEEDED:
+    "AI tạm thời chạm giới hạn ngân sách xử lý. Bạn vẫn có thể tìm món và quán; phần gợi ý dùng cách xếp hạng dự phòng.",
   RATE_LIMIT_UNAVAILABLE:
     "Chưa kiểm tra được giới hạn yêu cầu. Vui lòng thử lại khi kết nối hệ thống ổn định.",
   DELETION_JOB_CONFLICT:

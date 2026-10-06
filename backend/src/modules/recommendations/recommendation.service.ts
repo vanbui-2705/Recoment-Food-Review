@@ -2,7 +2,8 @@ import { createHash, randomUUID } from "node:crypto";
 import type { PrismaClient, Prisma } from "../../generated/prisma/client.js";
 import { AppError } from "../../common/errors/app-error.js";
 import { createCandidateService, type RecommendationContext } from "./candidate.service.js";
-import { createGeminiProvider, type StructuredAiProvider } from "../ai/ai.provider.js";
+import { type StructuredAiProvider } from "../ai/ai.provider.js";
+import { createBudgetedGeminiProvider } from "../ai/ai.budget.js";
 import { loadAiConfig } from "../ai/ai.config.js";
 import { rerank, groundedReasons } from "./recommendation.policy.js";
 import { REPEAT_WINDOW_MS, distanceMeters } from "../food/food.policy.js";
@@ -12,6 +13,7 @@ import { createDiscoveryService } from "../discovery/discovery.service.js";
 import type { Place } from "../discovery/place.providers.js";
 import { performance } from "node:perf_hooks";
 import { recordRecommendation } from "../../common/observability/metrics.js";
+import { securityNamespace } from "../../common/security/shared-quota.js";
 
 export type RecommendationInput = Partial<RecommendationContext> & { idempotencyKey: string };
 export function createRecommendationService(
@@ -22,7 +24,7 @@ export function createRecommendationService(
 ) {
   const candidates = createCandidateService(prisma, env, fetcher);
   const config = loadAiConfig(env),
-    provider = injectedProvider ?? createGeminiProvider(config, fetcher);
+    provider = injectedProvider ?? createBudgetedGeminiProvider(prisma, config, fetcher);
   const discovery = createDiscoveryService(prisma, env, fetcher);
   const get = async (userId: string, id: string, verifiedPlaces?: Place[]) => {
     const now = new Date();
@@ -299,7 +301,7 @@ export function createRecommendationService(
             const day = new Date().toISOString().slice(0, 10);
             const reserved = await prisma.$queryRaw<
               Array<{ requests: number }>
-            >`INSERT INTO ai_request_usage(day, requests) VALUES (${day}, 1) ON CONFLICT(day) DO UPDATE SET requests = ai_request_usage.requests + 1 WHERE ai_request_usage.requests < ${config.dailyRequests} RETURNING requests`;
+            >`INSERT INTO ai_request_counters(namespace,day,requests) VALUES (${securityNamespace()},${day},1) ON CONFLICT(namespace,day) DO UPDATE SET requests=ai_request_counters.requests+1 WHERE ai_request_counters.requests<${config.dailyRequests} RETURNING requests`;
             return reserved.length > 0;
           });
           await prisma.$transaction(async (tx) => {

@@ -241,6 +241,38 @@ export default function AdminOperations() {
               </article>
             ))}
           </div>
+          {data.aiBudget && (
+            <article className="food-card">
+              <h2>Ngân sách AI hôm nay</h2>
+              <p>
+                Đã dành trước:{" "}
+                {new Intl.NumberFormat("vi-VN", {
+                  style: "currency",
+                  currency: "USD",
+                }).format(Number(data.aiBudget.reservedMicros) / 1000000)}{" "}
+                /{" "}
+                {new Intl.NumberFormat("vi-VN", {
+                  style: "currency",
+                  currency: "USD",
+                }).format(Number(data.aiBudget.limitMicros) / 1000000)}
+                .
+              </p>
+              <p>
+                {data.aiBudget.requests} lần dành ngân sách · Ngày tính theo
+                UTC.
+              </p>
+              <p>
+                Đây là mức dự trù bảo thủ, không phải hóa đơn provider. Ngân
+                sách đã dành không được hoàn lại sau timeout để tránh vượt trần
+                khi phản hồi bị gián đoạn.
+              </p>
+              <p>
+                Model: {data.aiBudget.model} · Cấu hình giá có hiệu lực đến{" "}
+                {data.aiBudget.pricingValidUntil}. Hết hạn sẽ ngừng gọi AI và
+                dùng luồng dự phòng.
+              </p>
+            </article>
+          )}
           <h2>Dọn dữ liệu</h2>
           <p>
             Hoàn tất gần nhất: {time(data.retention.lastCompletedAt)} · Lịch

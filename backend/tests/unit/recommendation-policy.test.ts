@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { AiError } from "../../src/modules/ai/ai.provider.js";
 import {
   loadRankingWeights,
   normalizedScore,
@@ -101,5 +102,17 @@ describe("bounded recommendation ranking", () => {
       items: candidates,
       status: "FALLBACK_QUOTA",
     });
+    expect(
+      await rerank(
+        candidates,
+        {
+          ...provider,
+          generate: async () => {
+            throw new AiError("AI_BUDGET_EXCEEDED");
+          },
+        },
+        async () => true,
+      ),
+    ).toEqual({ items: candidates, status: "FALLBACK_AI_BUDGET_EXCEEDED" });
   });
 });

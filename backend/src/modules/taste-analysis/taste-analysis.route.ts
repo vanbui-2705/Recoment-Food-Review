@@ -1,13 +1,13 @@
 import { Type, type FastifyPluginAsyncTypebox } from "@fastify/type-provider-typebox";
 import { loadAiConfig } from "../ai/ai.config.js";
-import { createGeminiProvider } from "../ai/ai.provider.js";
+import { createBudgetedGeminiProvider } from "../ai/ai.budget.js";
 import { createRateLimitHook } from "../../common/security/rate-limit.js";
 import { createTasteAnalysisService, publicAnalysis } from "./taste-analysis.service.js";
 import type { TasteAnalysisJob } from "../../generated/prisma/client.js";
 import { object, list, string } from "../discovery/provider.http.js";
 export const tasteAnalysisRoutes: FastifyPluginAsyncTypebox = async (app) => {
   const config = loadAiConfig();
-  const provider = createGeminiProvider(config);
+  const provider = createBudgetedGeminiProvider(app.prisma, config);
   const service = createTasteAnalysisService(app.prisma, config, provider);
   const serialize = async (job: TasteAnalysisJob | null) => {
     const output = publicAnalysis(job, provider.configured);

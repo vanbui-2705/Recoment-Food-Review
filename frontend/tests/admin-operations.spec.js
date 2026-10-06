@@ -3,6 +3,13 @@ const id = "55555555-5555-4555-8555-555555555555";
 const headers = { "content-type": "application/json" };
 const summary = {
   generatedAt: "2026-10-07T03:00:00.000Z",
+  aiBudget: {
+    limitMicros: "10000000",
+    reservedMicros: "1000000",
+    requests: 1,
+    pricingValidUntil: "2027-01-01",
+    model: "gemini-3.8-flash",
+  },
   providers: [
     {
       source: "google",
@@ -102,6 +109,10 @@ test("shows unconfigured APIs honestly and requires confirmation before retrying
     page.getByRole("heading", { name: "Google Places" }),
   ).toBeVisible();
   await expect(page.getByText("Chưa cấu hình", { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Ngân sách AI hôm nay" }),
+  ).toBeVisible();
+  await expect(page.getByText(/không phải hóa đơn provider/)).toBeVisible();
   await page
     .getByRole("button", { name: "Xử lý lại yêu cầu xóa", exact: true })
     .click();

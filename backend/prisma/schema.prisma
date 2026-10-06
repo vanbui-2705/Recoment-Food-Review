@@ -189,6 +189,25 @@ model AccountDeletionJob {
   @@map("account_deletion_jobs")
 }
 
+model AiRequestCounter {
+  namespace String @db.VarChar(64)
+  day       String @db.VarChar(10)
+  requests  Int    @default(0)
+
+  @@id([namespace, day])
+  @@map("ai_request_counters")
+}
+
+model AiBudgetUsage {
+  namespace      String @db.VarChar(64)
+  day            String @db.VarChar(10)
+  reservedMicros BigInt @default(0) @map("reserved_micros")
+  requests       Int    @default(0)
+
+  @@id([namespace, day])
+  @@map("ai_budget_usage")
+}
+
 model SharedQuotaBucket {
   key       String   @id @db.VarChar(64)
   namespace String   @db.VarChar(64)

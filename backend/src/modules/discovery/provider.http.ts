@@ -1,3 +1,4 @@
+import { recordProviderResponse } from "../../common/observability/metrics.js";
 export type JsonObject = Record<string, unknown>;
 export const object = (value: unknown): JsonObject =>
   value && typeof value === "object" && !Array.isArray(value) ? (value as JsonObject) : {};
@@ -24,6 +25,7 @@ export async function providerJson(
   options: RequestInit = {},
   fetcher: typeof fetch = fetch,
 ): Promise<JsonObject> {
+  let outcome = "OK";
   try {
     const response = await fetcher(url, {
       ...options,
@@ -54,7 +56,13 @@ export async function providerJson(
       throw new ProviderError("INVALID_DATA");
     return object(payload);
   } catch (error) {
-    if (error instanceof ProviderError) throw error;
+    if (error instanceof ProviderError) {
+      outcome = error.status;
+      throw error;
+    }
+    outcome = "UNAVAILABLE";
     throw new ProviderError("UNAVAILABLE");
+  } finally {
+    recordProviderResponse(provider, outcome);
   }
 }

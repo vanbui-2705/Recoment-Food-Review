@@ -3,6 +3,7 @@ import type { PrismaClient, Prisma, TasteAnalysisJob } from "../../generated/pri
 import { AppError } from "../../common/errors/app-error.js";
 import { AiError, type StructuredAiProvider } from "../ai/ai.provider.js";
 import type { AiConfig } from "../ai/ai.config.js";
+import { securityNamespace } from "../../common/security/shared-quota.js";
 import { normalizeFoodText } from "../food/food.schema.js";
 import {
   AnalysisResultSchema,
@@ -247,7 +248,7 @@ export function createTasteAnalysisService(
         const day = now.toISOString().slice(0, 10);
         const reservation = await prisma.$queryRaw<
           Array<{ requests: number }>
-        >`INSERT INTO ai_request_usage(day, requests) VALUES (${day}, 1) ON CONFLICT(day) DO UPDATE SET requests = ai_request_usage.requests + 1 WHERE ai_request_usage.requests < ${config.dailyRequests} RETURNING requests`;
+        >`INSERT INTO ai_request_counters(namespace,day,requests) VALUES (${securityNamespace()},${day},1) ON CONFLICT(namespace,day) DO UPDATE SET requests=ai_request_counters.requests+1 WHERE ai_request_counters.requests<${config.dailyRequests} RETURNING requests`;
         if (!reservation.length) throw new AiError("AI_QUOTA_EXCEEDED");
         const known = await catalogs(prisma);
         const result = validateAnalysis(
@@ -339,7 +340,7 @@ export function createTasteAnalysisService(
         const code = error instanceof AiError ? error.code : "AI_UNAVAILABLE";
         const terminal =
           job.attempt >= config.maxAttempts ||
-          ["AI_INVALID_OUTPUT", "AI_NOT_CONFIGURED"].includes(code);
+          ["AI_INVALID_OUTPUT", "AI_NOT_CONFIGURED", "AI_BUDGET_EXCEEDED"].includes(code);
         await prisma.tasteAnalysisJob.updateMany({
           where: { id, status: "RUNNING", leaseToken: token },
           data: {
