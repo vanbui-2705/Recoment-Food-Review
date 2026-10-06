@@ -2,6 +2,7 @@ import { Type, type FastifyPluginAsyncTypebox } from "@fastify/type-provider-typ
 import { createRateLimitHook } from "../../common/security/rate-limit.js";
 import { AppError } from "../../common/errors/app-error.js";
 import { createDiscoveryService } from "./discovery.service.js";
+import { createNearbyFoodService } from "./nearby-food.service.js";
 const RecipeSourceSchema = Type.Union([Type.Literal("themealdb"), Type.Literal("spoonacular")]);
 const PlaceSourceSchema = Type.Union([
   Type.Literal("google"),
@@ -15,6 +16,7 @@ const RecipeParams = Type.Object(
 );
 export const discoveryRoutes: FastifyPluginAsyncTypebox = async (app) => {
   const service = createDiscoveryService(app.prisma);
+  const nearby = createNearbyFoodService(app.prisma);
   app.addHook("onSend", async (_req, reply) => {
     reply.header("Cache-Control", "private, no-store");
   });
@@ -24,6 +26,35 @@ export const discoveryRoutes: FastifyPluginAsyncTypebox = async (app) => {
     createRateLimitHook({ keyPrefix: "external-discovery", limit: 15, windowMs: 60000 }),
   );
   app.get("/discovery/sources", async () => ({ data: { items: service.sources() } }));
+  app.get(
+    "/discovery/nearby-food",
+    {
+      schema: {
+        querystring: Type.Object(
+          {
+            budget: Type.Integer({ minimum: 1000, maximum: 100000000 }),
+            latitude: Type.Optional(Type.Number({ minimum: -90, maximum: 90 })),
+            longitude: Type.Optional(Type.Number({ minimum: -180, maximum: 180 })),
+            radius: Type.Optional(Type.Integer({ minimum: 3000, maximum: 4000 })),
+          },
+          { additionalProperties: false },
+        ),
+      },
+    },
+    async (req) => {
+      const { latitude, longitude } = req.query;
+      if ((latitude === undefined) !== (longitude === undefined))
+        throw new AppError(400, "INVALID_LOCATION", "Cần cả vĩ độ và kinh độ");
+      return {
+        data: await nearby.search(
+          req.authUser!.id,
+          req.query.budget,
+          latitude === undefined ? undefined : { latitude, longitude: longitude! },
+          req.query.radius,
+        ),
+      };
+    },
+  );
   app.get(
     "/discovery/restaurants",
     {

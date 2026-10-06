@@ -1,6 +1,13 @@
 import { AppError } from "../../common/errors/app-error.js";
 import { distanceMeters } from "../food/food.policy.js";
-import { providerJson, ProviderError, safeUrl } from "../discovery/provider.http.js";
+import {
+  providerJson,
+  ProviderError,
+  safeUrl,
+  object,
+  list,
+  string,
+} from "../discovery/provider.http.js";
 type GooglePlace = {
   id?: string;
   displayName?: { text?: string };
@@ -12,6 +19,7 @@ type GooglePlace = {
   businessStatus?: string;
   currentOpeningHours?: { openNow?: boolean };
   attributions?: Array<{ provider?: string; providerUri?: string }>;
+  photos?: unknown[];
 };
 export function createPlacesAdapter(
   apiKey = process.env.GOOGLE_PLACES_API_KEY,
@@ -35,7 +43,7 @@ export function createPlacesAdapter(
               "Content-Type": "application/json",
               "X-Goog-Api-Key": apiKey,
               "X-Goog-FieldMask":
-                "places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.googleMapsUri,places.businessStatus,places.currentOpeningHours.openNow,places.attributions",
+                "places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.googleMapsUri,places.businessStatus,places.currentOpeningHours.openNow,places.attributions,places.photos",
             },
             body: JSON.stringify({
               textQuery: dishName,
@@ -110,6 +118,28 @@ export function createPlacesAdapter(
             : [],
           menuConfirmed: false,
           price: null,
+          photo: (() => {
+            const photo = object(list(p.photos)[0]);
+            const name = string(photo.name);
+            if (
+              !/^places\/[A-Za-z0-9_-]+\/photos\/[A-Za-z0-9_-]+$/.test(name) ||
+              name.length > 1000
+            )
+              return null;
+            return {
+              name,
+              authors: list(photo.authorAttributions)
+                .map((value) => {
+                  const author = object(value);
+                  const uri = string(author.uri);
+                  return {
+                    name: string(author.displayName),
+                    url: safeUrl(uri.startsWith("//") ? `https:${uri}` : uri),
+                  };
+                })
+                .filter((author) => !!author.name),
+            };
+          })(),
         }))
         .filter((p) => p.distanceMeters <= radius)
         .sort((a, b) => a.distanceMeters - b.distanceMeters);

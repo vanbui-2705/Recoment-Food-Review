@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { apiRequest } from "../../profileApi";
 import { date } from "./foodUtils";
+import PlacePhoto from "./PlacePhoto";
 
 export const sourceNames = {
   google: "Google Maps",
@@ -46,6 +47,7 @@ export function PlaceResults({ data }) {
         ))}
       {data.items.map((p) => (
         <article className="food-place" key={`${p.source}:${p.placeId}`}>
+          {p.photo && <PlacePhoto photo={p.photo} name={p.name} />}
           <p className="food-eyebrow">
             {sourceNames[p.source] || "Google Maps"} ·{" "}
             {p.matchType === "NEARBY_RESTAURANT"

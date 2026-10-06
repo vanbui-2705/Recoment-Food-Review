@@ -138,6 +138,8 @@ Frontend không gọi Google API trực tiếp để tránh lộ key và bypass 
 
 ### 3.5. Recommendation Engine
 
+Trang chính có luồng “Ăn ngon quanh bạn”: nhập ngân sách mỗi người, chọn bán kính 3–4 km và tìm quanh vị trí. Hiển thị ảnh từ quán, rating/số lượt đánh giá và giá món khi có thực đơn xác nhận. Quán chưa có giá món được tách riêng. Nút vòng quay ở góc màn hình chọn ngẫu nhiên từ các kết quả hiện tại; quay thử không ghi lịch sử, chỉ bấm chọn món mới kích hoạt thời gian chờ 96 giờ. Luồng này không phụ thuộc AI phân tích khẩu vị. Xem [hành vi và giới hạn nguồn dữ liệu](NEARBY_FOOD_AND_RANDOM.md).
+
 Luồng gợi ý:
 
 ```text

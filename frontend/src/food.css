@@ -1,4 +1,38 @@
-@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/plus-jakarta-sans-400.ttf") format("truetype");
+}
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/fonts/plus-jakarta-sans-500.ttf") format("truetype");
+}
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/fonts/plus-jakarta-sans-600.ttf") format("truetype");
+}
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/plus-jakarta-sans-700.ttf") format("truetype");
+}
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("/fonts/plus-jakarta-sans-800.ttf") format("truetype");
+}
 .food-shell {
   --food-ink: #20372b;
   --food-green: #286246;
@@ -386,6 +420,143 @@ body {
   border: 1px solid var(--food-line);
   border-radius: 12px;
 }
-.food-place, .food-card {
+.food-nearby {
+  padding: 28px;
+  background: #e5ebdd;
+  border-radius: 18px;
+  margin-bottom: 40px;
+}
+.food-nearby h2 {
+  font-size: clamp(26px, 4vw, 36px);
+  letter-spacing: -1px;
+}
+.food-nearby-form {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: end;
+}
+.food-nearby-form label {
+  margin: 0;
+}
+.food-nearby-photo {
+  margin: 0 0 16px;
+}
+.food-nearby-photo img,
+.food-photo-empty {
+  width: 100%;
+  height: 190px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+.food-photo-empty {
+  display: grid;
+  place-items: center;
+  background: #eef2e9;
+  color: var(--food-muted);
+  font-size: 14px;
+}
+.food-nearby-photo figcaption {
+  font-size: 11px;
+  line-height: 1.5;
+  margin-top: 8px;
+}
+.food-shell .food-wheel-trigger {
+  position: fixed;
+  z-index: 10;
+  bottom: calc(100px + env(safe-area-inset-bottom));
+  right: max(18px, calc((100vw - 1100px) / 2 + 18px));
+  border-radius: 50%;
+  height: 90px;
+  width: 90px;
+  padding: 12px 6px;
+  border: 3px solid var(--food-paper);
+  background: var(--food-green);
+  color: white;
+  font-size: 20px;
+  font-weight: 800;
+  box-shadow: 0 5px 18px #20372b33;
+}
+.food-wheel-trigger span {
+  display: block;
+  font-size: 10px;
+  font-weight: 500;
+  margin-top: 4px;
+}
+.food-wheel-dialog {
+  width: min(94vw, 480px);
+  max-height: calc(100dvh - 40px);
+  border: 1px solid var(--food-line);
+  border-radius: 20px;
+  padding: 28px;
+  color: var(--food-ink);
+  background: var(--food-paper);
+  overflow: auto;
+}
+.food-wheel-dialog::backdrop {
+  background: #20372b99;
+}
+.food-wheel-close {
+  float: right;
+  font-size: 24px !important;
+}
+.food-wheel-wrap {
+  position: relative;
+  width: 270px;
+  max-width: 100%;
+  margin: 24px auto;
+}
+.food-wheel-pointer {
+  position: absolute;
+  z-index: 1;
+  top: -14px;
+  left: calc(50% - 11px);
+  color: var(--food-ink);
+  font-size: 24px;
+}
+.food-wheel {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 5px solid var(--food-green);
+  transition: transform 2.3s cubic-bezier(0.12, 0.75, 0.18, 1);
+}
+.food-wheel span {
+  position: absolute;
+  top: 50%;
+  left: calc(50% - 62px);
+  width: 124px;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+  transform-origin: center;
+  white-space: nowrap;
+}
+.food-wheel-result {
+  margin-top: 24px;
+  border-top: 1px solid var(--food-line);
+}
+@media (max-width: 650px) {
+  .food-nearby {
+    padding: 20px 16px;
+  }
+  .food-nearby-form {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  }
+  .food-nearby-form button {
+    grid-column: 1 / -1;
+  }
+  .food-shell .food-wheel-trigger {
+    width: 76px;
+    height: 76px;
+    font-size: 18px;
+  }
+  .food-wheel-dialog {
+    padding: 22px 18px;
+  }
+}
+.food-place,
+.food-card {
   overflow-wrap: anywhere;
 }

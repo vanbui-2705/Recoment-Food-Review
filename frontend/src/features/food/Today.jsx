@@ -2,8 +2,15 @@ import { useEffect, useRef, useState } from "react";
 import { apiRequest } from "../../profileApi";
 import { money } from "./foodUtils";
 import RecipeIdeas from "./RecipeIdeas";
+import NearbyFood from "./NearbyFood";
 
-export default function Today({ navigate, onDish, onRecipe, notice }) {
+export default function Today({
+  navigate,
+  onDish,
+  onRecipe,
+  notice,
+  onNearbyCandidates,
+}) {
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState("");
@@ -20,6 +27,13 @@ export default function Today({ navigate, onDish, onRecipe, notice }) {
       setError(e.message);
     }
   };
+  useEffect(() => {
+    const chosen = () => {
+      load();
+    };
+    window.addEventListener("food-choice-saved", chosen);
+    return () => window.removeEventListener("food-choice-saved", chosen);
+  }, []);
   useEffect(() => {
     let active = true;
     apiRequest("/recommendations/today")
@@ -87,6 +101,7 @@ export default function Today({ navigate, onDish, onRecipe, notice }) {
   };
   return (
     <>
+      <NearbyFood onCandidates={onNearbyCandidates} notice={notice} />
       <p className="food-eyebrow">
         {new Date().toLocaleDateString("vi-VN", {
           weekday: "long",

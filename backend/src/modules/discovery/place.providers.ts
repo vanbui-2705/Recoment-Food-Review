@@ -18,6 +18,7 @@ export type Place = {
   matchType: "DISH_QUERY" | "NEARBY_RESTAURANT";
   menuConfirmed: false;
   price: null;
+  photo: { name: string; authors: { name: string; url: string | null }[] } | null;
 };
 const keyNames: Record<PlaceSource, string> = {
   google: "GOOGLE_PLACES_API_KEY",
@@ -67,6 +68,7 @@ export function createPlaceProviders(
       matchType: source === "geoapify" ? "NEARBY_RESTAURANT" : "DISH_QUERY",
       menuConfirmed: false,
       price: null,
+      photo: null,
     };
   };
   return {

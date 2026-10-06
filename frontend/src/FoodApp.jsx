@@ -9,6 +9,7 @@ import History from "./features/food/History";
 import PublicLegal from "./features/food/PublicLegal";
 import Discovery from "./features/food/Discovery";
 import RecipeDetail from "./features/food/RecipeDetail";
+import LuckyWheel from "./features/food/LuckyWheel";
 
 const readScreen = () => {
   const name = window.location.hash.slice(1).split("/")[0];
@@ -43,6 +44,10 @@ export default function FoodApp() {
   const [discoveryMode, setDiscoveryMode] = useState("restaurants");
   const [recipeBack, setRecipeBack] = useState("discover");
   const [message, setMessage] = useState("");
+  const [nearbyCandidates, setNearbyCandidates] = useState([]);
+  useEffect(() => {
+    if (!signedIn) setNearbyCandidates([]);
+  }, [signedIn]);
   useEffect(() => {
     const expire = () => setSignedIn(false);
     window.addEventListener("food-session-expired", expire);
@@ -135,6 +140,7 @@ export default function FoodApp() {
         {screen === "today" && (
           <Today
             navigate={navigate}
+            onNearbyCandidates={setNearbyCandidates}
             onRecipe={openRecipe}
             onDish={(dish) => {
               setSelected(dish);
@@ -198,6 +204,17 @@ export default function FoodApp() {
           </button>
         ))}
       </nav>
+      <LuckyWheel
+        candidates={nearbyCandidates}
+        notice={notice}
+        onFind={() => {
+          navigate("today");
+          setTimeout(
+            () => document.getElementById("nearby-budget")?.focus(),
+            0,
+          );
+        }}
+      />
       <footer className="food-legal">
         <a
           href="#terms"
