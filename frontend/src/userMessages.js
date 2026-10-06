@@ -1,4 +1,10 @@
 const messages = {
+  HISTORY_CHANGED:
+    "Nhật ký đã thay đổi. Kiểm tra lại thời gian chờ trước khi xác nhận xóa.",
+  HISTORY_NOT_FOUND:
+    "Bản ghi không còn trong nhật ký của bạn. Hãy tải lại danh sách.",
+  INVALID_HISTORY_CURSOR:
+    "Trang nhật ký không hợp lệ. Hãy tải lại danh sách từ đầu.",
   RECOMMENDATION_IN_PROGRESS:
     "Lượt gợi ý đang xử lý. Hãy chờ một chút rồi thử lại.",
   RECOMMENDATION_PROFILE_CHANGED:

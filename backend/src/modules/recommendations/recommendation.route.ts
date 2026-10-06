@@ -53,7 +53,7 @@ export const recommendationRoutes: FastifyPluginAsyncTypebox = async (app) => {
       const createdAt = body.eatenAt ? new Date(body.eatenAt) : now;
       if (createdAt > now || +createdAt < +now - 30 * 86400000)
         throw new AppError(400, "INVALID_EATEN_AT", "Thời điểm ăn phải trong 30 ngày vừa qua");
-      const choosing = body.type === "CHOSEN" || body.type === "EATEN";
+      const choosing = body.type === "CHOSEN";
       if (choosing) {
         const [ownedRequest, replay] = await Promise.all([
           app.prisma.recommendationRequest.findFirst({
@@ -81,6 +81,7 @@ export const recommendationRoutes: FastifyPluginAsyncTypebox = async (app) => {
           const result = await tx.recommendationResult.findFirst({
             where: { id: body.resultId, requestId: request.params.id, request: { userId } },
             include: {
+              request: { select: { budgetMax: true } },
               offer: {
                 include: {
                   identity: { include: { supplier: true, restaurant: true } },
@@ -111,7 +112,7 @@ export const recommendationRoutes: FastifyPluginAsyncTypebox = async (app) => {
               );
             return previous;
           }
-          if (body.type === "CHOSEN" || body.type === "EATEN") {
+          if (body.type === "CHOSEN") {
             const offer = result.offer,
               supplier = offer?.identity.supplier;
             if (
@@ -121,6 +122,7 @@ export const recommendationRoutes: FastifyPluginAsyncTypebox = async (app) => {
               !offer.isAvailable ||
               offer.mappingStatus !== "APPROVED" ||
               offer.dishId !== result.dishId ||
+              (result.request.budgetMax !== null && offer.price > result.request.budgetMax) ||
               ["PERMANENTLY_CLOSED", "TEMPORARILY_CLOSED"].includes(
                 offer.identity.restaurant.businessStatus,
               ) ||

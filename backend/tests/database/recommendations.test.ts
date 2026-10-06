@@ -274,6 +274,34 @@ describe("verified recommendation ownership and hard filters", () => {
       where: { id: offer.id },
       data: { expiresAt: offer.expiresAt },
     });
+    await app.prisma.externalMenuItem.update({ where: { id: offer.id }, data: { price: 60000 } });
+    expect(
+      (
+        await app.inject({
+          method: "POST",
+          url: `/recommendations/${requestId}/feedback`,
+          headers,
+          payload: { resultId, type: "CHOSEN", idempotencyKey: randomUUID() },
+        })
+      ).statusCode,
+    ).toBe(409);
+    const eaten = await app.inject({
+      method: "POST",
+      url: `/recommendations/${requestId}/feedback`,
+      headers,
+      payload: {
+        resultId,
+        type: "EATEN",
+        eatenAt: new Date(Date.now() - 86400000).toISOString(),
+        idempotencyKey: randomUUID(),
+      },
+    });
+    expect(eaten.statusCode).toBe(200);
+    await app.prisma.userInteraction.delete({ where: { id: eaten.json().data.id } });
+    await app.prisma.externalMenuItem.update({
+      where: { id: offer.id },
+      data: { price: offer.price },
+    });
   });
   it("excludes CHOSEN/EATEN across offers for exactly 96 hours and recipe identity across sources", async () => {
     const now = new Date();

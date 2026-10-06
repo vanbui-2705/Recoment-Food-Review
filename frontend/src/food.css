@@ -496,6 +496,26 @@ body {
 .food-wheel-dialog::backdrop {
   background: #20372b99;
 }
+.food-filters {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: 20px 0;
+}
+.food-filters label {
+  display: grid;
+  gap: 8px;
+  flex: 1 1 180px;
+}
+.food-filters select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--food-line);
+  border-radius: 12px;
+  color: var(--food-ink);
+  background: var(--food-paper);
+  font: inherit;
+}
 .food-wheel-close {
   float: right;
   font-size: 24px !important;

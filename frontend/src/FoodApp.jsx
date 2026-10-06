@@ -70,6 +70,11 @@ export default function FoodApp() {
     if (!signedIn) setNearbyCandidates([]);
   }, [signedIn]);
   useEffect(() => {
+    const changed = () => setNearbyCandidates([]);
+    window.addEventListener("food-history-changed", changed);
+    return () => window.removeEventListener("food-history-changed", changed);
+  }, []);
+  useEffect(() => {
     const chosen = (event) =>
       setNearbyCandidates((items) =>
         items.filter(
