@@ -7,17 +7,41 @@ import DishDetail from "./features/food/DishDetail";
 import Onboarding from "./features/food/Onboarding";
 import History from "./features/food/History";
 import PublicLegal from "./features/food/PublicLegal";
+import Discovery from "./features/food/Discovery";
+import RecipeDetail from "./features/food/RecipeDetail";
+
+const readScreen = () => {
+  const name = window.location.hash.slice(1).split("/")[0];
+  return [
+    "today",
+    "profile",
+    "history",
+    "dish",
+    "terms",
+    "privacy",
+    "discover",
+    "recipe",
+  ].includes(name)
+    ? name
+    : "today";
+};
+const readRecipe = () => {
+  const [screen, source, id] = window.location.hash.slice(1).split("/");
+  return screen === "recipe" &&
+    ["themealdb", "spoonacular"].includes(source) &&
+    /^[0-9]{1,20}$/.test(id || "")
+    ? { source, id, title: "Công thức đang tải" }
+    : null;
+};
 
 export default function FoodApp() {
   const [signedIn, setSignedIn] = useState(Boolean(getAccessToken()));
-  const [screen, setScreen] = useState(() =>
-    ["profile", "history", "terms", "privacy"].includes(
-      window.location.hash.slice(1),
-    )
-      ? window.location.hash.slice(1)
-      : "today",
-  );
+  const [screen, setScreen] = useState(readScreen);
   const [selected, setSelected] = useState(null);
+  const [selectedRecipe, setSelectedRecipe] = useState(readRecipe);
+  const [discoveryQuery, setDiscoveryQuery] = useState("");
+  const [discoveryMode, setDiscoveryMode] = useState("restaurants");
+  const [recipeBack, setRecipeBack] = useState("discover");
   const [message, setMessage] = useState("");
   useEffect(() => {
     const expire = () => setSignedIn(false);
@@ -25,22 +49,33 @@ export default function FoodApp() {
     return () => window.removeEventListener("food-session-expired", expire);
   }, []);
   useEffect(() => {
-    const sync = () =>
-      setScreen(
-        ["today", "profile", "history", "dish", "terms", "privacy"].includes(
-          window.location.hash.slice(1),
-        )
-          ? window.location.hash.slice(1)
-          : "today",
-      );
+    const sync = () => {
+      const next = readScreen();
+      const recipe = readRecipe();
+      if (recipe)
+        setSelectedRecipe((old) =>
+          old?.source === recipe.source && old?.id === recipe.id ? old : recipe,
+        );
+      setScreen(next === "recipe" && !recipe ? "discover" : next);
+    };
     window.addEventListener("hashchange", sync);
     return () => window.removeEventListener("hashchange", sync);
   }, []);
   const notice = (text) => setMessage(text);
-  const navigate = (next) => {
+  const navigate = (next, hash = next) => {
     setMessage("");
     setScreen(next);
-    window.location.hash = next;
+    window.location.hash = hash;
+  };
+  const openDiscovery = (query = "", mode = "restaurants") => {
+    setDiscoveryQuery(query);
+    setDiscoveryMode(mode);
+    navigate("discover");
+  };
+  const openRecipe = (recipe) => {
+    setRecipeBack(screen === "today" ? "today" : "discover");
+    setSelectedRecipe(recipe);
+    navigate("recipe", `recipe/${recipe.source}/${recipe.id}`);
   };
   if (!signedIn)
     return (
@@ -100,6 +135,7 @@ export default function FoodApp() {
         {screen === "today" && (
           <Today
             navigate={navigate}
+            onRecipe={openRecipe}
             onDish={(dish) => {
               setSelected(dish);
               navigate("dish");
@@ -118,17 +154,40 @@ export default function FoodApp() {
           />
         )}
         {screen === "history" && <History />}
+        {(screen === "discover" ||
+          (screen === "recipe" && recipeBack === "discover")) && (
+          <div hidden={screen !== "discover"}>
+            <Discovery
+              key={`${discoveryMode}:${discoveryQuery}`}
+              initialQuery={discoveryQuery}
+              initialMode={discoveryMode}
+              onRecipe={openRecipe}
+              navigate={navigate}
+            />
+          </div>
+        )}
+        {screen === "recipe" && selectedRecipe && (
+          <RecipeDetail
+            selected={selectedRecipe}
+            notice={notice}
+            onBack={() => navigate(recipeBack)}
+            onFindRestaurants={(name) => openDiscovery(name)}
+          />
+        )}
         {screen === "dish" && selected && (
           <DishDetail
             dish={selected}
             notice={notice}
             onBack={() => navigate("today")}
+            onFindRecipes={() => openDiscovery(selected.name, "recipes")}
+            onFindRestaurants={() => openDiscovery(selected.name)}
           />
         )}
       </main>
       <nav className="food-nav" aria-label="Điều hướng chính">
         {[
           ["today", "Hôm nay"],
+          ["discover", "Tìm món / Nấu ăn"],
           ["history", "Đã chọn / đã ăn"],
           ["profile", "Khẩu vị của tôi"],
         ].map(([id, label]) => (

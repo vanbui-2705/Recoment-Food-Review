@@ -1,5 +1,6 @@
 import { AppError } from "../../common/errors/app-error.js";
 import { distanceMeters } from "../food/food.policy.js";
+import { providerJson, ProviderError, safeUrl } from "../discovery/provider.http.js";
 type GooglePlace = {
   id?: string;
   displayName?: { text?: string };
@@ -23,39 +24,37 @@ export function createPlacesAdapter(
       radius: number,
     ) {
       if (!apiKey) throw new AppError(503, "PLACES_NOT_CONFIGURED", "Tìm quán chưa được cấu hình");
-      let response: Response;
-      try {
-        response = await fetcher("https://places.googleapis.com/v1/places:searchText", {
-          method: "POST",
-          signal: AbortSignal.timeout(6000),
-          headers: {
-            "Content-Type": "application/json",
-            "X-Goog-Api-Key": apiKey,
-            "X-Goog-FieldMask":
-              "places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.googleMapsUri,places.businessStatus,places.currentOpeningHours.openNow,places.attributions",
-          },
-          body: JSON.stringify({
-            textQuery: dishName,
-            includedType: "restaurant",
-            languageCode: "vi",
-            pageSize: 10,
-            locationBias: { circle: { center: location, radius: Math.min(radius, 50000) } },
-          }),
-        });
-      } catch {
-        throw new AppError(
-          503,
-          "PLACES_UNAVAILABLE",
-          "Không kết nối được nguồn quán, vui lòng thử lại",
-        );
-      }
-      if (!response.ok)
-        throw new AppError(503, "PLACES_UNAVAILABLE", "Nguồn quán tạm thời không khả dụng");
       let payload: { places?: GooglePlace[] };
       try {
-        payload = (await response.json()) as typeof payload;
-      } catch {
-        throw new AppError(503, "PLACES_UNAVAILABLE", "Nguồn quán trả dữ liệu không hợp lệ");
+        payload = await providerJson(
+          "google",
+          "https://places.googleapis.com/v1/places:searchText",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Goog-Api-Key": apiKey,
+              "X-Goog-FieldMask":
+                "places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.googleMapsUri,places.businessStatus,places.currentOpeningHours.openNow,places.attributions",
+            },
+            body: JSON.stringify({
+              textQuery: dishName,
+              includedType: "restaurant",
+              languageCode: "vi",
+              pageSize: 10,
+              locationBias: { circle: { center: location, radius: Math.min(radius, 50000) } },
+            }),
+          },
+          fetcher,
+        );
+      } catch (error) {
+        throw new AppError(
+          503,
+          error instanceof ProviderError && error.status === "QUOTA_EXCEEDED"
+            ? "PLACES_QUOTA_EXCEEDED"
+            : "PLACES_UNAVAILABLE",
+          "Không kết nối được nguồn quán, vui lòng thử lại",
+        );
       }
       if (
         !payload ||
@@ -71,21 +70,44 @@ export function createPlacesAdapter(
             p.location &&
             Number.isFinite(p.location.latitude) &&
             Number.isFinite(p.location.longitude) &&
+            Math.abs(p.location.latitude) <= 90 &&
+            Math.abs(p.location.longitude) <= 180 &&
             typeof p.displayName?.text === "string" &&
             p.businessStatus === "OPERATIONAL",
         )
         .map((p) => ({
           placeId: p.id!,
           name: p.displayName!.text!,
-          address: p.formattedAddress ?? null,
+          address: typeof p.formattedAddress === "string" ? p.formattedAddress : null,
           distanceMeters: distanceMeters(location, p.location!),
-          rating: p.rating ?? null,
-          ratingCount: p.userRatingCount ?? null,
-          openNow: p.currentOpeningHours?.openNow ?? null,
+          rating:
+            typeof p.rating === "number" &&
+            Number.isFinite(p.rating) &&
+            p.rating >= 0 &&
+            p.rating <= 5
+              ? p.rating
+              : null,
+          ratingCount:
+            typeof p.userRatingCount === "number" &&
+            Number.isSafeInteger(p.userRatingCount) &&
+            p.userRatingCount >= 0
+              ? p.userRatingCount
+              : null,
+          openNow:
+            typeof p.currentOpeningHours?.openNow === "boolean"
+              ? p.currentOpeningHours.openNow
+              : null,
           mapsUrl:
-            (p.googleMapsUri?.startsWith("https://") ? p.googleMapsUri : undefined) ??
+            safeUrl(p.googleMapsUri) ??
             `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(dishName)}&query_place_id=${encodeURIComponent(p.id!)}`,
-          attributions: p.attributions ?? [],
+          attributions: Array.isArray(p.attributions)
+            ? p.attributions
+                .filter((a) => a && typeof a.provider === "string")
+                .map((a) => ({
+                  provider: a.provider!,
+                  providerUri: safeUrl(a.providerUri) ?? undefined,
+                }))
+            : [],
           menuConfirmed: false,
           price: null,
         }))

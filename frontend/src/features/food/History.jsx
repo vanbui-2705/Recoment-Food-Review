@@ -5,6 +5,8 @@ import { date } from "./foodUtils";
 export default function History() {
   const [items, setItems] = useState(null);
   const [error, setError] = useState("");
+  const [recipes, setRecipes] = useState([]);
+  const [recipeError, setRecipeError] = useState("");
   useEffect(() => {
     let active = true;
     apiRequest("/users/me/food-history")
@@ -13,6 +15,13 @@ export default function History() {
       })
       .catch((e) => {
         if (active) setError(e.message);
+      });
+    apiRequest("/users/me/recipe-history")
+      .then((r) => {
+        if (active) setRecipes(r.data.items);
+      })
+      .catch(() => {
+        if (active) setRecipeError("Chưa tải được lịch sử món nấu tại nhà.");
       });
     return () => {
       active = false;
@@ -29,7 +38,7 @@ export default function History() {
         </p>
       )}
       {!items && !error && <p role="status">Đang tải nhật ký…</p>}
-      {items?.length === 0 && (
+      {items?.length === 0 && !recipes.length && (
         <p>Chưa có lịch sử. Chọn món hôm nay hoặc ghi món đã ăn hôm qua.</p>
       )}
       {items?.map((i) => {
@@ -52,6 +61,32 @@ export default function History() {
           </article>
         );
       })}
+      {recipeError && <p>{recipeError}</p>}
+      {recipes.length > 0 && (
+        <section className="food-section">
+          <h2>Món nấu tại nhà</h2>
+          {recipes.map((i) => {
+            const eligible = new Date(
+              new Date(i.createdAt).getTime() + 96 * 3600000,
+            );
+            return (
+              <article className="food-place" key={i.id}>
+                <h3>{i.title}</h3>
+                <p>
+                  {i.interactionType === "CHOSEN" ? "Đã chọn" : "Đã ăn"} ·{" "}
+                  {date(i.createdAt)}
+                </p>
+                <p>
+                  {eligible > new Date()
+                    ? `Có thể gợi ý lại từ ${date(eligible)}`
+                    : "Đã hết thời gian chờ"}{" "}
+                  (nếu không có lần chọn/ăn mới hơn)
+                </p>
+              </article>
+            );
+          })}
+        </section>
+      )}
     </>
   );
 }

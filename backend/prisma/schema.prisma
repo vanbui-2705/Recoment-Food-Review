@@ -111,6 +111,7 @@ model User {
   dishPreferences        UserDishPreference[]
   recommendationRequests RecommendationRequest[]
   interactions           UserInteraction[]
+  recipeInteractions     RecipeInteraction[]
 
   @@map("users")
 }
@@ -135,23 +136,23 @@ model RefreshToken {
 }
 
 model TasteProfile {
-  id                  String   @id @default(uuid()) @db.Uuid
-  userId              String   @unique @map("user_id") @db.Uuid
-  spicyLevel          Int      @map("spicy_level") @db.SmallInt
-  sweetLevel          Int      @map("sweet_level") @db.SmallInt
-  sourLevel           Int      @map("sour_level") @db.SmallInt
-  saltyLevel          Int      @map("salty_level") @db.SmallInt
-  budgetMin           Int      @map("budget_min")
-  budgetMax           Int      @map("budget_max")
-  maxDistanceMeters   Int      @map("max_distance_meters")
-  latitude            Float?   @db.DoublePrecision
-  longitude           Float?   @db.DoublePrecision
-  areaLabel           String?  @map("area_label") @db.VarChar(200)
+  id                  String      @id @default(uuid()) @db.Uuid
+  userId              String      @unique @map("user_id") @db.Uuid
+  spicyLevel          Int         @map("spicy_level") @db.SmallInt
+  sweetLevel          Int         @map("sweet_level") @db.SmallInt
+  sourLevel           Int         @map("sour_level") @db.SmallInt
+  saltyLevel          Int         @map("salty_level") @db.SmallInt
+  budgetMin           Int         @map("budget_min")
+  budgetMax           Int         @map("budget_max")
+  maxDistanceMeters   Int         @map("max_distance_meters")
+  latitude            Float?      @db.DoublePrecision
+  longitude           Float?      @db.DoublePrecision
+  areaLabel           String?     @map("area_label") @db.VarChar(200)
   mealPeriod          MealPeriod? @map("meal_period")
-  onboardingCompleted Boolean  @default(false) @map("onboarding_completed")
-  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt           DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
-  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  onboardingCompleted Boolean     @default(false) @map("onboarding_completed")
+  createdAt           DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt           DateTime    @updatedAt @map("updated_at") @db.Timestamptz(3)
+  user                User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("taste_profiles")
 }
@@ -429,4 +430,22 @@ model UserInteraction {
   @@index([dishId])
   @@index([restaurantId])
   @@map("user_interactions")
+}
+
+// Store only the reference and title for user history, not provider recipe content.
+model RecipeInteraction {
+  id              String              @id @default(uuid()) @db.Uuid
+  userId          String              @map("user_id") @db.Uuid
+  source          String              @db.VarChar(30)
+  recipeId        String              @map("recipe_id") @db.VarChar(30)
+  title           String              @db.VarChar(200)
+  canonicalName   String              @map("canonical_name") @db.VarChar(200)
+  interactionType UserInteractionType @map("interaction_type")
+  idempotencyKey  String              @unique @map("idempotency_key") @db.VarChar(255)
+  createdAt       DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([userId, canonicalName])
+  @@map("recipe_interactions")
 }

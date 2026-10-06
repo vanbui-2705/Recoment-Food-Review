@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { apiRequest } from "../../profileApi";
 import { money } from "./foodUtils";
+import RecipeIdeas from "./RecipeIdeas";
 
-export default function Today({ navigate, onDish, notice }) {
+export default function Today({ navigate, onDish, onRecipe, notice }) {
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState("");
@@ -182,6 +183,7 @@ export default function Today({ navigate, onDish, notice }) {
           </article>
         ))}
       </div>
+      <RecipeIdeas onRecipe={onRecipe} navigate={navigate} />
       <section className="food-section">
         <h2>Tra cứu & ghi món đã ăn</h2>
         <p>

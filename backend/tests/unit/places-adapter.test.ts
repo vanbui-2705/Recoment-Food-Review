@@ -53,14 +53,14 @@ describe("Google Places adapter", () => {
     expect(JSON.parse(options.body).locationBias.circle.radius).toBe(3000);
   });
   it("sanitizes timeout, rate-limit and malformed responses", async () => {
-    for (const fetcher of [
-      vi.fn().mockRejectedValue(new Error("secret")),
-      vi.fn().mockResolvedValue(new Response("secret", { status: 429 })),
-      vi.fn().mockResolvedValue(new Response("not-json")),
-    ]) {
+    for (const [fetcher, code] of [
+      [vi.fn().mockRejectedValue(new Error("secret")), "PLACES_UNAVAILABLE"],
+      [vi.fn().mockResolvedValue(new Response("secret", { status: 429 })), "PLACES_QUOTA_EXCEEDED"],
+      [vi.fn().mockResolvedValue(new Response("not-json")), "PLACES_UNAVAILABLE"],
+    ] as const) {
       await expect(
         createPlacesAdapter("secret", fetcher).search("Pho", location, 3000),
-      ).rejects.toMatchObject({ code: "PLACES_UNAVAILABLE" });
+      ).rejects.toMatchObject({ code });
     }
   });
 });

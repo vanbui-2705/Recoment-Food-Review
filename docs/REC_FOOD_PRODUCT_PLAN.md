@@ -107,6 +107,8 @@ Trạng thái: đã có API tìm kiếm/chi tiết món và ADMIN tạo/cập nh
 
 Trang chủ tự tải gợi ý hôm nay. Món đã chọn hoặc đã ăn bị loại trong đủ 96 giờ, kể cả món ghi nhận đã ăn hôm qua; lần chọn/ăn mới đặt lại thời gian chờ. Không tự nới bộ lọc khi hết món. Hồ sơ có dị ứng hiện trả thiếu dữ liệu an toàn vì chưa có bằng chứng theo từng quán. Chi tiết vận hành, API và test nằm trong [implementation](FOOD_DISCOVERY_IMPLEMENTATION.md).
 
+Đã bổ sung nguồn công thức tự động từ TheMealDB và Spoonacular: tìm món, nguyên liệu, từng bước nấu, liên kết nguồn/video nếu có, chọn nấu hôm nay và ghi món đã ăn. Trang chủ tải ý tưởng nấu ăn khi vào app; lịch sử món bên ngoài dùng cùng thời gian chờ 96 giờ qua tên chuẩn hóa và alias đã biết. Công thức chưa có giá/khẩu vị xác minh được hiển thị là ý tưởng nấu tại nhà. Xem [cấu hình API và giới hạn](EXTERNAL_FOOD_APIS.md).
+
 ### 3.4. Restaurants & Google Places
 
 Khi người dùng bấm vào món, hệ thống hiển thị:
@@ -131,6 +133,8 @@ places/
 ```
 
 Frontend không gọi Google API trực tiếp để tránh lộ key và bypass business rules.
+
+Đã có luồng nhập tên món/quán bất kỳ, không yêu cầu món có sẵn trong ngân hàng nội bộ, qua `GET /discovery/restaurants`. Kết nối Google Places, Goong, Foursquare Places hiện hành và Geoapify; chọn nguồn, bán kính, vị trí hiện tại/hồ sơ và chỉ quán xác nhận đang mở cửa. Kết quả giữ nguồn/attribution và phân biệt địa điểm liên quan từ khóa với nhà hàng gần vị trí. Chưa có bằng chứng thực đơn nên không khẳng định quán bán món hoặc bịa giá món. Frontend đã nối backend qua `/api`; toàn bộ key nằm trong `backend/.env`.
 
 ### 3.5. Recommendation Engine
 

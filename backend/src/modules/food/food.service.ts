@@ -6,6 +6,7 @@ import {
 import { createTasteProfileRepository } from "../taste-profile/taste-profile.repository.js";
 import { dishInclude } from "./food.repository.js";
 import { REPEAT_WINDOW_MS } from "./food.policy.js";
+import { foodIdentity } from "./food.identity.js";
 import { AppError } from "../../common/errors/app-error.js";
 type Candidate = {
   id: string;
@@ -62,7 +63,7 @@ export function createFoodService(prisma: PrismaClient) {
       const profile = await profiles.getProfile(userId);
       if (!profile?.onboardingCompleted)
         return { status: "ONBOARDING_REQUIRED", items: [], repeatAfterHours: 96 };
-      const [dishes, preferences, history] = await Promise.all([
+      const [dishes, preferences, history, recipeHistory] = await Promise.all([
         prisma.dish.findMany({
           include: dishInclude,
           where: { priceMin: { gte: profile.budgetMin }, priceMax: { lte: profile.budgetMax } },
@@ -78,6 +79,10 @@ export function createFoodService(prisma: PrismaClient) {
           },
           select: { dishId: true },
         }),
+        prisma.recipeInteraction.findMany({
+          where: { userId, createdAt: { gt: new Date(now.getTime() - REPEAT_WINDOW_MS) } },
+          select: { canonicalName: true },
+        }),
       ]);
       const liked = new Set(
         preferences.filter((p) => p.preference === "LIKED").map((p) => p.dishId),
@@ -86,6 +91,14 @@ export function createFoodService(prisma: PrismaClient) {
         preferences.filter((p) => p.preference === "DISLIKED").map((p) => p.dishId),
       );
       const recent = new Set(history.map((p) => p.dishId));
+      const recentNames = new Set(recipeHistory.map((p) => p.canonicalName));
+      for (const d of dishes) {
+        if (
+          recentNames.has(foodIdentity(d.name)) ||
+          d.aliases.some((a) => recentNames.has(foodIdentity(a.normalizedAlias)))
+        )
+          recent.add(d.id);
+      }
       const items = dishes
         .slice(0, 500)
         .filter((d) => candidateAllowed(d, profile, disliked, recent))

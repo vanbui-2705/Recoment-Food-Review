@@ -2,7 +2,13 @@ import { useState } from "react";
 import { apiRequest } from "../../profileApi";
 import { date, money } from "./foodUtils";
 
-export default function DishDetail({ dish, notice, onBack }) {
+export default function DishDetail({
+  dish,
+  notice,
+  onBack,
+  onFindRecipes,
+  onFindRestaurants,
+}) {
   const [places, setPlaces] = useState(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -44,6 +50,10 @@ export default function DishDetail({ dish, notice, onBack }) {
       <p className="food-eyebrow">{dish.cuisine.name}</p>
       <h1>{dish.name}</h1>
       <p>{dish.description}</p>
+      <div className="food-actions">
+        <button onClick={onFindRecipes}>Tìm hướng dẫn nấu món này</button>
+        <button onClick={onFindRestaurants}>Tìm quán từ tất cả nguồn</button>
+      </div>
       <section className="food-section">
         <h2>Kiến thức món ăn</h2>
         <p>
