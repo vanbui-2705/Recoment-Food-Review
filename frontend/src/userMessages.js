@@ -1,4 +1,6 @@
 const messages = {
+  EMAIL_NOT_CONFIGURED: "Dịch vụ email chưa được cấu hình. Chưa có email nào được gửi; bạn có thể thử lại sau khi dịch vụ được bật.",
+  EMAIL_LINK_INVALID: "Liên kết đã hết hạn hoặc đã được dùng. Hãy yêu cầu liên kết mới và mở email mới nhất.",
   LAST_ACTIVE_ADMIN: "Không thể khóa quản trị viên đang hoạt động cuối cùng. Hãy giữ ít nhất một tài khoản quản trị hoạt động.",
   USER_STATUS_CHANGED: "Tài khoản đã thay đổi ở phiên khác. Tải lại trạng thái và kiểm tra trước khi xác nhận.",
   USER_NOT_FOUND: "Tài khoản không còn trong danh sách. Hãy tải lại dữ liệu.",

@@ -4,6 +4,9 @@ import { loadAiConfig } from "./modules/ai/ai.config.js";
 import { createGeminiProvider } from "./modules/ai/ai.provider.js";
 import { createTasteAnalysisService } from "./modules/taste-analysis/taste-analysis.service.js";
 import { createChatService } from "./modules/chat/chat.service.js";
+import { loadEmailConfig } from "./modules/email/email.config.js";
+import { createEmailProvider } from "./modules/email/email.provider.js";
+import { createEmailService } from "./modules/email/email.service.js";
 
 const config = loadAiConfig();
 const app = buildApp({ logger: true });
@@ -21,18 +24,28 @@ try {
   await app.ready();
   const service = createTasteAnalysisService(app.prisma, config, createGeminiProvider(config));
   const chat = createChatService(app.prisma);
-  if (!config.workerEnabled || !service.configured) {
+  const emailConfig = loadEmailConfig();
+  const email = createEmailService(app.prisma, emailConfig, createEmailProvider(emailConfig));
+  if (!config.workerEnabled) {
     app.log.info(
       { enabled: config.workerEnabled, configured: service.configured },
-      "Taste analysis worker disabled",
+      "Background worker disabled",
     );
   } else {
-    app.log.info("Taste analysis worker started");
+    app.log.info(
+      {
+        analysisConfigured: service.configured,
+        chatConfigured: chat.configured,
+        emailConfigured: email.configured,
+      },
+      "Background worker started",
+    );
     while (!stopping) {
       let worked = false;
       try {
-        worked = await service.tick();
-        if (!stopping) worked = (await chat.tick()) || worked;
+        if (email.configured) worked = await email.tick();
+        if (!stopping && service.configured) worked = (await service.tick()) || worked;
+        if (!stopping && chat.configured) worked = (await chat.tick()) || worked;
       } catch {
         app.log.error({ code: "WORKER_TICK_FAILED" }, "Worker tick failed");
       }

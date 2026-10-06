@@ -1,0 +1,17 @@
+# Khôi phục mật khẩu và xác minh email
+
+07/10/2026 — checkpoint 60/86. Hoàn tất 11.2, 11.4, 11.5; adapter/retry của 11.3 đã có code và fake tests, chưa đóng mục vì chưa nghiệm thu gửi live bằng sender/key thật.
+
+POST /auth/forgot-password trả cùng ACCEPTED/message cho tài khoản tồn tại/không tồn tại/không hoạt động. Khi provider chưa cấu hình, mọi email nhận cùng 503 EMAIL_NOT_CONFIGURED; không giả vờ gửi. Rate limit trước lookup; hàng đợi giới hạn mỗi tài khoản/mục đích 5 yêu cầu/ngày và 60 giây giữa yêu cầu, khóa user trong transaction chống gửi đồng thời.
+
+POST /auth/resend-verification và alias /auth/email-verification lấy email của người đã xác thực; client không chọn người nhận. GET /auth/email-status trả email, thời điểm xác minh và capability. POST /auth/reset-password, /auth/verify-email validate purpose/expiry/token và rate limit. Đặt lại mật khẩu tăng authVersion, thu hồi mọi session cùng transaction. Token hết hạn 30 phút, single-use; đổi mật khẩu/khóa user làm token cũ không hợp lệ.
+
+UI có quên/đặt lại mật khẩu, xác minh có nút xác nhận để link scanner không tự tiêu thụ, và kiểm tra/yêu cầu xác minh trong tài khoản. Token ở fragment, được bỏ khỏi URL khi mở, chỉ giữ trong component memory và xóa khi thành công; không lưu trong storage/API URL. Giữ input khi thất bại; chỉ thành công mới xóa session local. Link hết hạn có giải thích và đường yêu cầu mới. Protected auth/session APIs refresh được; sai mật khẩu hiện tại không làm người dùng bị báo hết phiên.
+
+Migration additive 23 thêm hashed email_action_tokens và email_outbox unique token, lease/attempt/status invariants. Payload recipient/link mã hóa AES-256-GCM, nonce ngẫu nhiên, AAD theo outbox ID; không lưu plaintext link. Sent/permanent failure/cancelled xóa ciphertext. Worker kiểm tra token/user/version, SKIP LOCKED, lease 60 giây, tối đa 5 attempts, backoff 15/30/60/120 giây. Token hết hạn/đã dùng bị hủy và xóa payload.
+
+WORKER_ENABLED=true chạy email khi cấu hình email hợp lệ dù LLM_API_KEY trống. Web chỉ enqueue. Adapter dùng HTTPS endpoint cố định, timeout 10 giây, bounded response và không ghi body lỗi provider. Retry giữ payload/outbox ID/Idempotency-Key trong vòng expiry 30 phút. Nguồn chính thức: [POST /emails](https://resend.com/docs/api-reference/emails/send-email), [idempotency](https://resend.com/docs/dashboard/emails/idempotency-keys). Provider chấp nhận email không đồng nghĩa đã xác nhận email đến inbox.
+
+backend/.env.example liệt kê EMAIL_PROVIDER, RESEND_API_KEY, EMAIL_FROM (sender/domain đã xác minh), PUBLIC_APP_URL, EMAIL_ALLOWED_ORIGINS, EMAIL_OUTBOX_ENCRYPTION_KEY (32 byte/64 hex), EMAIL_TIMEOUT_MS. Origin phải khớp allowlist, không lấy Host header để dựng link. Production dùng HTTPS; HTTP chỉ cho loopback development/test. Encryption key độc lập JWT/API key; giữ ổn định khi có email pending, drain outbox trước khi đổi key. Chạy migration riêng rồi cấu hình sender/origin/secret và bật worker. Live smoke cần mailbox thật: forgot -> reset -> old sessions rejected; verify -> replay rejected. Chưa gửi email live trong đợt này.
+
+Backend build/lint qua, unit 65/65, PostgreSQL 108/108 (20 files), migration-from-empty 23 migration qua. Browser production toàn bộ 90/90 desktop/mobile. Docker backend/frontend plan-email đều build thành công. Provider fake chỉ ở tests; không reset quota thật hoặc gửi email thật. Privacy UI đã cập nhật data flows; export/delete/retention tiếp tục triển khai.

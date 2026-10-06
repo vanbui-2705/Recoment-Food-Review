@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { apiRequest } from "../../profileApi";
 import UserNotice from "./UserNotice";
+import AccountEmail from "./AccountEmail";
 
 export default function AccountSettings({ onSignedOut }) {
   const [name, setName] = useState("");
@@ -286,6 +287,7 @@ export default function AccountSettings({ onSignedOut }) {
           Đăng xuất tất cả thiết bị
         </button>
       </section>
+      <AccountEmail />
       {confirm && (
         <dialog
           ref={dialog}

@@ -14,6 +14,7 @@ import LuckyWheel from "./features/food/LuckyWheel";
 import UserNotice from "./features/food/UserNotice";
 import AdminPanel from "./features/food/AdminPanel";
 import AccountSettings from "./features/food/AccountSettings";
+import EmailRecovery from "./features/food/EmailRecovery";
 import RestaurantDetail, {
   restaurantTarget,
 } from "./features/food/RestaurantDetail";
@@ -34,6 +35,9 @@ const readScreen = () => {
     "restaurant",
     "admin",
     "account",
+    "forgot-password",
+    "reset-password",
+    "verify-email",
   ].includes(name)
     ? name
     : "today";
@@ -186,6 +190,22 @@ export default function FoodApp() {
         : `restaurant/place/${target.source}/${encodeURIComponent(target.id)}`,
     );
   };
+  if (["forgot-password", "reset-password", "verify-email"].includes(screen))
+    return (
+      <div className="food-shell">
+        {connectionNotice}
+        <EmailRecovery
+          key={screen}
+          screen={screen}
+          onPasswordReset={() => {
+            localStorage.removeItem(ACCESS_TOKEN_KEY);
+            sessionStorage.removeItem("food_refresh_token");
+            setSignedIn(false);
+            setSessionExpired(false);
+          }}
+        />
+      </div>
+    );
   if (!signedIn)
     return (
       <div className="food-shell">

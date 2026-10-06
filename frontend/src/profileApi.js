@@ -52,7 +52,19 @@ export async function apiRequest(path, options = {}, retry = true) {
   if (response.ok && responseType === "stream") return response;
   const payload =
     response.status === 204 ? null : await response.json().catch(() => null);
-  if (response.status === 401 && !path.startsWith("/auth/")) {
+  const publicAuthPath = [
+    "/auth/login",
+    "/auth/register",
+    "/auth/refresh",
+    "/auth/logout",
+    "/auth/forgot-password",
+    "/auth/reset-password",
+    "/auth/verify-email",
+  ].includes(path);
+  const currentPasswordFailure =
+    path === "/auth/change-password" &&
+    payload?.error?.code === "INVALID_CURRENT_PASSWORD";
+  if (response.status === 401 && !publicAuthPath && !currentPasswordFailure) {
     const refreshToken =
       retry && window.sessionStorage.getItem("food_refresh_token");
     if (refreshToken) {

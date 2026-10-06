@@ -619,3 +619,5 @@ body {
 .food-admin-account-list { display: grid; gap: 16px; margin: 20px 0; }
 .food-admin-account-list .food-panel { padding: 20px; background: #fffefa; border-radius: 18px; border: 1px solid #dce5d8; }
 .food-admin-account-list p, .food-admin-account-list pre { overflow-wrap: anywhere; white-space: pre-wrap; }
+.food-auth fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.food-auth > a { display: inline-block; margin-top: 16px; }

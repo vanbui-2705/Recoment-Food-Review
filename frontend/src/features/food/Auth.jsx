@@ -85,6 +85,7 @@ export default function Auth({ onLogin }) {
           {busy ? "Đang xử lý…" : register ? "Tạo tài khoản" : "Đăng nhập"}
         </button>
       </form>
+      {!register && <a href="#forgot-password">Quên mật khẩu?</a>}
       <button
         onClick={() => {
           setRegister(!register);

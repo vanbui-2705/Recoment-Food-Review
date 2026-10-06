@@ -24,9 +24,11 @@ export default function PublicLegal({ screen }) {
       <h1>Quyền riêng tư</h1>
       <p>
         Hồ sơ khẩu vị, vị trí và lịch sử lựa chọn được lưu để cá nhân hóa gợi ý.
-        GPS chỉ được yêu cầu khi bạn bấm lấy vị trí. Khi tìm quán, tên món và
-        tọa độ được gửi tới Google Maps; thông tin dị ứng và lịch sử ăn không
-        được gửi tới Google.
+        GPS chỉ được yêu cầu khi bạn bấm lấy vị trí. Khi tìm quán, từ khóa và
+        tọa độ được gửi đến nguồn tìm địa điểm đang bật: Google Maps, Goong,
+        Foursquare hoặc Geoapify. Khi tìm công thức, từ khóa được gửi đến
+        TheMealDB hoặc Spoonacular. Hồ sơ dị ứng đã lưu và nhật ký ăn không
+        được gửi trực tiếp đến các nguồn tìm quán.
       </p>
       <p>
         Google xử lý dữ liệu theo{" "}
@@ -39,6 +41,13 @@ export default function PublicLegal({ screen }) {
         </a>
         . Liên hệ đơn vị vận hành để yêu cầu truy cập hoặc xóa dữ liệu tài
         khoản.
+      </p>
+      <p>
+        Khi dùng phân tích khẩu vị hoặc chat, mô tả và nội dung liên quan có thể
+        được gửi đến dịch vụ AI để xử lý. Khi yêu cầu khôi phục mật khẩu hoặc
+        xác minh email, địa chỉ email và liên kết dùng một lần được gửi đến
+        dịch vụ email Resend nếu đã bật. Mật khẩu và hồ sơ khẩu vị không được
+        gửi đến dịch vụ email.
       </p>
     </>
   );

@@ -2,6 +2,17 @@ import { test, expect } from "@playwright/test";
 const id = "11111111-1111-4111-8111-111111111111",
   otherId = "22222222-2222-4222-8222-222222222222";
 test.beforeEach(async ({ page }) => {
+  await page.route("**/api/auth/email-status", (route) =>
+    route.fulfill({
+      json: {
+        data: {
+          email: "owner@example.com",
+          emailVerifiedAt: null,
+          configured: false,
+        },
+      },
+    }),
+  );
   await page.addInitScript(() =>
     localStorage.setItem("eatwise_access_token", "test-token"),
   );

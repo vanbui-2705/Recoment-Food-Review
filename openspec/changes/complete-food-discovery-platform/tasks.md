@@ -98,10 +98,10 @@
 ## 11. P6a — Tài khoản, email và riêng tư
 
 - [x] 11.1 Thêm UI đổi mật khẩu/profile name/session/logout-all dùng auth foundation; test session revocation.
-- [ ] 11.2 Migration hashed single-use email/reset tokens và email outbox; test expiry/replay/unique delivery.
+- [x] 11.2 Migration hashed single-use email/reset tokens và email outbox; test expiry/replay/unique delivery.
 - [ ] 11.3 Viết email adapter với validated config/origin allowlist và retry; fake tests trước, live delivery khi có key.
-- [ ] 11.4 Thêm forgot/reset/verify/resend APIs, rate limits và generic anti-enumeration responses.
-- [ ] 11.5 Tạo reset/verify/settings frontend flows và test expired link/retry/no provider.
+- [x] 11.4 Thêm forgot/reset/verify/resend APIs, rate limits và generic anti-enumeration responses.
+- [x] 11.5 Tạo reset/verify/settings frontend flows và test expired link/retry/no provider.
 - [ ] 11.6 Xây re-auth protected owner export/delete lifecycle, restricted-content filtering và session revocation.
 - [ ] 11.7 Implement retention/cleanup defaults và audit anonymization; test cooldown không mất do cleanup sớm.
 - [ ] 11.8 Cập nhật privacy/terms/account UX theo chức năng thật và Coming soon; E2E export/delete xác nhận rõ.
