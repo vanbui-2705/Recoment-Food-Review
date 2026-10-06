@@ -139,4 +139,64 @@ describe("private history pagination and confirmed deletion", () => {
       (await app.inject({ method: "GET", url: `${path}/deletion-preview`, headers })).statusCode,
     ).toBe(404);
   });
+  it("validates owned rating semantics, deduplicates concurrent feedback and previews cascade deletion", async () => {
+    const row = await app.prisma.userInteraction.findFirstOrThrow({ where: { userId, dishId } });
+    const path = `/users/me/history/DISH/${row.id}/feedback`;
+    const body = { type: "RATED", rating: 5, idempotencyKey: randomUUID() };
+    const rated = await Promise.all([
+      app.inject({ method: "POST", url: path, headers, payload: body }),
+      app.inject({ method: "POST", url: path, headers, payload: body }),
+    ]);
+    expect(rated.map((result) => result.statusCode)).toEqual([200, 200]);
+    expect(rated[0]!.json().data.id).toBe(rated[1]!.json().data.id);
+    expect(
+      (await app.inject({ method: "POST", url: path, headers: other, payload: body })).statusCode,
+    ).toBe(404);
+    expect(
+      (await app.inject({ method: "POST", url: path, headers, payload: { ...body, rating: 4 } }))
+        .statusCode,
+    ).toBe(409);
+    for (const invalid of [
+      { ...body, rating: 0 },
+      { ...body, rating: 6 },
+      { ...body, type: "LIKED" },
+      { type: "RATED", idempotencyKey: randomUUID() },
+    ])
+      expect(
+        (await app.inject({ method: "POST", url: path, headers, payload: invalid })).statusCode,
+      ).toBe(400);
+    const previewPath = `/users/me/history/DISH/${row.id}/deletion-preview`;
+    const preview = (await app.inject({ method: "GET", url: previewPath, headers })).json().data;
+    expect(preview.linkedFeedbackCount).toBe(1);
+    const changed = await app.inject({
+      method: "POST",
+      url: path,
+      headers,
+      payload: { type: "LIKED", idempotencyKey: randomUUID() },
+    });
+    expect(changed.statusCode).toBe(200);
+    expect(
+      (
+        await app.inject({
+          method: "DELETE",
+          url: `/users/me/history/DISH/${row.id}`,
+          headers,
+          payload: { confirm: true, expectedVersion: preview.expectedVersion },
+        })
+      ).statusCode,
+    ).toBe(409);
+    const latest = (await app.inject({ method: "GET", url: previewPath, headers })).json().data;
+    expect(latest.linkedFeedbackCount).toBe(2);
+    expect(
+      (
+        await app.inject({
+          method: "DELETE",
+          url: `/users/me/history/DISH/${row.id}`,
+          headers,
+          payload: { confirm: true, expectedVersion: latest.expectedVersion },
+        })
+      ).statusCode,
+    ).toBe(200);
+    expect(await app.prisma.userInteraction.count({ where: { feedbackOfId: row.id } })).toBe(0);
+  });
 });

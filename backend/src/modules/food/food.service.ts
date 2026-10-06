@@ -83,8 +83,12 @@ export function createFoodService(prisma: PrismaClient) {
           select: { dishId: true },
         }),
         prisma.recipeInteraction.findMany({
-          where: { userId, createdAt: { gt: new Date(now.getTime() - REPEAT_WINDOW_MS) } },
-          select: { canonicalName: true },
+          where: {
+            userId,
+            interactionType: { in: ["CHOSEN", "EATEN"] },
+            createdAt: { gt: new Date(now.getTime() - REPEAT_WINDOW_MS) },
+          },
+          select: { canonicalName: true, canonicalDishId: true },
         }),
       ]);
       const liked = new Set(
@@ -95,6 +99,9 @@ export function createFoodService(prisma: PrismaClient) {
       );
       const recent = new Set(history.map((p) => p.dishId));
       const recentNames = new Set(recipeHistory.map((p) => p.canonicalName));
+      recipeHistory.forEach((row) => {
+        if (row.canonicalDishId) recent.add(row.canonicalDishId);
+      });
       for (const d of dishes) {
         if (
           recentNames.has(foodIdentity(d.name)) ||

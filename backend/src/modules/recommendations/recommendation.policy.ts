@@ -61,6 +61,7 @@ export function diversify<T extends RankedCandidate>(candidates: T[], limit = 20
   return [...chosen, ...deferred].slice(0, limit);
 }
 export const groundedReasons = {
+  FEEDBACK_MATCH: "Phản hồi trước của bạn về món này khá tích cực",
   BUDGET_MATCH: "Giá thực đơn còn hạn, nằm trong ngân sách của bạn",
   NEARBY: "Quán nằm trong bán kính bạn chọn",
   TASTE_MATCH: "Gần với các mức vị đã lưu trong khẩu vị",

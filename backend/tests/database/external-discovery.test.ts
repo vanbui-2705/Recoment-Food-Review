@@ -3,6 +3,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { buildApp } from "../../src/app.js";
 import { createDiscoveryService } from "../../src/modules/discovery/discovery.service.js";
 import { REPEAT_WINDOW_MS } from "../../src/modules/food/food.policy.js";
+import { normalizeFoodText } from "../../src/modules/food/food.schema.js";
 const meal = {
   idMeal: "12",
   strMeal: "Test external soup",
@@ -104,5 +105,48 @@ describe("external discovery persistence and authorization", () => {
     fetcher.mockClear();
     expect((await service.today(userId)).status).toBe("INSUFFICIENT_SAFETY_DATA");
     expect(fetcher).not.toHaveBeenCalled();
+  });
+  it("keeps ambiguous recipe aliases separate and links only an unambiguous canonical dish", async () => {
+    await app.prisma.userAllergy.deleteMany({ where: { userId } });
+    const suffix = randomUUID(),
+      title = `Collision recipe ${suffix}`,
+      dishIds: string[] = [];
+    const oldMeal = { ...meal };
+    try {
+      const cuisine = await app.prisma.cuisine.findFirstOrThrow();
+      for (let i = 0; i < 2; i++) {
+        const dish = await app.prisma.dish.create({
+          data: {
+            slug: `recipe-collision-${suffix}-${i}`,
+            name: `Different dish ${suffix} ${i}`,
+            cuisineId: cuisine.id,
+            spicyLevel: 0,
+            sweetLevel: 0,
+            sourLevel: 0,
+            saltyLevel: 0,
+            priceMin: 1000,
+            priceMax: 50000,
+            aliases: { create: { alias: title, normalizedAlias: normalizeFoodText(title) } },
+          },
+        });
+        dishIds.push(dish.id);
+      }
+      meal.idMeal = "13";
+      meal.strMeal = title;
+      const ambiguous = await service.record(userId, "themealdb", "13", "CHOSEN", randomUUID());
+      expect(ambiguous.canonicalDishId).toBeNull();
+      expect(ambiguous.canonicalName).toBe("recipe:themealdb:13");
+      expect((await service.today(userId)).items).toHaveLength(0);
+      await app.prisma.dishAlias.deleteMany({ where: { dishId: dishIds[1] } });
+      meal.idMeal = "14";
+      const mapped = await service.record(userId, "themealdb", "14", "CHOSEN", randomUUID());
+      expect(mapped.canonicalDishId).toBe(dishIds[0]);
+    } finally {
+      Object.assign(meal, oldMeal);
+      await app.prisma.recipeInteraction.deleteMany({
+        where: { userId, recipeId: { in: ["13", "14"] } },
+      });
+      await app.prisma.dish.deleteMany({ where: { id: { in: dishIds } } });
+    }
   });
 });

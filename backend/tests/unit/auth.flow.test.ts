@@ -17,6 +17,7 @@ const user = {
   displayName: "Test User",
   role: "USER" as const,
   status: "ACTIVE" as const,
+  authVersion: 0,
   createdAt: new Date("2026-09-23T00:00:00.000Z"),
 };
 
@@ -96,6 +97,8 @@ describe("complete authentication flow", () => {
         expiresAt: new Date(Date.now() + 60_000),
         revokedAt: null,
         replacedByTokenId: null,
+        authVersion: 0,
+        familyId: "2a7b0c4d-3c7e-4bf7-9e92-4ce3e8a0f0c1",
         user,
       }),
     });

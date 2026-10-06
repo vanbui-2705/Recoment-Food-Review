@@ -6,6 +6,7 @@ import { createDiscoveryService } from "../discovery/discovery.service.js";
 import { distanceMeters, REPEAT_WINDOW_MS } from "../food/food.policy.js";
 import { foodIdentity } from "../food/food.identity.js";
 import { safetyDecision } from "../merchant-menu/safety.policy.js";
+import { feedbackScores, applyFeedback } from "./feedback.policy.js";
 import {
   diversify,
   loadRankingWeights,
@@ -118,8 +119,8 @@ export function createCandidateService(
           select: { dishId: true },
         }),
         prisma.recipeInteraction.findMany({
-          where: { userId, createdAt: { gt: since } },
-          select: { canonicalName: true },
+          where: { userId, interactionType: { in: ["CHOSEN", "EATEN"] }, createdAt: { gt: since } },
+          select: { canonicalName: true, canonicalDishId: true },
         }),
         providedPlaces
           ? Promise.resolve(providedPlaces)
@@ -131,7 +132,10 @@ export function createCandidateService(
       const liked = new Set(
         preferences.filter((item) => item.preference === "LIKED").map((item) => item.dishId),
       );
-      const recentIds = new Set(recent.map((item) => item.dishId)),
+      const recentIds = new Set([
+          ...recent.map((item) => item.dishId),
+          ...recipes.map((item) => item.canonicalDishId).filter((id) => id !== null),
+        ]),
         recentNames = new Set(recipes.map((item) => item.canonicalName));
       const constraints = {
         allergies: profile?.allergies.map((item) => item.code) ?? [],
@@ -140,6 +144,52 @@ export function createCandidateService(
             .filter((item) => item.isMandatory)
             .map((item) => item.code) ?? [],
       };
+      const feedbackSince = new Date(+now - 180 * 86400000);
+      const [dishFeedback, recipeFeedback] = await Promise.all([
+        prisma.userInteraction.findMany({
+          where: {
+            userId,
+            interactionType: { in: ["RATED", "LIKED", "SKIPPED"] },
+            createdAt: { gte: feedbackSince },
+          },
+          select: { id: true, dishId: true, interactionType: true, rating: true, createdAt: true },
+          orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+          take: 500,
+        }),
+        prisma.recipeInteraction.findMany({
+          where: {
+            userId,
+            interactionType: { in: ["RATED", "LIKED", "SKIPPED"] },
+            createdAt: { gte: feedbackSince },
+          },
+          select: {
+            id: true,
+            canonicalDishId: true,
+            canonicalName: true,
+            interactionType: true,
+            rating: true,
+            createdAt: true,
+          },
+          orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+          take: 500,
+        }),
+      ]);
+      const feedback = feedbackScores([
+        ...dishFeedback.map((row) => ({
+          key: `dish:${row.dishId}`,
+          type: row.interactionType,
+          rating: row.rating,
+          at: row.createdAt,
+          id: row.id,
+        })),
+        ...recipeFeedback.map((row) => ({
+          key: row.canonicalDishId ? `dish:${row.canonicalDishId}` : `name:${row.canonicalName}`,
+          type: row.interactionType,
+          rating: row.rating,
+          at: row.createdAt,
+          id: row.id,
+        })),
+      ]);
       let safetyBlocked = 0;
       const candidates = offers.slice(0, 500).flatMap((offer) => {
         const dish = offer.dish!;
@@ -195,20 +245,32 @@ export function createCandidateService(
                 ),
               )
             : 0;
-        const score = normalizedScore(
-          {
-            taste,
-            cuisine,
-            distance: 1 - distance / context.radius,
-            budget: 1 - offer.price / context.budget,
-            rating: live?.rating == null ? 0.5 : live.rating / 5,
-            novelty: liked.has(dish.id) ? 1 : 0.5,
-          },
-          weights,
+        const feedbackAdjustment = Math.max(
+          -0.3,
+          Math.min(
+            0.3,
+            (feedback.get(`dish:${dish.id}`) ?? 0) +
+              (feedback.get(`name:${foodIdentity(dish.name)}`) ?? 0),
+          ),
+        );
+        const score = applyFeedback(
+          normalizedScore(
+            {
+              taste,
+              cuisine,
+              distance: 1 - distance / context.radius,
+              budget: 1 - offer.price / context.budget,
+              rating: live?.rating == null ? 0.5 : live.rating / 5,
+              novelty: liked.has(dish.id) ? 1 : 0.5,
+            },
+            weights,
+          ),
+          feedbackAdjustment,
         );
         const reasons = [
           "BUDGET_MATCH",
           "NEARBY",
+          ...(feedbackAdjustment > 0 ? ["FEEDBACK_MATCH"] : []),
           ...(taste >= 0.8 && !pending && profile ? ["TASTE_MATCH"] : []),
           ...(cuisine > 0 ? ["CUISINE_MATCH"] : []),
           ...(liked.has(dish.id) ? ["LIKED"] : []),

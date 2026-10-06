@@ -1,7 +1,8 @@
 import { useState } from "react";
 import AdminMenu from "./AdminMenu";
 import AdminReports from "./AdminReports";
-export default function AdminPanel() {
+import AdminAccounts from "./AdminAccounts";
+export default function AdminPanel({ onSignedOut }) {
   const [tab, setTab] = useState("menu");
   return (
     <>
@@ -21,7 +22,31 @@ export default function AdminPanel() {
           Báo cáo dữ liệu
         </button>
       </nav>
-      {tab === "menu" ? <AdminMenu /> : <AdminReports />}
+      <nav aria-label="Quản lý truy cập" className="food-actions">
+        <button
+          onClick={() => setTab("users")}
+          aria-current={tab === "users" ? "page" : undefined}
+        >
+          Người dùng
+        </button>
+        <button
+          onClick={() => setTab("audit")}
+          aria-current={tab === "audit" ? "page" : undefined}
+        >
+          Nhật ký quản trị
+        </button>
+      </nav>
+      {tab === "menu" ? (
+        <AdminMenu />
+      ) : tab === "reports" ? (
+        <AdminReports />
+      ) : (
+        <AdminAccounts
+          key={tab}
+          audit={tab === "audit"}
+          onSignedOut={onSignedOut}
+        />
+      )}
     </>
   );
 }

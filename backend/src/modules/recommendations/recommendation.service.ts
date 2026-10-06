@@ -74,15 +74,23 @@ export function createRecommendationService(
         select: { dishId: true },
       }),
       prisma.recipeInteraction.findMany({
-        where: { userId, createdAt: { gt: new Date(+now - REPEAT_WINDOW_MS) } },
-        select: { canonicalName: true },
+        where: {
+          userId,
+          interactionType: { in: ["CHOSEN", "EATEN"] },
+          createdAt: { gt: new Date(+now - REPEAT_WINDOW_MS) },
+        },
+        select: { canonicalName: true, canonicalDishId: true },
       }),
       prisma.userDishPreference.findMany({
         where: { userId, preference: "DISLIKED" },
         select: { dishId: true },
       }),
     ]);
-    const blocked = new Set([...history, ...dislikes].map((item) => item.dishId)),
+    const blocked = new Set(
+        [...history, ...dislikes]
+          .map((item) => item.dishId)
+          .concat(recipes.flatMap((item) => (item.canonicalDishId ? [item.canonicalDishId] : []))),
+      ),
       names = new Set(recipes.map((item) => item.canonicalName));
     const profileCurrent =
       (note?.revision ?? 0) === (request.profileRevision ?? 0) &&

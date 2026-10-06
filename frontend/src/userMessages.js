@@ -1,4 +1,10 @@
 const messages = {
+  LAST_ACTIVE_ADMIN: "Không thể khóa quản trị viên đang hoạt động cuối cùng. Hãy giữ ít nhất một tài khoản quản trị hoạt động.",
+  USER_STATUS_CHANGED: "Tài khoản đã thay đổi ở phiên khác. Tải lại trạng thái và kiểm tra trước khi xác nhận.",
+  USER_NOT_FOUND: "Tài khoản không còn trong danh sách. Hãy tải lại dữ liệu.",
+  ACCOUNT_CHANGED: "Tài khoản đã thay đổi. Hãy đăng nhập lại trước khi tiếp tục.",
+  SESSION_NOT_FOUND: "Thiết bị không còn trong tài khoản của bạn. Hãy tải lại danh sách.",
+  INVALID_DISPLAY_NAME: "Tên hiển thị cần ít nhất 2 ký tự sau khi bỏ khoảng trắng thừa.",
   REPORT_NOT_FOUND:
     "Báo cáo không còn trong danh sách. Hãy tải lại để kiểm tra.",
   REPORT_TARGET_NOT_FOUND:

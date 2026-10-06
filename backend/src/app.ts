@@ -1,8 +1,10 @@
 import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import Fastify from "fastify";
+import { safeError, safeRequest } from "./common/observability/logging.js";
 
 import { registerErrorHandlers } from "./common/errors/error-handler.js";
 import { adminRoutes } from "./modules/admin/admin.route.js";
+import { adminUserRoutes } from "./modules/admin/admin.users.js";
 import { authRoutes } from "./modules/auth/auth.route.js";
 import { healthRoutes } from "./modules/health/health.route.js";
 import { tasteProfileRoutes } from "./modules/taste-profile/taste-profile.route.js";
@@ -28,7 +30,26 @@ export type BuildAppOptions = {
 
 export function buildApp(options: BuildAppOptions = {}) {
   const app = Fastify({
-    logger: options.logger ?? true,
+    logger:
+      (options.logger ?? true)
+        ? {
+            serializers: { req: safeRequest, err: safeError },
+            redact: {
+              paths: [
+                "req.headers.authorization",
+                "req.headers.cookie",
+                "res.headers.set-cookie",
+                "password",
+                "passwordHash",
+                "token",
+                "refreshToken",
+                "accessToken",
+                "apiKey",
+              ],
+              censor: "[REDACTED]",
+            },
+          }
+        : false,
     ajv: { customOptions: { removeAdditional: false } },
   }).withTypeProvider<TypeBoxTypeProvider>();
 
@@ -41,6 +62,7 @@ export function buildApp(options: BuildAppOptions = {}) {
     app.register(usersRoutes);
     app.register(tasteProfileRoutes);
     app.register(adminRoutes);
+    app.register(adminUserRoutes);
     app.register(foodRoutes);
     app.register(discoveryRoutes);
     app.register(personalFoodKnowledgeRoutes);

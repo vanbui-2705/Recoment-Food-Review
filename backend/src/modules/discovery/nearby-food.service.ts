@@ -86,8 +86,8 @@ export function createNearbyFoodService(
           select: { dishId: true },
         }),
         prisma.recipeInteraction.findMany({
-          where: { userId, createdAt: { gt: since } },
-          select: { canonicalName: true },
+          where: { userId, interactionType: { in: ["CHOSEN", "EATEN"] }, createdAt: { gt: since } },
+          select: { canonicalName: true, canonicalDishId: true },
         }),
         prisma.userDishPreference.findMany({
           where: { userId, preference: "DISLIKED" },
@@ -95,6 +95,9 @@ export function createNearbyFoodService(
         }),
       ]);
       const blockedIds = new Set([...history, ...preferences].map((row) => row.dishId));
+      recipeHistory.forEach((row) => {
+        if (row.canonicalDishId) blockedIds.add(row.canonicalDishId);
+      });
       const blockedNames = new Set(recipeHistory.map((row) => row.canonicalName));
       const [allergyCount, dietCount] = await Promise.all([
         prisma.userAllergy.count({ where: { userId } }),

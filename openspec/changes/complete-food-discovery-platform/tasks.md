@@ -78,18 +78,18 @@
 
 ## 9. P5 — Feedback và lịch sử
 
-- [ ] 9.1 Thêm offer/recipe feedback linkage tương thích foundation và API cũ; migration/tests rating semantics.
-- [ ] 9.2 Xây feedback endpoint validate owned results/types/rating/idempotency; test replay/conflict/isolation.
+- [x] 9.1 Thêm offer/recipe feedback linkage tương thích foundation và API cũ; migration/tests rating semantics.
+- [x] 9.2 Xây feedback endpoint validate owned results/types/rating/idempotency; test replay/conflict/isolation.
 - [x] 9.3 Thêm cursor history/filter/deletion API; test ownership và preview tác động cooldown.
 - [x] 9.4 Xây data-report schema/API/rate limit/status với source reference; test spam và malformed references.
-- [ ] 9.5 Gắn rating/skip/report/history controls vào frontend; test Google rating tách app rating.
-- [ ] 9.6 Đưa feedback vào soft ranking và test không sửa allergy/diet; regression cooldown sau xóa được xác nhận.
+- [x] 9.5 Gắn rating/skip/report/history controls vào frontend; test Google rating tách app rating.
+- [x] 9.6 Đưa feedback vào soft ranking và test không sửa allergy/diet; regression cooldown sau xóa được xác nhận.
 
 ## 10. P5 — Admin đầy đủ
 
 - [x] 10.1 Migration immutable/redacted admin audit và transactional writer; test rollback/no secret fields.
 - [ ] 10.2 Hoàn thiện content/catalog/restaurant/offer APIs với soft deactivate; test referenced history bảo toàn.
-- [ ] 10.3 Thêm user list/block/unblock/session revocation và last-admin guard; test access/refresh sau khóa.
+- [x] 10.3 Thêm user list/block/unblock/session revocation và last-admin guard; test access/refresh sau khóa.
 - [x] 10.4 Thêm report triage/resolve/reopen reason và audit; test lifecycle/race.
 - [ ] 10.5 Tạo ADMIN layout và views content/users/restaurants/reports/audit với pagination/error states.
 - [ ] 10.6 Gắn provider health/quota và retry sync vào admin, không render key; test USER bị 403 ở mọi write.
@@ -97,7 +97,7 @@
 
 ## 11. P6a — Tài khoản, email và riêng tư
 
-- [ ] 11.1 Thêm UI đổi mật khẩu/profile name/session/logout-all dùng auth foundation; test session revocation.
+- [x] 11.1 Thêm UI đổi mật khẩu/profile name/session/logout-all dùng auth foundation; test session revocation.
 - [ ] 11.2 Migration hashed single-use email/reset tokens và email outbox; test expiry/replay/unique delivery.
 - [ ] 11.3 Viết email adapter với validated config/origin allowlist và retry; fake tests trước, live delivery khi có key.
 - [ ] 11.4 Thêm forgot/reset/verify/resend APIs, rate limits và generic anti-enumeration responses.
@@ -110,7 +110,7 @@
 
 - [x] 12.1 Thêm frontend build/Playwright desktop-mobile và Docker checks vào CI; migration-from-empty regression.
 - [ ] 12.2 Tách web/worker/migration startup, flags và graceful shutdown; test deployment compatibility.
-- [ ] 12.3 Thêm DB-aware readiness, redacted request logging và metrics endpoint/access controls.
+- [x] 12.3 Thêm DB-aware readiness, redacted request logging và metrics endpoint/access controls.
 - [ ] 12.4 Instrument provider quota/errors, job backlog, LLM fallback/cost và no-match/latency; test sensitive data không xuất log.
 - [ ] 12.5 Xây atomic shared rate/quota counters và benchmark concurrency nhiều replica.
 - [ ] 12.6 Chuẩn bị TLS/CORS/secrets wiring và staging release scripts theo môi trường thực tế; không hardcode cloud credentials.

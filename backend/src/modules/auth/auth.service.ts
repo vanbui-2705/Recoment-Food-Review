@@ -1,4 +1,5 @@
 import { verify } from "argon2";
+import { randomUUID } from "node:crypto";
 
 import type { AppConfig } from "../../config/env.js";
 import { AppError } from "../../common/errors/app-error.js";
@@ -80,12 +81,15 @@ export function createAuthService(repository: AuthRepository, config?: AuthServi
   ): Promise<AuthSession> => {
     const tokenConfig = requireConfig();
     const opaqueRefreshToken = createRefreshToken();
+    const familyId = randomUUID();
     const refreshExpiresAt = new Date(
       Date.now() + tokenConfig.refreshTokenTtlDays * 24 * 60 * 60 * 1_000,
     );
 
     await repository.createRefreshToken({
       userId: user.id,
+      familyId,
+      authVersion: user.authVersion,
       tokenHash: opaqueRefreshToken.tokenHash,
       expiresAt: refreshExpiresAt,
       ...metadata,
@@ -94,7 +98,7 @@ export function createAuthService(repository: AuthRepository, config?: AuthServi
     return {
       user: toPublicUser(user),
       accessToken: await signAccessToken(
-        { userId: user.id, role: user.role },
+        { userId: user.id, role: user.role, authVersion: user.authVersion, sessionId: familyId },
         tokenConfig.jwtAccessSecret,
         tokenConfig.accessTokenTtlSeconds,
       ),
@@ -160,7 +164,8 @@ export function createAuthService(repository: AuthRepository, config?: AuthServi
         !storedToken ||
         storedToken.revokedAt ||
         refreshTokenExpired(storedToken.expiresAt) ||
-        storedToken.user.status !== "ACTIVE"
+        storedToken.user.status !== "ACTIVE" ||
+        storedToken.authVersion !== storedToken.user.authVersion
       ) {
         throw invalidCredentials();
       }
@@ -174,6 +179,8 @@ export function createAuthService(repository: AuthRepository, config?: AuthServi
         await repository.rotateRefreshToken({
           oldTokenId: storedToken.id,
           userId: storedToken.userId,
+          familyId: storedToken.familyId,
+          authVersion: storedToken.authVersion,
           tokenHash: replacement.tokenHash,
           expiresAt: replacementExpiresAt,
           ...metadata,
@@ -189,7 +196,12 @@ export function createAuthService(repository: AuthRepository, config?: AuthServi
       return {
         user: toPublicUser(storedToken.user),
         accessToken: await signAccessToken(
-          { userId: storedToken.user.id, role: storedToken.user.role },
+          {
+            userId: storedToken.user.id,
+            role: storedToken.user.role,
+            authVersion: storedToken.authVersion,
+            sessionId: storedToken.familyId,
+          },
           tokenConfig.jwtAccessSecret,
           tokenConfig.accessTokenTtlSeconds,
         ),
@@ -223,7 +235,11 @@ export function createAuthService(repository: AuthRepository, config?: AuthServi
         );
       }
 
-      await repository.changePassword(userId, await hashPassword(input.newPassword));
+      await repository.changePassword(
+        userId,
+        await hashPassword(input.newPassword),
+        user.passwordHash,
+      );
     },
 
     async getActiveUserById(userId: string): Promise<RegisteredUserRecord | null> {

@@ -13,6 +13,7 @@ import RecipeDetail from "./features/food/RecipeDetail";
 import LuckyWheel from "./features/food/LuckyWheel";
 import UserNotice from "./features/food/UserNotice";
 import AdminPanel from "./features/food/AdminPanel";
+import AccountSettings from "./features/food/AccountSettings";
 import RestaurantDetail, {
   restaurantTarget,
 } from "./features/food/RestaurantDetail";
@@ -32,6 +33,7 @@ const readScreen = () => {
     "recipe",
     "restaurant",
     "admin",
+    "account",
   ].includes(name)
     ? name
     : "today";
@@ -88,7 +90,14 @@ export default function FoodApp() {
         ),
       );
     window.addEventListener("food-choice-saved", chosen);
-    return () => window.removeEventListener("food-choice-saved", chosen);
+    const feedback = (event) => {
+      if (event.detail?.type === "SKIPPED") chosen(event);
+    };
+    window.addEventListener("food-feedback-saved", feedback);
+    return () => {
+      window.removeEventListener("food-choice-saved", chosen);
+      window.removeEventListener("food-feedback-saved", feedback);
+    };
   }, []);
   useEffect(() => {
     const expire = () => {
@@ -231,6 +240,12 @@ export default function FoodApp() {
           </button>
         )}
         <button
+          onClick={() => navigate("account")}
+          aria-current={screen === "account" ? "page" : undefined}
+        >
+          Tài khoản
+        </button>
+        <button
           onClick={async () => {
             try {
               await apiRequest("/auth/logout", {
@@ -252,7 +267,28 @@ export default function FoodApp() {
         </button>
       </header>
       <main className="food-main">
-        {screen === "admin" && <AdminPanel />}
+        {screen === "account" && (
+          <AccountSettings
+            onSignedOut={(text) => {
+              localStorage.removeItem(ACCESS_TOKEN_KEY);
+              sessionStorage.removeItem("food_refresh_token");
+              setSessionExpired(false);
+              setSignedIn(false);
+              setMessage(text);
+            }}
+          />
+        )}
+        {screen === "admin" && (
+          <AdminPanel
+            onSignedOut={(text) => {
+              localStorage.removeItem(ACCESS_TOKEN_KEY);
+              sessionStorage.removeItem("food_refresh_token");
+              setSessionExpired(false);
+              setSignedIn(false);
+              setMessage(text);
+            }}
+          />
+        )}
         {connectionNotice}
         {message && (
           <UserNotice tone="success" onDismiss={() => setMessage("")}>

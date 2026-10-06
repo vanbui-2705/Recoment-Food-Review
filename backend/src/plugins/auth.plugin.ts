@@ -15,6 +15,7 @@ export type AppRole = "USER" | "ADMIN";
 declare module "fastify" {
   interface FastifyRequest {
     authUser: AuthenticatedRequestUser | null;
+    authSessionId: string | null;
   }
 
   interface FastifyInstance {
@@ -33,6 +34,7 @@ export const authPlugin = fastifyPlugin(
     const repository = createAuthRepository(app.prisma);
 
     app.decorateRequest("authUser", null);
+    app.decorateRequest("authSessionId", null);
     app.decorate(
       "authenticate",
       async function authenticate(request: FastifyRequest): Promise<void> {
@@ -50,9 +52,18 @@ export const authPlugin = fastifyPlugin(
           const claims = await verifyAccessToken(accessToken, config.jwtAccessSecret);
           const user = await repository.findUserById(claims.userId);
 
-          if (!user || user.status !== "ACTIVE") {
+          if (!user || user.status !== "ACTIVE" || user.authVersion !== (claims.authVersion ?? 0)) {
             throw unauthorized();
           }
+
+          if (!claims.sessionId && user.legacyAccessDisabled) throw unauthorized();
+          if (
+            claims.sessionId &&
+            !(await repository.isSessionActive(user.id, claims.sessionId, user.authVersion))
+          ) {
+            throw unauthorized();
+          }
+          request.authSessionId = claims.sessionId ?? null;
 
           request.authUser = {
             id: user.id,

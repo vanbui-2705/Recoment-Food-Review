@@ -84,16 +84,31 @@ export function createDiscoveryService(
               { aliases: { some: { normalizedAlias: { in: names } } } },
             ],
           },
-          select: { name: true, aliases: { select: { normalizedAlias: true } } },
+          select: { id: true, name: true, aliases: { select: { normalizedAlias: true } } },
         })
       : [];
-    const aliases = new Map<string, string>();
+    const aliases = new Map<string, Map<string, { id: string; name: string }>>();
     for (const d of dishes) {
-      const canonical = foodIdentity(d.name);
-      aliases.set(normalizeFoodText(d.name), canonical);
-      d.aliases.forEach((a) => aliases.set(a.normalizedAlias, canonical));
+      for (const name of [normalizeFoodText(d.name), ...d.aliases.map((a) => a.normalizedAlias)]) {
+        const matches = aliases.get(name) ?? new Map();
+        matches.set(d.id, d);
+        aliases.set(name, matches);
+      }
     }
-    return (title: string) => aliases.get(normalizeFoodText(title)) ?? foodIdentity(title);
+    const resolve = (title: string) => {
+      const matches = aliases.get(normalizeFoodText(title));
+      return matches?.size === 1 ? [...matches.values()][0]! : null;
+    };
+    return Object.assign(
+      (title: string) => {
+        const dish = resolve(title);
+        return dish ? foodIdentity(dish.name) : foodIdentity(title);
+      },
+      {
+        resolve,
+        ambiguous: (title: string) => (aliases.get(normalizeFoodText(title))?.size ?? 0) > 1,
+      },
+    );
   };
   const searchRecipes = async (query: string, source?: RecipeSource, day?: number) => {
     const result = await collectSources(
@@ -206,8 +221,12 @@ export function createDiscoveryService(
       const [result, recent, localRecent, dislikes] = await Promise.all([
         searchRecipes("", undefined, day),
         prisma.recipeInteraction.findMany({
-          where: { userId, createdAt: { gt: new Date(now.getTime() - REPEAT_WINDOW_MS) } },
-          select: { canonicalName: true },
+          where: {
+            userId,
+            interactionType: { in: ["CHOSEN", "EATEN"] },
+            createdAt: { gt: new Date(now.getTime() - REPEAT_WINDOW_MS) },
+          },
+          select: { canonicalName: true, canonicalDishId: true, source: true, recipeId: true },
         }),
         prisma.userInteraction.findMany({
           where: {
@@ -223,6 +242,10 @@ export function createDiscoveryService(
         }),
       ]);
       const blocked = new Set(recent.map((r) => r.canonicalName));
+      const blockedDishIds = new Set(
+        recent.map((row) => row.canonicalDishId).filter((id) => id !== null),
+      );
+      const blockedRecipeIds = new Set(recent.map((row) => `${row.source}:${row.recipeId}`));
       for (const r of [...localRecent, ...dislikes]) {
         blocked.add(foodIdentity(r.dish.name));
         r.dish.aliases.forEach((a) => blocked.add(foodIdentity(a.normalizedAlias)));
@@ -233,7 +256,12 @@ export function createDiscoveryService(
           .digest("hex");
       const canonical = await canonicalNames(result.items.map((r) => r.title));
       const items = result.items
-        .filter((r) => !blocked.has(canonical(r.title)))
+        .filter(
+          (r) =>
+            !blockedRecipeIds.has(`${r.source}:${r.id}`) &&
+            !blockedDishIds.has(canonical.resolve(r.title)?.id ?? "") &&
+            !blocked.has(canonical(r.title)),
+        )
         .sort((a, b) => rank(a).localeCompare(rank(b)))
         .slice(0, 12);
       return {
@@ -278,7 +306,10 @@ export function createDiscoveryService(
             source,
             recipeId: id,
             title: recipe!.title,
-            canonicalName: canonical!(recipe!.title),
+            canonicalName: canonical!.ambiguous(recipe!.title)
+              ? `recipe:${source}:${id}`
+              : canonical!(recipe!.title),
+            canonicalDishId: canonical!.resolve(recipe!.title)?.id ?? null,
             interactionType: type,
             idempotencyKey,
             createdAt,

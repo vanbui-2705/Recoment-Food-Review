@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { apiRequest } from "../../profileApi";
+import FeedbackControls from "./FeedbackControls";
 import { money } from "./foodUtils";
 import PlacePhoto from "./PlacePhoto";
 import { sourceNames } from "./Discovery";
@@ -419,6 +420,27 @@ export default function NearbyFood({
                         : `${item.rating}/5 (${item.ratingCount || 0} đánh giá quán)`}
                     </p>
                     <p>{item.address}</p>
+                    {item.offerId && data.id && (
+                      <FeedbackControls
+                        path={`/recommendations/${data.id}/feedback`}
+                        resultId={item.id}
+                        dishId={item.dishId}
+                        canonicalName={item.canonicalName}
+                        onSaved={(type) => {
+                          if (type === "SKIPPED")
+                            setData((old) =>
+                              old
+                                ? {
+                                    ...old,
+                                    items: old.items.filter(
+                                      (row) => row.dishId !== item.dishId,
+                                    ),
+                                  }
+                                : old,
+                            );
+                        }}
+                      />
+                    )}
                     <div className="food-actions">
                       <button
                         className="food-primary"

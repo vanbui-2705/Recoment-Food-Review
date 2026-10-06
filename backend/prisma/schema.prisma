@@ -100,6 +100,8 @@ model User {
   displayName            String                   @map("display_name") @db.VarChar(100)
   role                   UserRole                 @default(USER)
   status                 UserStatus               @default(ACTIVE)
+  authVersion            Int                      @default(0) @map("auth_version")
+  legacyAccessDisabled   Boolean                  @default(false) @map("legacy_access_disabled")
   emailVerifiedAt        DateTime?                @map("email_verified_at") @db.Timestamptz(3)
   createdAt              DateTime                 @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt              DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(3)
@@ -189,6 +191,8 @@ model ChatEvent {
 model RefreshToken {
   id                String        @id @default(uuid()) @db.Uuid
   userId            String        @map("user_id") @db.Uuid
+  familyId          String        @map("family_id") @db.Uuid
+  authVersion       Int           @default(0) @map("auth_version")
   tokenHash         String        @unique @map("token_hash")
   expiresAt         DateTime      @map("expires_at") @db.Timestamptz(3)
   revokedAt         DateTime?     @map("revoked_at") @db.Timestamptz(3)
@@ -202,6 +206,7 @@ model RefreshToken {
   replaces          RefreshToken? @relation("TokenReplacement")
 
   @@index([userId, expiresAt])
+  @@index([userId, familyId, revokedAt])
   @@map("refresh_tokens")
 }
 
@@ -340,6 +345,7 @@ model Dish {
   recommendationResults RecommendationResult[]
   interactions          UserInteraction[]
   externalOffers        ExternalMenuItem[]
+  recipeInteractions    RecipeInteraction[]
 
   @@index([cuisineId])
   @@map("dishes")
@@ -518,6 +524,9 @@ model UserInteraction {
   restaurantId           String?               @map("restaurant_id") @db.Uuid
   interactionType        UserInteractionType   @map("interaction_type")
   rating                 Int?                  @db.SmallInt
+  feedbackOfId           String?               @map("feedback_of_id") @db.Uuid
+  feedbackOf             UserInteraction?      @relation("DishHistoryFeedback", fields: [feedbackOfId], references: [id], onDelete: Cascade)
+  feedback               UserInteraction[]     @relation("DishHistoryFeedback")
   idempotencyKey         String                @unique @map("idempotency_key") @db.VarChar(255)
   createdAt              DateTime              @default(now()) @map("created_at") @db.Timestamptz(3)
   user                   User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -527,6 +536,7 @@ model UserInteraction {
 
   @@index([userId, createdAt(sort: Desc)])
   @@index([recommendationResultId])
+  @@index([feedbackOfId, createdAt(sort: Desc)])
   @@index([dishId])
   @@index([restaurantId])
   @@map("user_interactions")
@@ -540,6 +550,12 @@ model RecipeInteraction {
   recipeId        String              @map("recipe_id") @db.VarChar(30)
   title           String              @db.VarChar(200)
   canonicalName   String              @map("canonical_name") @db.VarChar(200)
+  canonicalDishId String?             @map("canonical_dish_id") @db.Uuid
+  canonicalDish   Dish?               @relation(fields: [canonicalDishId], references: [id], onDelete: Restrict)
+  rating          Int?                @db.SmallInt
+  feedbackOfId    String?             @map("feedback_of_id") @db.Uuid
+  feedbackOf      RecipeInteraction?  @relation("RecipeHistoryFeedback", fields: [feedbackOfId], references: [id], onDelete: Cascade)
+  feedback        RecipeInteraction[] @relation("RecipeHistoryFeedback")
   interactionType UserInteractionType @map("interaction_type")
   idempotencyKey  String              @unique @map("idempotency_key") @db.VarChar(255)
   createdAt       DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
@@ -547,6 +563,8 @@ model RecipeInteraction {
 
   @@index([userId, createdAt(sort: Desc)])
   @@index([userId, canonicalName])
+  @@index([canonicalDishId])
+  @@index([feedbackOfId, createdAt(sort: Desc)])
   @@map("recipe_interactions")
 }
 

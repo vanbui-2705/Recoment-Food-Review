@@ -1,0 +1,4 @@
+ALTER TABLE user_interactions DROP CONSTRAINT user_interactions_feedback_of_id_fkey;
+ALTER TABLE user_interactions ADD CONSTRAINT user_interactions_feedback_of_id_fkey FOREIGN KEY(feedback_of_id) REFERENCES user_interactions(id) ON DELETE CASCADE;
+ALTER TABLE recipe_interactions DROP CONSTRAINT recipe_interactions_feedback_of_id_fkey;
+ALTER TABLE recipe_interactions ADD CONSTRAINT recipe_interactions_feedback_of_id_fkey FOREIGN KEY(feedback_of_id) REFERENCES recipe_interactions(id) ON DELETE CASCADE;

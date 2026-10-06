@@ -1,4 +1,5 @@
 import type { FastifyPluginAsyncTypebox } from "@fastify/type-provider-typebox";
+import { Type } from "typebox";
 
 import { loadEnv } from "../../config/env.js";
 import { createRateLimitHook } from "../../common/security/rate-limit.js";
@@ -21,9 +22,9 @@ function requestMetadata(request: {
 
   const metadata: { userAgent?: string; ipAddress: string } = { ipAddress: request.ip };
   if (typeof userAgent === "string") {
-    metadata.userAgent = userAgent;
+    metadata.userAgent = userAgent.slice(0, 500);
   } else if (Array.isArray(userAgent) && userAgent[0]) {
-    metadata.userAgent = userAgent[0];
+    metadata.userAgent = userAgent[0].slice(0, 500);
   }
 
   return metadata;
@@ -138,6 +139,55 @@ export const authRoutes: FastifyPluginAsyncTypebox = async function authRoutes(a
       }
 
       await service.changePassword(request.authUser.id, request.body);
+      return reply.status(204).send();
+    },
+  );
+
+  const sessionLimit = createRateLimitHook({
+    keyPrefix: "auth-session-management",
+    limit: 40,
+    windowMs: 60_000,
+  });
+  app.get(
+    "/auth/sessions",
+    { preHandler: [app.authenticate, sessionLimit] },
+    async (req, reply) => {
+      reply.header("Cache-Control", "no-store");
+      const items = await repository.listSessions(req.authUser!.id);
+      return {
+        data: {
+          items: items.map(({ familyId, userAgent, ...item }) => ({
+            id: familyId,
+            device: (userAgent ?? "Thiết bị không xác định").slice(0, 200),
+            current: req.authSessionId === familyId,
+            ...item,
+          })),
+          limit: 50,
+        },
+      };
+    },
+  );
+  app.delete(
+    "/auth/sessions/:id",
+    {
+      preHandler: [app.authenticate, sessionLimit],
+      schema: {
+        params: Type.Object(
+          { id: Type.String({ format: "uuid" }) },
+          { additionalProperties: false },
+        ),
+      },
+    },
+    async (req, reply) => {
+      await repository.revokeSession(req.authUser!.id, req.params.id);
+      return reply.status(204).send();
+    },
+  );
+  app.post(
+    "/auth/logout-all",
+    { preHandler: [app.authenticate, sessionLimit] },
+    async (req, reply) => {
+      await repository.logoutAll(req.authUser!.id);
       return reply.status(204).send();
     },
   );

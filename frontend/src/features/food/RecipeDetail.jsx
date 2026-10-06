@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { apiRequest } from "../../profileApi";
 import ReportData from "./ReportData";
+import FeedbackControls from "./FeedbackControls";
 import { sourceNames } from "./Discovery";
 
 export default function RecipeDetail({
@@ -12,6 +13,7 @@ export default function RecipeDetail({
   const [recipe, setRecipe] = useState(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [historyRecord, setHistoryRecord] = useState(null);
   const [checked, setChecked] = useState(new Set());
   const [step, setStep] = useState(0);
   const [reload, setReload] = useState(0);
@@ -19,6 +21,7 @@ export default function RecipeDetail({
   useEffect(() => {
     let active = true;
     setRecipe(null);
+    setHistoryRecord(null);
     setError("");
     setChecked(new Set());
     setStep(0);
@@ -53,9 +56,13 @@ export default function RecipeDetail({
         { method: "POST", body: JSON.stringify(pending.current.get(action)) },
       );
       pending.current.delete(action);
+      setHistoryRecord(recorded.data);
       window.dispatchEvent(
         new CustomEvent("food-choice-saved", {
-          detail: { canonicalName: recorded?.data?.canonicalName },
+          detail: {
+            canonicalName: recorded?.data?.canonicalName,
+            dishId: recorded?.data?.canonicalDishId,
+          },
         }),
       );
       notice(
@@ -182,6 +189,13 @@ export default function RecipeDetail({
               )}
             </div>
           </section>
+          {historyRecord?.id && (
+            <FeedbackControls
+              path={`/users/me/history/RECIPE/${historyRecord.id}/feedback`}
+              dishId={historyRecord.canonicalDishId}
+              canonicalName={historyRecord.canonicalName}
+            />
+          )}
           <div className="food-actions">
             <ReportData
               target={{ kind: "RECIPE", source: recipe.source, id: recipe.id }}

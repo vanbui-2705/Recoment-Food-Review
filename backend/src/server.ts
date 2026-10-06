@@ -2,6 +2,7 @@ import "dotenv/config";
 
 import { buildApp } from "./app.js";
 import { loadEnv } from "./config/env.js";
+import { safeError } from "./common/observability/logging.js";
 
 const config = loadEnv();
 const app = buildApp({ logger: true });
@@ -15,7 +16,7 @@ async function start(): Promise<void> {
 
     app.log.info({ address, environment: config.nodeEnv }, "Server started");
   } catch (error) {
-    app.log.error({ err: error }, "Could not start server");
+    app.log.error({ failure: safeError(error) }, "Could not start server");
     process.exitCode = 1;
   }
 }
@@ -26,7 +27,7 @@ async function shutdown(signal: NodeJS.Signals): Promise<void> {
   try {
     await app.close();
   } catch (error) {
-    app.log.error({ err: error }, "Graceful shutdown failed");
+    app.log.error({ failure: safeError(error) }, "Graceful shutdown failed");
     process.exitCode = 1;
   }
 }

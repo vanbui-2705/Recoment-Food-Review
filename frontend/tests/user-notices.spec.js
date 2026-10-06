@@ -15,8 +15,11 @@ test.beforeEach(async ({ page }) => {
 test("keeps offline warning until reconnect and allows dismissing the recovery notice", async ({
   page,
 }) => {
-  await page.route("**/api/users/me/*-history", (r) =>
+  await page.route("**/api/users/me/history?**", (r) =>
     r.fulfill({ json: { data: { items: [] } } }),
+  );
+  await page.route("**/api/users/me/data-reports?**", (r) =>
+    r.fulfill({ json: { data: { items: [], total: 0, page: 1, limit: 10 } } }),
   );
   await page.goto("/");
   await page.evaluate(() => window.dispatchEvent(new Event("offline")));

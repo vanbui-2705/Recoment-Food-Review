@@ -396,19 +396,29 @@ describe("verified recommendation ownership and hard filters", () => {
       where: { userId },
       data: { analyzedRevision: 1 },
     });
-    const stale = createRecommendationService(app.prisma, {}, fetch, {
-      configured: true,
-      model: "test",
-      generate: async (_instruction, input) => {
-        await app.prisma.personalFoodKnowledge.update({ where: { userId }, data: { revision: 2 } });
-        return {
-          items: (input as Array<{ id: string }>).map((item) => ({
-            id: item.id,
-            reasonCodes: ["BUDGET_MATCH"],
-          })),
-        };
+    // This is an injected fake model, not a live provider; repeated regression runs
+    // must exercise revision CAS independently of the real daily quota.
+    const stale = createRecommendationService(
+      app.prisma,
+      { LLM_DAILY_REQUEST_LIMIT: "100000" },
+      fetch,
+      {
+        configured: true,
+        model: "test",
+        generate: async (_instruction, input) => {
+          await app.prisma.personalFoodKnowledge.update({
+            where: { userId },
+            data: { revision: 2 },
+          });
+          return {
+            items: (input as Array<{ id: string }>).map((item) => ({
+              id: item.id,
+              reasonCodes: ["BUDGET_MATCH"],
+            })),
+          };
+        },
       },
-    });
+    );
     await expect(
       stale.recommend(userId, { ...context, idempotencyKey: randomUUID() }),
     ).rejects.toMatchObject({ code: "RECOMMENDATION_PROFILE_CHANGED" });
@@ -450,5 +460,81 @@ describe("verified recommendation ownership and hard filters", () => {
     expect(
       (await app.prisma.tasteProfile.findUniqueOrThrow({ where: { userId } })).updatedAt,
     ).toEqual(before.updatedAt);
+  });
+  it("uses recipe ratings only as soft feedback, preserves canonical identity after rename and keeps allergy gates", async () => {
+    await app.prisma.userInteraction.deleteMany({ where: { userId } });
+    await app.prisma.recipeInteraction.deleteMany({ where: { userId } });
+    const base = (await candidate.pool(userId, context)).items.find(
+      (item) => item.dishId === dishId,
+    )!;
+    expect(base).toBeDefined();
+    const parent = await app.prisma.recipeInteraction.create({
+      data: {
+        userId,
+        source: "themealdb",
+        recipeId: "9",
+        title: "Old canonical title",
+        canonicalName: "old title",
+        canonicalDishId: dishId,
+        interactionType: "EATEN",
+        createdAt: new Date(Date.now() - 97 * 3600000),
+        idempotencyKey: randomUUID(),
+      },
+    });
+    const path = `/users/me/history/RECIPE/${parent.id}/feedback`,
+      payload = { type: "RATED", rating: 5, idempotencyKey: randomUUID() };
+    const profileBefore = await app.prisma.tasteProfile.findUniqueOrThrow({ where: { userId } });
+    expect((await app.inject({ method: "POST", url: path, headers, payload })).statusCode).toBe(
+      200,
+    );
+    const rated = (await candidate.pool(userId, context)).items.find(
+      (item) => item.dishId === dishId,
+    )!;
+    expect(rated.score).toBe(base.score + 2);
+    expect(await app.prisma.tasteProfile.findUniqueOrThrow({ where: { userId } })).toEqual(
+      profileBefore,
+    );
+    const offer = await app.prisma.externalMenuItem.findUniqueOrThrow({
+      where: { id: base.offerId },
+      include: { evidence: true },
+    });
+    const allergen = await app.prisma.allergen.findFirstOrThrow({
+      where: { code: { notIn: offer.evidence.map((fact) => fact.code) } },
+    });
+    await app.prisma.userAllergy.create({
+      data: { userId, allergenId: allergen.id, severity: "SEVERE" },
+    });
+    expect(
+      (await candidate.pool(userId, context)).items.some((item) => item.dishId === dishId),
+    ).toBe(false);
+    await app.prisma.userAllergy.deleteMany({ where: { userId } });
+    await app.prisma.recipeInteraction.update({
+      where: { id: parent.id },
+      data: { createdAt: new Date(Date.now() - 3600000) },
+    });
+    expect(
+      (await candidate.pool(userId, context)).items.some((item) => item.dishId === dishId),
+    ).toBe(false);
+    const preview = (
+      await app.inject({
+        method: "GET",
+        url: `/users/me/history/RECIPE/${parent.id}/deletion-preview`,
+        headers,
+      })
+    ).json().data;
+    expect(preview.linkedFeedbackCount).toBe(1);
+    expect(
+      (
+        await app.inject({
+          method: "DELETE",
+          url: `/users/me/history/RECIPE/${parent.id}`,
+          headers,
+          payload: { confirm: true, expectedVersion: preview.expectedVersion },
+        })
+      ).statusCode,
+    ).toBe(200);
+    expect(
+      (await candidate.pool(userId, context)).items.find((item) => item.dishId === dishId)?.score,
+    ).toBe(base.score);
   });
 });

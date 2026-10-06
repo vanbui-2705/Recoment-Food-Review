@@ -505,6 +505,19 @@ body {
 .food-chat-text {
   white-space: pre-wrap;
 }
+.food-feedback {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--food-line);
+  border-radius: 12px;
+  margin: 16px 0;
+}
+.food-feedback > button {
+  margin: 8px 8px 0 0;
+}
+.food-feedback select {
+  max-width: 100%;
+}
 .food-chat-history > div {
   display: flex;
   gap: 8px;
@@ -593,3 +606,16 @@ body {
 .food-card {
   overflow-wrap: anywhere;
 }
+.food-account { max-width: 780px; margin: 0 auto; }
+.food-account .food-panel { margin: 24px 0; padding: 24px; border: 1px solid #dce5d8; border-radius: 20px; background: #fffefa; }
+.food-account label { display: grid; gap: 8px; margin: 16px 0; }
+.food-account input { width: 100%; min-width: 0; }
+.food-account fieldset { border: 0; padding: 0; margin: 0; }
+.food-session-list { list-style: none; padding: 0; }
+.food-session-list li { display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; border-top: 1px solid #dce5d8; padding: 18px 0; }
+.food-session-list li > div { flex: 1; min-width: 180px; }
+.food-session-list p { overflow-wrap: anywhere; font-size: .85rem; }
+@media (max-width: 600px) { .food-header { flex-wrap: wrap; } .food-account .food-panel { padding: 18px; } }
+.food-admin-account-list { display: grid; gap: 16px; margin: 20px 0; }
+.food-admin-account-list .food-panel { padding: 20px; background: #fffefa; border-radius: 18px; border: 1px solid #dce5d8; }
+.food-admin-account-list p, .food-admin-account-list pre { overflow-wrap: anywhere; white-space: pre-wrap; }

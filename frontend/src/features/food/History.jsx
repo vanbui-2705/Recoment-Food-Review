@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { apiRequest } from "../../profileApi";
 import { date } from "./foodUtils";
 import ReportHistory from "./ReportHistory";
+import FeedbackControls from "./FeedbackControls";
 
 export default function History() {
   const [items, setItems] = useState([]),
@@ -159,6 +160,24 @@ export default function History() {
       {items.map((item) => (
         <article className="food-place" key={`${item.kind}:${item.id}`}>
           <h2>{item.title}</h2>
+          {item.appRating != null && (
+            <p>Đánh giá của bạn trên EatWise: {item.appRating}/5 sao</p>
+          )}
+          <FeedbackControls
+            path={`/users/me/history/${item.kind}/${item.id}/feedback`}
+            dishId={item.dishId || item.canonicalDishId}
+            initialRating={item.appRating}
+            onSaved={(type, result) => {
+              if (type === "RATED")
+                setItems((old) =>
+                  old.map((row) =>
+                    row.id === item.id && row.kind === item.kind
+                      ? { ...row, appRating: result.rating }
+                      : row,
+                  ),
+                );
+            }}
+          />
           <p>
             {item.kind === "RECIPE" ? "Nấu tại nhà" : "Món tại quán"} ·{" "}
             {item.interactionType === "CHOSEN" ? "Đã chọn" : "Đã ăn"} ·{" "}
@@ -217,6 +236,12 @@ export default function History() {
               </p>
             )}
             <p>Thao tác này không thể hoàn tác.</p>
+            {preview.linkedFeedbackCount > 0 && (
+              <p>
+                {preview.linkedFeedbackCount} phản hồi sao/thích/bỏ qua gắn với
+                bản ghi này cũng sẽ bị xóa và không còn ảnh hưởng thứ tự gợi ý.
+              </p>
+            )}
             {deleteError && (
               <p role="alert" className="food-error">
                 {deleteError}

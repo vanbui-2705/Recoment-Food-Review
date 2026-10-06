@@ -57,6 +57,13 @@ export function createHistoryService(prisma: PrismaClient) {
               id: true,
               createdAt: true,
               interactionType: true,
+              dishId: true,
+              feedback: {
+                where: { userId, interactionType: "RATED" },
+                select: { rating: true },
+                orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+                take: 1,
+              },
               dish: { select: { name: true } },
             },
             orderBy: [{ createdAt: "desc" }, { id: "desc" }],
@@ -73,6 +80,13 @@ export function createHistoryService(prisma: PrismaClient) {
               title: true,
               source: true,
               recipeId: true,
+              canonicalDishId: true,
+              feedback: {
+                where: { userId, interactionType: "RATED" },
+                select: { rating: true },
+                orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+                take: 1,
+              },
             },
             orderBy: [{ createdAt: "desc" }, { id: "desc" }],
             take: limit + 1,
@@ -85,9 +99,11 @@ export function createHistoryService(prisma: PrismaClient) {
       (a, b) =>
         +b.createdAt - +a.createdAt || b.kind.localeCompare(a.kind) || b.id.localeCompare(a.id),
     );
-    const items = all
-      .slice(0, limit)
-      .map((row) => ({ ...row, eligibleAgainAt: new Date(+row.createdAt + REPEAT_WINDOW_MS) }));
+    const items = all.slice(0, limit).map(({ feedback, ...row }) => ({
+      ...row,
+      appRating: feedback[0]?.rating ?? null,
+      eligibleAgainAt: new Date(+row.createdAt + REPEAT_WINDOW_MS),
+    }));
     const last = items.at(-1);
     return {
       items,
@@ -115,6 +131,7 @@ export function createHistoryService(prisma: PrismaClient) {
         ? [targetDish.dish.name, ...targetDish.dish.aliases.map((a) => a.alias)].map(foodIdentity)
         : [targetRecipe!.canonicalName],
     );
+    const canonicalDishId = targetDish?.dishId ?? targetRecipe?.canonicalDishId;
     const since = new Date(+now - REPEAT_WINDOW_MS);
     // Read predicates inside the deletion transaction too: a concurrent new meal
     // must trigger serialization retry rather than silently changing this preview.
@@ -128,15 +145,22 @@ export function createHistoryService(prisma: PrismaClient) {
     const related = [
       ...dishes
         .filter((row) =>
-          targetDish
-            ? row.dishId === targetDish.dishId
+          canonicalDishId
+            ? row.dishId === canonicalDishId
             : [row.dish.name, ...row.dish.aliases.map((a) => a.alias)]
                 .map(foodIdentity)
                 .some((name) => names.has(name)),
         )
         .map((row) => ({ id: row.id, kind: "DISH", at: row.createdAt })),
       ...recipes
-        .filter((row) => names.has(row.canonicalName))
+        .filter(
+          (row) =>
+            (canonicalDishId && row.canonicalDishId === canonicalDishId) ||
+            names.has(row.canonicalName) ||
+            (targetRecipe &&
+              row.source === targetRecipe.source &&
+              row.recipeId === targetRecipe.recipeId),
+        )
         .map((row) => ({ id: row.id, kind: "RECIPE", at: row.createdAt })),
     ];
     const remaining = related.filter((row) => row.kind !== kind || row.id !== id);
@@ -144,12 +168,17 @@ export function createHistoryService(prisma: PrismaClient) {
       ? new Date(Math.max(...remaining.map((row) => +row.at)) + REPEAT_WINDOW_MS)
       : null;
     const target = targetDish ?? targetRecipe!;
+    const linkedFeedbackCount =
+      kind === "DISH"
+        ? await db.userInteraction.count({ where: { feedbackOfId: id, userId } })
+        : await db.recipeInteraction.count({ where: { feedbackOfId: id, userId } });
     const expectedVersion = createHash("sha256")
       .update(
         JSON.stringify({
           kind,
           id,
           at: target.createdAt,
+          linkedFeedbackCount,
           rows: related.sort((a, b) => a.id.localeCompare(b.id)),
         }),
       )
@@ -161,6 +190,7 @@ export function createHistoryService(prisma: PrismaClient) {
       expectedVersion,
       eligibleAgainAtAfterDeletion: after,
       remainingCooldownRecords: remaining.length,
+      linkedFeedbackCount,
       notice: after
         ? "Lần chọn hoặc ăn khác vẫn giữ thời gian chờ cho món này."
         : "Xóa bản ghi này có thể đưa món trở lại danh sách gợi ý. Các ràng buộc dị ứng và chế độ ăn vẫn được giữ.",

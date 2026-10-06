@@ -143,7 +143,7 @@ export const discoveryRoutes: FastifyPluginAsyncTypebox = async (app) => {
   app.get("/users/me/recipe-history", async (req) => ({
     data: {
       items: await app.prisma.recipeInteraction.findMany({
-        where: { userId: req.authUser!.id },
+        where: { userId: req.authUser!.id, interactionType: { in: ["CHOSEN", "EATEN"] } },
         select: {
           id: true,
           source: true,
