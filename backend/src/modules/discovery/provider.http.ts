@@ -18,19 +18,12 @@ export class ProviderError extends Error {
     super(status);
   }
 }
-// Shared per process; prevents one request from fanning out without a bound.
-const counters = new Map<string, { count: number; start: number }>();
 export async function providerJson(
   provider: string,
   url: string,
   options: RequestInit = {},
   fetcher: typeof fetch = fetch,
 ): Promise<JsonObject> {
-  const now = Date.now();
-  const bucket = counters.get(provider);
-  const counter = !bucket || now - bucket.start >= 60000 ? { count: 0, start: now } : bucket;
-  counters.set(provider, counter);
-  if (++counter.count > 120) throw new ProviderError("QUOTA_EXCEEDED");
   try {
     const response = await fetcher(url, {
       ...options,

@@ -5,10 +5,11 @@ import { createPlacesAdapter } from "../places/places.adapter.js";
 import { createFoodRepository, dishInclude } from "./food.repository.js";
 import { DishIdSchema, DishWriteSchema, normalizeFoodText } from "./food.schema.js";
 import { createFoodService } from "./food.service.js";
+import { quotaFetch } from "../discovery/provider.quota.js";
 export const foodRoutes: FastifyPluginAsyncTypebox = async (app) => {
   const repository = createFoodRepository(app.prisma);
   const service = createFoodService(app.prisma);
-  const places = createPlacesAdapter();
+  const places = createPlacesAdapter(undefined, quotaFetch(app.prisma));
   app.addHook("onSend", async (_req, reply) => {
     reply.header("Cache-Control", "private, no-store");
   });

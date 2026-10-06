@@ -18,6 +18,7 @@ import {
   type Location,
 } from "./place.providers.js";
 import { ProviderError } from "./provider.http.js";
+import { quotaFetch } from "./provider.quota.js";
 export type SourceStatus = {
   source: string;
   status: "OK" | "NOT_CONFIGURED" | "UNAVAILABLE" | "QUOTA_EXCEEDED" | "INVALID_DATA";
@@ -72,8 +73,9 @@ export function createDiscoveryService(
   env = process.env,
   fetcher: typeof fetch = fetch,
 ) {
-  const recipes = createRecipeProviders(env, fetcher);
-  const places = createPlaceProviders(env, fetcher);
+  const boundedFetch = quotaFetch(prisma, env, fetcher);
+  const recipes = createRecipeProviders(env, boundedFetch);
+  const places = createPlaceProviders(env, boundedFetch);
   const canonicalNames = async (titles: string[]) => {
     const names = titles.map(normalizeFoodText);
     const dishes = titles.length

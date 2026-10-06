@@ -2,7 +2,9 @@ import { Type, type FastifyPluginAsyncTypebox } from "@fastify/type-provider-typ
 import { AppError } from "../../common/errors/app-error.js";
 import { createRateLimitHook } from "../../common/security/rate-limit.js";
 import { providerJson, safeUrl } from "../discovery/provider.http.js";
+import { quotaFetch } from "../discovery/provider.quota.js";
 export const placePhotoRoutes: FastifyPluginAsyncTypebox = async (app) => {
+  const boundedFetch = quotaFetch(app.prisma);
   app.get(
     "/places/photo",
     {
@@ -31,6 +33,7 @@ export const placePhotoRoutes: FastifyPluginAsyncTypebox = async (app) => {
           "google-photos",
           `https://places.googleapis.com/v1/${req.query.name}/media?maxWidthPx=640&skipHttpRedirect=true`,
           { headers: { "X-Goog-Api-Key": key } },
+          boundedFetch,
         );
         const imageUrl = safeUrl(data.photoUri);
         if (!imageUrl) throw new Error("Invalid image");

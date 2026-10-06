@@ -189,6 +189,33 @@ model AccountDeletionJob {
   @@map("account_deletion_jobs")
 }
 
+model SharedQuotaBucket {
+  key       String   @id @db.VarChar(64)
+  namespace String   @db.VarChar(64)
+  scope     String   @db.VarChar(80)
+  count     Int
+  resetAt   DateTime @map("reset_at") @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@index([resetAt], map: "shared_quota_buckets_expiry_idx")
+  @@index([namespace, scope, resetAt], map: "shared_quota_buckets_scope_idx")
+  @@map("shared_quota_buckets")
+}
+
+model ProviderObservation {
+  namespace       String    @db.VarChar(64)
+  provider        String    @db.VarChar(20)
+  lastAttemptAt   DateTime  @map("last_attempt_at") @db.Timestamptz(3)
+  lastSuccessAt   DateTime? @map("last_success_at") @db.Timestamptz(3)
+  lastStatus      String    @map("last_status") @db.VarChar(20)
+  requests        BigInt    @default(0)
+  failures        BigInt    @default(0)
+  quotaRejections BigInt    @default(0) @map("quota_rejections")
+
+  @@id([namespace, provider])
+  @@map("provider_observations")
+}
+
 model Conversation {
   id        String        @id @default(uuid()) @db.Uuid
   userId    String        @map("user_id") @db.Uuid

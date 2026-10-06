@@ -2,6 +2,8 @@ import { Type, type FastifyPluginAsyncTypebox } from "@fastify/type-provider-typ
 import { metricsText } from "../../common/observability/metrics.js";
 import { loadAiConfig } from "../ai/ai.config.js";
 import { retention } from "../account/account.retention.js";
+import { securityNamespace } from "../../common/security/shared-quota.js";
+import { providerHosts, providerRequestLimit } from "../discovery/provider.quota.js";
 
 const HealthResponseSchema = Type.Object({
   status: Type.Literal("ok"),
@@ -59,15 +61,28 @@ export const healthRoutes: FastifyPluginAsyncTypebox = async function healthRout
       async (_req, reply) => {
         reply.header("Cache-Control", "no-store");
         reply.type("text/plain; version=0.0.4; charset=utf-8");
-        const [analysis, chat, sync, usage] = await app.prisma.$transaction([
-          app.prisma.tasteAnalysisJob.groupBy({ by: ["status"], _count: true }),
-          app.prisma.chatRun.groupBy({ by: ["status"], _count: true }),
-          app.prisma.menuSyncRun.groupBy({ by: ["status"], _count: true }),
-          app.prisma.aiRequestUsage.findUnique({
-            where: { day: new Date().toISOString().slice(0, 10) },
-            select: { requests: true },
-          }),
-        ]);
+        const [analysis, chat, sync, usage, email, deletion, providers, quotas, cleanup] =
+          await app.prisma.$transaction([
+            app.prisma.tasteAnalysisJob.groupBy({ by: ["status"], _count: true }),
+            app.prisma.chatRun.groupBy({ by: ["status"], _count: true }),
+            app.prisma.menuSyncRun.groupBy({ by: ["status"], _count: true }),
+            app.prisma.aiRequestUsage.findUnique({
+              where: { day: new Date().toISOString().slice(0, 10) },
+              select: { requests: true },
+            }),
+            app.prisma.emailOutbox.groupBy({ by: ["status"], _count: true }),
+            app.prisma.accountDeletionJob.groupBy({ by: ["status"], _count: true }),
+            app.prisma.providerObservation.findMany({ where: { namespace: securityNamespace() } }),
+            app.prisma.sharedQuotaBucket.findMany({
+              where: {
+                namespace: securityNamespace(),
+                scope: { startsWith: "provider:" },
+                resetAt: { gt: new Date() },
+              },
+              select: { scope: true, count: true },
+            }),
+            app.prisma.maintenanceLease.findUnique({ where: { name: "retention-v1" } }),
+          ]);
         const statuses = new Set([
           "QUEUED",
           "RUNNING",
@@ -81,17 +96,39 @@ export const healthRoutes: FastifyPluginAsyncTypebox = async function healthRout
           "COMMITTED",
           "ABANDONED",
           "PREVIEWED",
+          "PROCESSING",
+          "SENT",
         ]);
         const jobLines = ["# TYPE food_jobs gauge"];
         for (const [kind, rows] of [
           ["analysis", analysis],
           ["chat", chat],
           ["menu_sync", sync],
+          ["email", email],
+          ["deletion", deletion],
         ] as const)
           for (const row of rows)
             if (statuses.has(row.status))
               jobLines.push(`food_jobs{kind="${kind}",status="${row.status}"} ${row._count}`);
-        return `${metricsText()}${jobLines.join("\n")}\n# TYPE food_ai_requests_today gauge\nfood_ai_requests_today ${usage?.requests ?? 0}\n`;
+        const providerLines = [
+          "# TYPE food_provider_requests_total counter",
+          "# TYPE food_provider_failures_total counter",
+          "# TYPE food_provider_quota_rejections_total counter",
+          "# TYPE food_provider_quota_used gauge",
+          "# TYPE food_provider_quota_limit gauge",
+        ];
+        for (const source of Object.values(providerHosts)) {
+          const observed = providers.find((row) => row.provider === source),
+            quota = quotas.find((row) => row.scope === `provider:${source}`);
+          providerLines.push(
+            `food_provider_requests_total{source="${source}"} ${observed?.requests ?? 0}`,
+            `food_provider_failures_total{source="${source}"} ${observed?.failures ?? 0}`,
+            `food_provider_quota_rejections_total{source="${source}"} ${observed?.quotaRejections ?? 0}`,
+            `food_provider_quota_used{source="${source}"} ${quota?.count ?? 0}`,
+            `food_provider_quota_limit{source="${source}"} ${providerRequestLimit()}`,
+          );
+        }
+        return `${metricsText()}${jobLines.join("\n")}\n${providerLines.join("\n")}\n# TYPE food_ai_requests_today gauge\nfood_ai_requests_today ${usage?.requests ?? 0}\n# TYPE food_retention_last_success_seconds gauge\nfood_retention_last_success_seconds ${cleanup?.lastCompletedAt ? Math.floor(cleanup.lastCompletedAt.getTime() / 1000) : 0}\n# TYPE food_retention_failed gauge\nfood_retention_failed ${cleanup?.lastErrorCode ? 1 : 0}\n`;
       },
     );
   app.get(

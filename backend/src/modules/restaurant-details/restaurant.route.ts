@@ -3,6 +3,7 @@ import { AppError } from "../../common/errors/app-error.js";
 import { createRateLimitHook } from "../../common/security/rate-limit.js";
 import { createRestaurantProviders } from "./restaurant.providers.js";
 import { safetyDecision } from "../merchant-menu/safety.policy.js";
+import { quotaFetch } from "../discovery/provider.quota.js";
 
 export const restaurantRoutes: FastifyPluginAsyncTypebox = async (app) => {
   app.addHook("preHandler", app.authenticate);
@@ -13,7 +14,7 @@ export const restaurantRoutes: FastifyPluginAsyncTypebox = async (app) => {
   app.addHook("onSend", async (_req, reply) => {
     reply.header("Cache-Control", "private, no-store");
   });
-  const providers = createRestaurantProviders();
+  const providers = createRestaurantProviders(process.env, quotaFetch(app.prisma));
   const query = Type.Object(
     {
       cursor: Type.Optional(Type.String({ format: "uuid" })),

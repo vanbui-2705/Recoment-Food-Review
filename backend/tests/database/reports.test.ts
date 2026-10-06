@@ -1,6 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { buildApp } from "../../src/app.js";
+import { signAccessToken } from "../../src/common/security/token.js";
+import { loadEnv } from "../../src/config/env.js";
 describe("attributable data reports and audited administration", () => {
   const app = buildApp({ logger: false }),
     suffix = randomUUID(),
@@ -180,6 +182,17 @@ describe("attributable data reports and audited administration", () => {
     ).toBe("OPEN");
   });
   it("limits spam without claiming an unaccepted report was saved", async () => {
+    const spamUser = await app.prisma.user.create({
+      data: {
+        email: `spam-${suffix}@test.local`,
+        displayName: "Spam fixture",
+        passwordHash: "unused",
+      },
+    });
+    users.push(spamUser.id);
+    const spamOwner = {
+      authorization: `Bearer ${await signAccessToken({ userId: spamUser.id, role: "USER" }, loadEnv().jwtAccessSecret, 300)}`,
+    };
     const body = payload();
     for (let i = 0; i < 5; i++)
       expect(
@@ -187,7 +200,7 @@ describe("attributable data reports and audited administration", () => {
           await app.inject({
             method: "POST",
             url: "/users/me/data-reports",
-            headers: owner,
+            headers: spamOwner,
             payload: body,
             remoteAddress: "10.10.10.4",
           })
@@ -196,7 +209,7 @@ describe("attributable data reports and audited administration", () => {
     const blocked = await app.inject({
       method: "POST",
       url: "/users/me/data-reports",
-      headers: owner,
+      headers: spamOwner,
       payload: { ...body, idempotencyKey: randomUUID() },
       remoteAddress: "10.10.10.4",
     });
@@ -204,7 +217,7 @@ describe("attributable data reports and audited administration", () => {
     expect(blocked.headers["retry-after"]).toBeDefined();
     expect(
       await app.prisma.dataReport.count({
-        where: { userId: users[0], idempotencyKey: `${users[0]}:${body.idempotencyKey}` },
+        where: { userId: spamUser.id, idempotencyKey: `${spamUser.id}:${body.idempotencyKey}` },
       }),
     ).toBe(1);
   });

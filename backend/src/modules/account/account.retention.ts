@@ -139,10 +139,22 @@ export function createRetentionService(prisma: PrismaClient, enabled: boolean) {
           if (reports.length)
             await tx.dataReport.deleteMany({ where: { id: { in: reports.map((row) => row.id) } } });
           more ||= reports.length === 200;
-          if (!scopeUserId)
+          if (!scopeUserId) {
+            const expiredBuckets = await tx.sharedQuotaBucket.findMany({
+              where: { resetAt: { lt: before(1) } },
+              select: { key: true },
+              take: 200,
+              orderBy: { resetAt: "asc" },
+            });
+            if (expiredBuckets.length)
+              await tx.sharedQuotaBucket.deleteMany({
+                where: { key: { in: expiredBuckets.map((row) => row.key) } },
+              });
+            more ||= expiredBuckets.length === 200;
             await tx.aiRequestUsage.deleteMany({
               where: { day: { lt: before(31).toISOString().slice(0, 10) } },
             });
+          }
           return more;
         });
         await prisma.maintenanceLease.updateMany({
