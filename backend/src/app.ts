@@ -20,6 +20,8 @@ import { placePhotoRoutes } from "./modules/places/place-photo.route.js";
 import { tasteAnalysisRoutes } from "./modules/taste-analysis/taste-analysis.route.js";
 import { usersRoutes } from "./modules/users/users.route.js";
 import { merchantRoutes } from "./modules/merchant-menu/merchant.route.js";
+import { createMenuSyncRoutes } from "./modules/merchant-menu/menu-sync.route.js";
+import type { MenuAdapterRegistry } from "./modules/merchant-menu/menu-sync.adapters.js";
 import { restaurantRoutes } from "./modules/restaurant-details/restaurant.route.js";
 import { recommendationRoutes } from "./modules/recommendations/recommendation.route.js";
 import { historyRoutes } from "./modules/history/history.route.js";
@@ -31,6 +33,8 @@ import { databasePlugin } from "./plugins/database.plugin.js";
 export type BuildAppOptions = {
   logger?: boolean;
   database?: boolean;
+  menuAdapters?: MenuAdapterRegistry;
+  menuSyncEnabled?: boolean;
 };
 
 export function buildApp(options: BuildAppOptions = {}) {
@@ -79,6 +83,7 @@ export function buildApp(options: BuildAppOptions = {}) {
     app.register(placePhotoRoutes);
     app.register(tasteAnalysisRoutes);
     app.register(merchantRoutes);
+    app.register(createMenuSyncRoutes(options.menuAdapters, options.menuSyncEnabled));
     app.register(restaurantRoutes);
     app.register(recommendationRoutes);
     app.register(historyRoutes);

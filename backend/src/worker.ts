@@ -9,6 +9,7 @@ import { createEmailProvider } from "./modules/email/email.provider.js";
 import { createEmailService } from "./modules/email/email.service.js";
 import { createAccountService } from "./modules/account/account.service.js";
 import { createRetentionService } from "./modules/account/account.retention.js";
+import { createMenuSyncService } from "./modules/merchant-menu/menu-sync.service.js";
 
 const config = loadAiConfig();
 const app = buildApp({ logger: true });
@@ -34,6 +35,7 @@ try {
   const email = createEmailService(app.prisma, emailConfig, createEmailProvider(emailConfig));
   const account = createAccountService(app.prisma, config.workerEnabled);
   const retention = createRetentionService(app.prisma, config.workerEnabled);
+  const menuSync = createMenuSyncService(app.prisma);
   if (!config.workerEnabled) {
     app.log.info(
       { enabled: config.workerEnabled, configured: service.configured },
@@ -56,6 +58,10 @@ try {
         if (!stopping && email.configured) worked = (await email.tick()) || worked;
         if (!stopping && service.configured) worked = (await service.tick()) || worked;
         if (!stopping && chat.configured) worked = (await chat.tick()) || worked;
+        if (!stopping && menuSync.configured) {
+          worked = (await menuSync.schedule()) > 0 || worked;
+          if (!stopping) worked = (await menuSync.tick()) || worked;
+        }
       } catch {
         app.log.error({ code: "WORKER_TICK_FAILED" }, "Worker tick failed");
       }

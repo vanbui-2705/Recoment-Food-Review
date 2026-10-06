@@ -407,8 +407,8 @@ model UserDietaryRestriction {
 }
 
 model Cuisine {
-  isActive Boolean @default(true) @map("is_active")
-  updatedAt DateTime @updatedAt @default(now()) @map("updated_at") @db.Timestamptz(3)
+  isActive    Boolean                 @default(true) @map("is_active")
+  updatedAt   DateTime                @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
   id          String                  @id @default(uuid()) @db.Uuid
   code        String                  @unique @db.VarChar(50)
   name        String                  @db.VarChar(100)
@@ -434,7 +434,7 @@ model UserCuisinePreference {
 }
 
 model Dish {
-  isActive Boolean @default(true) @map("is_active")
+  isActive              Boolean                @default(true) @map("is_active")
   id                    String                 @id @default(uuid()) @db.Uuid
   slug                  String                 @unique @db.VarChar(120)
   name                  String                 @db.VarChar(150)
@@ -482,8 +482,8 @@ model DishAlias {
 }
 
 model Ingredient {
-  isActive Boolean @default(true) @map("is_active")
-  updatedAt DateTime @updatedAt @default(now()) @map("updated_at") @db.Timestamptz(3)
+  isActive    Boolean          @default(true) @map("is_active")
+  updatedAt   DateTime         @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
   id          String           @id @default(uuid()) @db.Uuid
   code        String           @unique @db.VarChar(80)
   name        String           @db.VarChar(150)
@@ -539,7 +539,7 @@ model UserDishPreference {
 }
 
 model Restaurant {
-  isActive Boolean @default(true) @map("is_active")
+  isActive              Boolean                      @default(true) @map("is_active")
   id                    String                       @id @default(uuid()) @db.Uuid
   googlePlaceId         String?                      @unique @map("google_place_id") @db.VarChar(255)
   name                  String                       @db.VarChar(200)
@@ -793,6 +793,7 @@ model MerchantSupplier {
   lastCommittedAt        DateTime?                    @map("last_committed_at") @db.Timestamptz(3)
   identities             ExternalRestaurantIdentity[]
   syncRuns               MenuSyncRun[]
+  syncSchedule           MenuSyncSchedule?
 
   @@map("merchant_suppliers")
 }
@@ -812,7 +813,7 @@ model ExternalRestaurantIdentity {
 }
 
 model ExternalMenuItem {
-  moderationEnabled Boolean @default(true) @map("moderation_enabled")
+  moderationEnabled     Boolean                    @default(true) @map("moderation_enabled")
   id                    String                     @id @default(uuid()) @db.Uuid
   identityId            String                     @map("identity_id") @db.Uuid
   externalId            String                     @map("external_id") @db.VarChar(255)
@@ -854,6 +855,7 @@ model MenuSyncRun {
   committedAt   DateTime?          @map("committed_at") @db.Timestamptz(3)
   errorCode     String?            @map("error_code") @db.VarChar(80)
   supplier      MerchantSupplier   @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+  workerJobs    MenuSyncJob[]
   pages         MenuSyncPage[]
   quarantine    MenuQuarantine[]
   offers        ExternalMenuItem[]
@@ -966,4 +968,43 @@ model ReportReview {
 
   @@index([reportId, createdAt])
   @@map("report_reviews")
+}
+
+model MenuSyncSchedule {
+  supplierId      String           @id @map("supplier_id") @db.Uuid
+  adapterCode     String           @map("adapter_code") @db.VarChar(50)
+  enabled         Boolean          @default(false)
+  intervalMinutes Int              @map("interval_minutes")
+  nextRunAt       DateTime         @map("next_run_at") @db.Timestamptz(3)
+  createdAt       DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime         @updatedAt @map("updated_at") @db.Timestamptz(3)
+  supplier        MerchantSupplier @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+  jobs            MenuSyncJob[]
+
+  @@index([enabled, nextRunAt])
+  @@map("menu_sync_schedules")
+}
+
+model MenuSyncJob {
+  id             String           @id @default(uuid()) @db.Uuid
+  scheduleId     String           @map("schedule_id") @db.Uuid
+  idempotencyKey String           @unique @map("idempotency_key") @db.VarChar(255)
+  status         String           @default("QUEUED") @db.VarChar(12)
+  attempts       Int              @default(0)
+  availableAt    DateTime         @default(now()) @map("available_at") @db.Timestamptz(3)
+  leaseUntil     DateTime?        @map("lease_until") @db.Timestamptz(3)
+  leaseToken     String?          @map("lease_token") @db.Uuid
+  manifest       Json?
+  runId          String?          @map("run_id") @db.Uuid
+  errorCode      String?          @map("error_code") @db.VarChar(50)
+  retryable      Boolean          @default(true)
+  createdAt      DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime         @updatedAt @map("updated_at") @db.Timestamptz(3)
+  schedule       MenuSyncSchedule @relation(fields: [scheduleId], references: [supplierId], onDelete: Restrict)
+  run            MenuSyncRun?     @relation(fields: [runId], references: [id], onDelete: SetNull)
+
+  @@index([status, availableAt, leaseUntil])
+  @@index([scheduleId, status])
+  @@index([createdAt, id])
+  @@map("menu_sync_jobs")
 }

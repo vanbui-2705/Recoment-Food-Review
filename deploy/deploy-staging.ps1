@@ -14,7 +14,7 @@ if (-not $Apply) { Write-Output 'Configuration valid. No deployment was changed.
 # Operator must have completed backup/rollback and live-provider gates before using -Apply.
 & docker @composeArgs pull backend worker frontend migrate edge
 if ($LASTEXITCODE -ne 0) { throw 'Reviewed image pull failed; deployment was not changed.' }
-& docker @composeArgs stop --timeout 120 worker
+& docker @composeArgs stop --timeout 180 worker
 if ($LASTEXITCODE -ne 0) { throw 'Worker pause failed; stop the rollout and inspect the deployment.' }
 & docker @composeArgs run --rm migrate
 if ($LASTEXITCODE -ne 0) { throw 'Migration failed; keep worker paused and inspect before resuming.' }

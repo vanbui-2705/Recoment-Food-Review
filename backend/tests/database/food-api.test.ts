@@ -115,7 +115,11 @@ describe("food discovery persistence", () => {
       method: "PUT",
       url: `/admin/dishes/${dishId}`,
       headers: adminHeaders,
-      payload: { ...dish, expectedUpdatedAt: created.json().data.dish.updatedAt, aliases: ["Bún đậu", "bun dau"] },
+      payload: {
+        ...dish,
+        expectedUpdatedAt: created.json().data.dish.updatedAt,
+        aliases: ["Bún đậu", "bun dau"],
+      },
     });
     expect(invalid.statusCode).toBe(400);
     const read = await app.inject({ url: `/dishes/${dishId}`, headers });

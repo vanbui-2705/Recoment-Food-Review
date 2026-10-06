@@ -69,7 +69,7 @@ export const healthRoutes: FastifyPluginAsyncTypebox = async function healthRout
               _min: { createdAt: true },
             }),
             app.prisma.chatRun.groupBy({ by: ["status"], _count: true, _min: { createdAt: true } }),
-            app.prisma.menuSyncRun.groupBy({
+            app.prisma.menuSyncJob.groupBy({
               by: ["status"],
               _count: true,
               _min: { createdAt: true },

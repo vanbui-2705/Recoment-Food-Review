@@ -59,7 +59,7 @@ export function createMerchantService(prisma: PrismaClient) {
         expectedPages: number;
         observedAt: string;
       },
-      actorId: string,
+      actorId: string | null,
     ) {
       await supplier(input.supplierId);
       const observedAt = new Date(input.observedAt);
@@ -94,7 +94,7 @@ export function createMerchantService(prisma: PrismaClient) {
         return run;
       });
     },
-    async stage(id: string, page: number, items: unknown[], actorId: string) {
+    async stage(id: string, page: number, items: unknown[], actorId: string | null) {
       return prisma.$transaction(async (tx) => {
         await tx.$queryRaw`SELECT id FROM menu_sync_runs WHERE id = ${id}::uuid FOR UPDATE`;
         const run = await tx.menuSyncRun.findUnique({ where: { id }, include: { supplier: true } });
@@ -149,9 +149,36 @@ export function createMerchantService(prisma: PrismaClient) {
         return { accepted: true, replayed: false, quarantined: errors.length };
       });
     },
-    async commit(id: string, actorId: string) {
+    async commit(
+      id: string,
+      actorId: string | null,
+      fence?: { jobId: string; leaseToken: string },
+    ) {
       return prisma.$transaction(
         async (tx) => {
+          let jobSupplierId: string | undefined;
+          if (fence) {
+            await tx.$queryRaw`SELECT id FROM menu_sync_jobs WHERE id=${fence.jobId}::uuid FOR UPDATE`;
+            const job = await tx.menuSyncJob.findUnique({
+              where: { id: fence.jobId },
+              include: { schedule: true },
+            });
+            if (
+              !job ||
+              job.runId !== id ||
+              job.status !== "RUNNING" ||
+              job.leaseToken !== fence.leaseToken ||
+              !job.leaseUntil ||
+              job.leaseUntil <= new Date()
+            )
+              throw fail("MENU_SYNC_LEASE_LOST", "Lượt đồng bộ đã hết quyền xử lý.");
+            jobSupplierId = job.scheduleId;
+            await tx.$queryRaw`SELECT supplier_id FROM menu_sync_schedules WHERE supplier_id=${job.scheduleId}::uuid FOR UPDATE`;
+            const schedule = await tx.menuSyncSchedule.findUniqueOrThrow({
+              where: { supplierId: job.scheduleId },
+            });
+            if (!schedule.enabled) throw fail("MENU_SYNC_PAUSED", "Lịch đồng bộ đã tạm ngừng.");
+          }
           await tx.$queryRaw`SELECT id FROM menu_sync_runs WHERE id = ${id}::uuid FOR UPDATE`;
           const run = await tx.menuSyncRun.findUnique({
             where: { id },
@@ -161,6 +188,8 @@ export function createMerchantService(prisma: PrismaClient) {
             },
           });
           if (!run) throw new AppError(404, "SYNC_NOT_FOUND", "Không tìm thấy lần đồng bộ");
+          if (jobSupplierId && jobSupplierId !== run.supplierId)
+            throw fail("MENU_SYNC_LEASE_LOST", "Lượt đồng bộ không thuộc nguồn này.");
           if (run.status === "COMMITTED") return { run, replayed: true };
           if (
             run.status !== "STAGING" ||

@@ -31,7 +31,7 @@ export const adminOperationsRoutes: FastifyPluginAsyncTypebox = async (app) => {
   app.get("/admin/operations", async () => {
     const now = new Date(),
       namespace = securityNamespace();
-    const [observations, quotas, analysis, chat, emails, deletions, maintenance, budget] =
+    const [observations, quotas, analysis, chat, emails, deletions, maintenance, budget, menuSync] =
       await app.prisma.$transaction([
         app.prisma.providerObservation.findMany({ where: { namespace } }),
         app.prisma.sharedQuotaBucket.findMany({
@@ -46,6 +46,7 @@ export const adminOperationsRoutes: FastifyPluginAsyncTypebox = async (app) => {
         app.prisma.aiBudgetUsage.findUnique({
           where: { namespace_day: { namespace, day: now.toISOString().slice(0, 10) } },
         }),
+        app.prisma.menuSyncJob.groupBy({ by: ["status"], _count: true }),
       ]);
     return {
       data: {
@@ -83,7 +84,7 @@ export const adminOperationsRoutes: FastifyPluginAsyncTypebox = async (app) => {
           emailConfigured: email.configured,
           workerEnabled: ai.workerEnabled,
         },
-        jobs: { analysis, chat, email: emails, deletion: deletions },
+        jobs: { analysis, chat, email: emails, deletion: deletions, menuSync },
         retention: {
           lastCompletedAt: maintenance?.lastCompletedAt ?? null,
           nextRunAt: maintenance?.nextRunAt ?? null,

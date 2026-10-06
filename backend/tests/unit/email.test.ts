@@ -45,15 +45,13 @@ it("encrypts email content with authenticated per-outbox identity and rejects ta
   expect(() => decryptEmail(cipher.slice(0, -2) + "xx", config.keyHex, "outbox-a")).toThrow();
 });
 it("uses the official HTTPS endpoint and stable idempotency without exposing provider bodies", async () => {
-  const fetcher = vi
-    .fn()
-    .mockImplementation(() =>
-      Promise.resolve(
-        new Response(JSON.stringify({ id: "11111111-1111-4111-8111-111111111111" }), {
-          status: 200,
-        }),
-      ),
-    );
+  const fetcher = vi.fn().mockImplementation(() =>
+    Promise.resolve(
+      new Response(JSON.stringify({ id: "11111111-1111-4111-8111-111111111111" }), {
+        status: 200,
+      }),
+    ),
+  );
   const provider = createEmailProvider(config, fetcher),
     payload = {
       from: config.from,

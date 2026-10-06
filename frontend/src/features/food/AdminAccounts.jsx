@@ -149,7 +149,11 @@ export default function AdminAccounts({ audit = false, onSignedOut }) {
                 {audit ? (
                   <>
                     <h2>{item.action}</h2>
-                    <p>Người thao tác: {item.actorId || "Đã ẩn danh"}</p>
+                    <p>
+                      Người thao tác:{" "}
+                      {item.actorId ||
+                        (item.metadata?.automation ? "Hệ thống" : "Đã ẩn danh")}
+                    </p>
                     <p>Đối tượng: {item.targetId || "Đã ẩn danh"}</p>
                     <small>
                       {new Date(item.createdAt).toLocaleString("vi-VN")}

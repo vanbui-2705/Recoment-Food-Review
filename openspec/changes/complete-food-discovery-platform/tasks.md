@@ -25,7 +25,7 @@
 - [x] 3.3 Xây canonical mapping tên/alias và review cho ambiguity; test cross-source collisions.
 - [x] 3.4 Xây import dry-run/upsert commit idempotent; test nhập lại và invalid price/currency.
 - [x] 3.5 Xây paginated sync, complete-snapshot removal và delta rules; test partial failure không đánh hết món.
-- [ ] 3.6 Xây freshness/expiry/availability gate và schedule/lease/retry sync; test TTL và worker restart.
+- [x] 3.6 Xây freshness/expiry/availability gate và schedule/lease/retry sync; test TTL và worker restart.
 - [x] 3.7 Thêm ADMIN sync-run/list/retry/import APIs và auth/quota tests.
 - [ ] 3.8 Viết adapter live theo supplier chính thức khi đã có contract/key; test payload thật và lập live-readiness report.
 
@@ -92,7 +92,7 @@
 - [x] 10.3 Thêm user list/block/unblock/session revocation và last-admin guard; test access/refresh sau khóa.
 - [x] 10.4 Thêm report triage/resolve/reopen reason và audit; test lifecycle/race.
 - [x] 10.5 Tạo ADMIN layout và views content/users/restaurants/reports/audit với pagination/error states.
-- [ ] 10.6 Gắn provider health/quota và retry sync vào admin, không render key; test USER bị 403 ở mọi write.
+- [x] 10.6 Gắn provider health/quota và retry sync vào admin, không render key; test USER bị 403 ở mọi write.
 - [x] 10.7 Chạy admin E2E review mapping/evidence/report/block/deactivate và cập nhật hướng dẫn vận hành.
 
 ## 11. P6a — Tài khoản, email và riêng tư

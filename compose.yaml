@@ -25,6 +25,7 @@ x-runtime-environment: &runtime-environment
   LLM_OUTPUT_USD_PER_MILLION: ${LLM_OUTPUT_USD_PER_MILLION:-7.5}
   LLM_PRICING_VALID_UNTIL: ${LLM_PRICING_VALID_UNTIL:-2027-01-01}
   WORKER_ENABLED: ${WORKER_ENABLED:-false}
+  MENU_SYNC_WORKER_ENABLED: ${MENU_SYNC_WORKER_ENABLED:-false}
   CHAT_RUN_TIMEOUT_MS: ${CHAT_RUN_TIMEOUT_MS:-90000}
   JOB_MAX_ATTEMPTS: ${JOB_MAX_ATTEMPTS:-3}
   JOB_LEASE_SECONDS: ${JOB_LEASE_SECONDS:-90}
@@ -121,7 +122,7 @@ services:
 
   worker:
     init: true
-    stop_grace_period: 120s
+    stop_grace_period: 180s
     build:
       context: ./backend
       target: production

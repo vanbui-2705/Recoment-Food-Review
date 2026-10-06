@@ -59,15 +59,19 @@ function storedProfile() {
 
 function createRepositoryMock(): TasteProfileRepository {
   return {
-    listAllergens: vi.fn().mockResolvedValue([
-      { id: "allergen-1", code: "SHELLFISH", name: "Shellfish", description: null },
-    ]),
-    listDietaryRestrictions: vi.fn().mockResolvedValue([
-      { id: "diet-1", code: "VEGAN", name: "Vegan", description: null },
-    ]),
-    listCuisines: vi.fn().mockResolvedValue([
-      { id: "cuisine-1", code: "VIETNAMESE", name: "Vietnamese", description: null },
-    ]),
+    listAllergens: vi
+      .fn()
+      .mockResolvedValue([
+        { id: "allergen-1", code: "SHELLFISH", name: "Shellfish", description: null },
+      ]),
+    listDietaryRestrictions: vi
+      .fn()
+      .mockResolvedValue([{ id: "diet-1", code: "VEGAN", name: "Vegan", description: null }]),
+    listCuisines: vi
+      .fn()
+      .mockResolvedValue([
+        { id: "cuisine-1", code: "VIETNAMESE", name: "Vietnamese", description: null },
+      ]),
     findProfile: vi.fn().mockResolvedValue(null),
     replaceProfile: vi.fn().mockResolvedValue(storedProfile()),
   };
@@ -115,7 +119,9 @@ describe("taste profile service", () => {
     const repository = createRepositoryMock();
     const service = createTasteProfileService(repository);
 
-    await expect(service.saveProfile("user-1", { ...basePayload, budgetMin: 80_000 }, false)).rejects.toMatchObject({
+    await expect(
+      service.saveProfile("user-1", { ...basePayload, budgetMin: 80_000 }, false),
+    ).rejects.toMatchObject({
       code: "INVALID_BUDGET_RANGE",
       statusCode: 400,
     });
@@ -143,7 +149,11 @@ describe("taste profile service", () => {
     expect(repository.replaceProfile).not.toHaveBeenCalled();
 
     await expect(
-      service.saveProfile("user-1", { ...basePayload, cuisinePreferences: [{ code: "UNKNOWN", preferenceScore: 100 }] }, false),
+      service.saveProfile(
+        "user-1",
+        { ...basePayload, cuisinePreferences: [{ code: "UNKNOWN", preferenceScore: 100 }] },
+        false,
+      ),
     ).rejects.toMatchObject({ code: "UNKNOWN_CATALOG_CODE" });
     expect(repository.replaceProfile).not.toHaveBeenCalled();
   });

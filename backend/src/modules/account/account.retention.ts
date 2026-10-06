@@ -140,6 +140,20 @@ export function createRetentionService(prisma: PrismaClient, enabled: boolean) {
             await tx.dataReport.deleteMany({ where: { id: { in: reports.map((row) => row.id) } } });
           more ||= reports.length === 200;
           if (!scopeUserId) {
+            const syncJobs = await tx.menuSyncJob.findMany({
+              where: {
+                createdAt: { lt: before(90) },
+                status: { in: ["SUCCEEDED", "FAILED", "CANCELLED"] },
+              },
+              select: { id: true },
+              take: 200,
+              orderBy: { createdAt: "asc" },
+            });
+            if (syncJobs.length)
+              await tx.menuSyncJob.deleteMany({
+                where: { id: { in: syncJobs.map((row) => row.id) } },
+              });
+            more ||= syncJobs.length === 200;
             const expiredBuckets = await tx.sharedQuotaBucket.findMany({
               where: { resetAt: { lt: before(1) } },
               select: { key: true },

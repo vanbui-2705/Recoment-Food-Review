@@ -1,4 +1,13 @@
 const messages = {
+  MENU_SYNC_NOT_CONFIGURED:
+    "Chưa kết nối nguồn thực đơn được cấp phép hoặc worker đồng bộ chưa được bật. Chưa có yêu cầu đồng bộ nào được tiếp nhận.",
+  MENU_SYNC_CHANGED:
+    "Trạng thái đồng bộ đã thay đổi. Tải lại và xem trạng thái mới trước khi xác nhận.",
+  MENU_SYNC_PAUSED:
+    "Nguồn hoặc lịch đồng bộ đang tạm ngừng. Thực đơn đã lưu vẫn giữ thời hạn xác minh ban đầu.",
+  MENU_SYNC_NOT_FOUND: "Lượt đồng bộ không còn tồn tại. Hãy tải lại danh sách.",
+  MENU_SYNC_SOURCE_BOUND:
+    "Nguồn đã gắn với một adapter. Nguồn dữ liệu khác cần định danh riêng để tránh nhầm quán và món.",
   CONTENT_CHANGED:
     "Dữ liệu đã thay đổi ở phiên khác. Tải lại và xem trước khi xác nhận.",
   CONTENT_NOT_FOUND: "Dữ liệu không còn tồn tại. Hãy tải lại danh sách.",

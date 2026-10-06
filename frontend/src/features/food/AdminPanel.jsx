@@ -4,6 +4,7 @@ import AdminReports from "./AdminReports";
 import AdminAccounts from "./AdminAccounts";
 import AdminOperations from "./AdminOperations";
 import AdminContent from "./AdminContent";
+import AdminMenuSync from "./AdminMenuSync";
 export default function AdminPanel({ onSignedOut }) {
   const [tab, setTab] = useState("menu");
   return (
@@ -33,6 +34,12 @@ export default function AdminPanel({ onSignedOut }) {
       </nav>
       <nav aria-label="Quản lý truy cập" className="food-actions">
         <button
+          onClick={() => setTab("sync")}
+          aria-current={tab === "sync" ? "page" : undefined}
+        >
+          Đồng bộ thực đơn
+        </button>
+        <button
           onClick={() => setTab("operations")}
           aria-current={tab === "operations" ? "page" : undefined}
         >
@@ -57,6 +64,8 @@ export default function AdminPanel({ onSignedOut }) {
         <AdminMenu />
       ) : tab === "reports" ? (
         <AdminReports />
+      ) : tab === "sync" ? (
+        <AdminMenuSync />
       ) : tab === "operations" ? (
         <AdminOperations />
       ) : (

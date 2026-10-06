@@ -226,6 +226,7 @@ export default function AdminOperations() {
                       chat: "Hội thoại",
                       email: "Email",
                       deletion: "Xóa tài khoản",
+                      menuSync: "Đồng bộ thực đơn",
                     }[kind]
                   }
                 </h3>
