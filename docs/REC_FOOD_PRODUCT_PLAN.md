@@ -11,7 +11,9 @@ Rec-Food là nền tảng khám phá món ăn cá nhân hóa kết hợp:
 - trợ lý AI hội thoại;
 - giỏ hàng và đặt món sau khi người dùng xác nhận.
 
-Mục tiêu cuối cùng là người dùng chỉ cần trò chuyện với trợ lý AI, nhận được gợi ý phù hợp và có thể xác nhận để tạo đơn hàng.
+Mục tiêu bản phát hành hiện tại là người dùng trò chuyện với trợ lý AI, nhận gợi ý món/quán phù hợp và xem hướng dẫn nấu hoặc chỉ đường. Giỏ hàng/đơn hàng (nhóm 9 trong bản rà soát) và thanh toán/giao hàng (nhóm 10) giữ **Coming soon**. Kiến trúc giao dịch dưới đây là định hướng tương lai, không thuộc phạm vi triển khai đợt này.
+
+Kế hoạch thực hiện chi tiết: [REC_FOOD_COMPLETION_PLAN.md](REC_FOOD_COMPLETION_PLAN.md). Bộ proposal/design/specs/checklist: [complete-food-discovery-platform](../openspec/changes/complete-food-discovery-platform/proposal.md).
 
 ## 2. Kiến trúc tổng thể
 
@@ -199,6 +201,8 @@ get_order_quote()
 submit_order_after_confirmation()
 ```
 
+Trong bản phát hành hiện tại chỉ đăng ký tool khám phá/profile; ba tool giỏ hàng/báo giá/đặt đơn ở trên là **Coming soon**, không được expose cho AI. Yêu cầu đặt món/thanh toán được trả trạng thái chưa hỗ trợ và có thể chuyển sang xem quán/chỉ đường.
+
 Luồng xác nhận đặt món:
 
 ```text
@@ -227,6 +231,8 @@ AI: Tạo đơn hàng
 Không cho phép AI tự gọi `submit_order` chỉ vì người dùng nói mơ hồ như “ok” trong ngữ cảnh không rõ.
 
 ### 3.7. Cart & Order
+
+Trạng thái: **Coming soon** — nhóm 9; không xây schema/API giao dịch trong đợt hoàn thiện discovery. Thanh toán/giao hàng là **Coming soon** — nhóm 10. Phần thiết kế dưới đây được giữ cho giai đoạn tương lai.
 
 Các bảng/module dự kiến:
 
@@ -364,7 +370,9 @@ frontend/src/
 - AI hỏi lại ngân sách, vị trí, khẩu vị;
 - tạo recommendation từ hội thoại.
 
-### Phase 4 — Cart & Ordering
+### Phase 4 — Cart & Ordering — Coming soon
+
+Đã hoãn khỏi phạm vi bản phát hành hiện tại, bao gồm thanh toán và giao hàng. Các phase đang thực hiện được thay bằng P0–P6 trong [kế hoạch hoàn thiện](REC_FOOD_COMPLETION_PLAN.md).
 
 - giỏ hàng;
 - báo giá;
@@ -377,14 +385,15 @@ frontend/src/
 ## 6. Thứ tự module nên xây tiếp
 
 ```text
-1. taste-profile-api-and-onboarding
-2. food-catalog-api
-3. recommendation-engine-mvp
-4. restaurant-places-integration
-5. ai-food-assistant
-6. cart-and-order-flow
-7. payment-and-delivery-integration
-8. admin-content-management
+P0. baseline, hợp đồng API/config và Coming soon
+P1. AI phân tích mô tả khẩu vị
+P2. thực đơn merchant + safety evidence + chi tiết quán + admin ingest
+P3. recommendation thống nhất + LLM ranking/explanation
+P4. chat discovery nhiều lượt và streaming
+P5. feedback + admin đầy đủ
+P6. tài khoản/email + vận hành và release gates
+
+Coming soon: cart/order và payment/delivery
 ```
 
 ## 7. Rủi ro và nguyên tắc an toàn
@@ -434,8 +443,8 @@ Chưa có implementation hoàn chỉnh:
 - bằng chứng an toàn dị ứng theo từng quán;
 - LLM integration;
 - chat assistant;
-- cart/order;
-- payment/delivery;
+- cart/order — Coming soon, ngoài scope đợt này;
+- payment/delivery — Coming soon, ngoài scope đợt này;
 - admin UI/API đầy đủ.
 
 ## 9. Change tiếp theo đề xuất
@@ -443,7 +452,7 @@ Chưa có implementation hoàn chỉnh:
 Change tiếp theo nên là:
 
 ```text
-taste-profile-api-and-onboarding
+complete-food-discovery-platform
 ```
 
-Taste profile và daily discovery đã triển khai. Bước tiếp theo là tích hợp nguồn thực đơn merchant và xác minh dữ liệu theo quán để mở rộng gợi ý cho hồ sơ có dị ứng; không dùng Google Text Search thay bằng chứng thực đơn hoặc an toàn.
+Taste profile và daily discovery đã triển khai. Change mới có proposal, design, chín capability specs và tasks theo P0–P6. Bắt đầu P0/P1; xây pipeline merchant/evidence và tài khoản/vận hành ở các nhánh độc lập tiếp theo. Nguồn merchant cần hợp đồng/key thật để đạt live-ready; không dùng Google Text Search thay bằng chứng thực đơn hoặc an toàn. Chi tiết API, UX, dữ liệu, test và điều kiện phát hành nằm trong [REC_FOOD_COMPLETION_PLAN.md](REC_FOOD_COMPLETION_PLAN.md).
