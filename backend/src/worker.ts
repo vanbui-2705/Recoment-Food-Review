@@ -7,6 +7,8 @@ import { createChatService } from "./modules/chat/chat.service.js";
 import { loadEmailConfig } from "./modules/email/email.config.js";
 import { createEmailProvider } from "./modules/email/email.provider.js";
 import { createEmailService } from "./modules/email/email.service.js";
+import { createAccountService } from "./modules/account/account.service.js";
+import { createRetentionService } from "./modules/account/account.retention.js";
 
 const config = loadAiConfig();
 const app = buildApp({ logger: true });
@@ -26,6 +28,8 @@ try {
   const chat = createChatService(app.prisma);
   const emailConfig = loadEmailConfig();
   const email = createEmailService(app.prisma, emailConfig, createEmailProvider(emailConfig));
+  const account = createAccountService(app.prisma, config.workerEnabled);
+  const retention = createRetentionService(app.prisma, config.workerEnabled);
   if (!config.workerEnabled) {
     app.log.info(
       { enabled: config.workerEnabled, configured: service.configured },
@@ -43,7 +47,9 @@ try {
     while (!stopping) {
       let worked = false;
       try {
-        if (email.configured) worked = await email.tick();
+        worked = await account.tick();
+        if (!stopping) worked = (await retention.tick()) || worked;
+        if (!stopping && email.configured) worked = (await email.tick()) || worked;
         if (!stopping && service.configured) worked = (await service.tick()) || worked;
         if (!stopping && chat.configured) worked = (await chat.tick()) || worked;
       } catch {

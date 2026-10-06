@@ -102,9 +102,9 @@
 - [ ] 11.3 Viết email adapter với validated config/origin allowlist và retry; fake tests trước, live delivery khi có key.
 - [x] 11.4 Thêm forgot/reset/verify/resend APIs, rate limits và generic anti-enumeration responses.
 - [x] 11.5 Tạo reset/verify/settings frontend flows và test expired link/retry/no provider.
-- [ ] 11.6 Xây re-auth protected owner export/delete lifecycle, restricted-content filtering và session revocation.
-- [ ] 11.7 Implement retention/cleanup defaults và audit anonymization; test cooldown không mất do cleanup sớm.
-- [ ] 11.8 Cập nhật privacy/terms/account UX theo chức năng thật và Coming soon; E2E export/delete xác nhận rõ.
+- [x] 11.6 Xây re-auth protected owner export/delete lifecycle, restricted-content filtering và session revocation.
+- [x] 11.7 Implement retention/cleanup defaults và audit anonymization; test cooldown không mất do cleanup sớm.
+- [x] 11.8 Cập nhật privacy/terms/account UX theo chức năng thật và Coming soon; E2E export/delete xác nhận rõ.
 
 ## 12. P6a/P6b — Vận hành và phát hành
 

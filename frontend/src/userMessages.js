@@ -1,4 +1,8 @@
 const messages = {
+  ACCOUNT_REAUTH_REQUIRED: "Mật khẩu hiện tại chưa đúng. Nhập lại để xác nhận thao tác dữ liệu cá nhân.",
+  ACCOUNT_DELETION_UNAVAILABLE: "Xử lý xóa dữ liệu tạm thời chưa sẵn sàng. Tài khoản của bạn chưa bị thay đổi; hãy thử lại sau hoặc liên hệ hỗ trợ.",
+  ACCOUNT_DELETION_PENDING: "Tài khoản đang trong quy trình xóa dữ liệu và không thể mở lại.",
+  EXPORT_TOO_LARGE: "Xuất dữ liệu vượt giới hạn phiên tải. Hãy liên hệ hỗ trợ để nhận dữ liệu đầy đủ.",
   EMAIL_NOT_CONFIGURED: "Dịch vụ email chưa được cấu hình. Chưa có email nào được gửi; bạn có thể thử lại sau khi dịch vụ được bật.",
   EMAIL_LINK_INVALID: "Liên kết đã hết hạn hoặc đã được dùng. Hãy yêu cầu liên kết mới và mở email mới nhất.",
   LAST_ACTIVE_ADMIN: "Không thể khóa quản trị viên đang hoạt động cuối cùng. Hãy giữ ít nhất một tài khoản quản trị hoạt động.",

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { apiRequest } from "../../profileApi";
 import UserNotice from "./UserNotice";
 import AccountEmail from "./AccountEmail";
+import AccountDataControls from "./AccountDataControls";
 
 export default function AccountSettings({ onSignedOut }) {
   const [name, setName] = useState("");
@@ -288,6 +289,7 @@ export default function AccountSettings({ onSignedOut }) {
         </button>
       </section>
       <AccountEmail />
+      <AccountDataControls onSignedOut={onSignedOut} />
       {confirm && (
         <dialog
           ref={dialog}

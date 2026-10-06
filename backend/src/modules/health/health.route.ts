@@ -1,5 +1,7 @@
 import { Type, type FastifyPluginAsyncTypebox } from "@fastify/type-provider-typebox";
 import { metricsText } from "../../common/observability/metrics.js";
+import { loadAiConfig } from "../ai/ai.config.js";
+import { retention } from "../account/account.retention.js";
 
 const HealthResponseSchema = Type.Object({
   status: Type.Literal("ok"),
@@ -8,6 +10,20 @@ const HealthResponseSchema = Type.Object({
 });
 
 export const healthRoutes: FastifyPluginAsyncTypebox = async function healthRoutes(app) {
+  const workerEnabled = loadAiConfig().workerEnabled;
+  app.get("/privacy-policy", async (_req, reply) => {
+    reply.header("Cache-Control", "no-store");
+    const lease = app.hasDecorator("prisma")
+      ? await app.prisma.maintenanceLease.findUnique({
+          where: { name: "retention-v1" },
+          select: { lastCompletedAt: true },
+        })
+      : null;
+    const fresh = lease?.lastCompletedAt && lease.lastCompletedAt.getTime() > Date.now() - 7200000;
+    return {
+      data: { retention, cleanupState: !workerEnabled ? "DISABLED" : fresh ? "ACTIVE" : "PENDING" },
+    };
+  });
   app.get("/ready", async (_req, reply) => {
     reply.header("Cache-Control", "no-store");
     if (!app.hasDecorator("prisma"))

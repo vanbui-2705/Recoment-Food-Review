@@ -25,6 +25,7 @@ const selected = {
   status: true,
   createdAt: true,
   updatedAt: true,
+  deletionJob: { select: { status: true } },
 } as const;
 export const adminUserRoutes: FastifyPluginAsyncTypebox = async (app) => {
   app.addHook("preHandler", app.authenticate);
@@ -136,6 +137,12 @@ export const adminUserRoutes: FastifyPluginAsyncTypebox = async (app) => {
             select: selected,
           });
           if (!target) throw new AppError(404, "USER_NOT_FOUND", "Không tìm thấy tài khoản.");
+          if (target.deletionJob)
+            throw new AppError(
+              409,
+              "ACCOUNT_DELETION_PENDING",
+              "Tài khoản đang trong quy trình xóa dữ liệu; không thể mở lại.",
+            );
           if (target.updatedAt.getTime() !== new Date(req.body.expectedUpdatedAt).getTime())
             throw new AppError(
               409,

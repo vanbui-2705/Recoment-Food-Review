@@ -150,7 +150,7 @@ export default function AdminAccounts({ audit = false, onSignedOut }) {
                   <>
                     <h2>{item.action}</h2>
                     <p>Người thao tác: {item.actorId || "Đã ẩn danh"}</p>
-                    <p>Đối tượng: {item.targetId}</p>
+                    <p>Đối tượng: {item.targetId || "Đã ẩn danh"}</p>
                     <small>
                       {new Date(item.createdAt).toLocaleString("vi-VN")}
                     </small>
@@ -165,7 +165,7 @@ export default function AdminAccounts({ audit = false, onSignedOut }) {
                       {item.status === "ACTIVE" ? "Đang hoạt động" : "Đã khóa"}
                     </p>
                     <button
-                      disabled={loading || busy}
+                      disabled={loading || busy || !!item.deletionJob}
                       onClick={() => {
                         setSelected({
                           ...item,
@@ -181,9 +181,11 @@ export default function AdminAccounts({ audit = false, onSignedOut }) {
                         setStale(false);
                       }}
                     >
-                      {item.status === "ACTIVE"
-                        ? "Khóa tài khoản"
-                        : "Mở lại tài khoản"}
+                      {item.deletionJob
+                        ? "Đang xử lý xóa dữ liệu"
+                        : item.status === "ACTIVE"
+                          ? "Khóa tài khoản"
+                          : "Mở lại tài khoản"}
                     </button>
                   </>
                 )}
