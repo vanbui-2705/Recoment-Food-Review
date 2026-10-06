@@ -5,12 +5,14 @@ import { distanceMeters, REPEAT_WINDOW_MS } from "../food/food.policy.js";
 import { foodIdentity } from "../food/food.identity.js";
 import { normalizeFoodText } from "../food/food.schema.js";
 import { type Location, type Place } from "./place.providers.js";
+import { createCandidateService } from "../recommendations/candidate.service.js";
 export function createNearbyFoodService(
   prisma: PrismaClient,
   env = process.env,
   fetcher: typeof fetch = fetch,
 ) {
   const discovery = createDiscoveryService(prisma, env, fetcher);
+  const candidateService = createCandidateService(prisma, env, fetcher);
   return {
     async search(
       userId: string,
@@ -18,6 +20,7 @@ export function createNearbyFoodService(
       location?: Location,
       radius = 3500,
       now = new Date(),
+      onlyOpen = false,
     ) {
       const profile = await prisma.tasteProfile.findUnique({ where: { userId } });
       const origin =
@@ -93,10 +96,16 @@ export function createNearbyFoodService(
       ]);
       const blockedIds = new Set([...history, ...preferences].map((row) => row.dishId));
       const blockedNames = new Set(recipeHistory.map((row) => row.canonicalName));
-      const items = menus
+      const [allergyCount, dietCount] = await Promise.all([
+        prisma.userAllergy.count({ where: { userId } }),
+        prisma.userDietaryRestriction.count({ where: { userId, isMandatory: true } }),
+      ]);
+      const legacyItems = menus
         .slice(0, 200)
         .flatMap((menu) => {
           if (
+            allergyCount > 0 ||
+            dietCount > 0 ||
             blockedIds.has(menu.dishId) ||
             blockedNames.has(foodIdentity(menu.dish.name)) ||
             menu.dish.aliases.some((alias) => blockedNames.has(foodIdentity(alias.normalizedAlias)))
@@ -110,13 +119,17 @@ export function createNearbyFoodService(
           const live = places.items.find(
             (place) => place.source === "google" && place.placeId === menu.restaurant.googlePlaceId,
           );
-          if (live?.openNow === false) return [];
+          if (live?.openNow === false || (onlyOpen && live?.openNow !== true)) return [];
           return [
             {
               id: `menu:${menu.restaurantId}:${menu.dishId}`,
               dishId: menu.dishId,
               restaurantId: menu.restaurantId,
               title: menu.dish.name,
+              canonicalName: foodIdentity(menu.dish.name),
+              canonicalAliases: menu.dish.aliases.map((alias) =>
+                foodIdentity(alias.normalizedAlias),
+              ),
               restaurantName: menu.restaurant.name,
               address: menu.restaurant.address,
               price: menu.price,
@@ -137,6 +150,22 @@ export function createNearbyFoodService(
           ];
         })
         .sort((a, b) => (b.rating ?? -1) - (a.rating ?? -1) || a.distanceMeters - b.distanceMeters);
+      const pool = await candidateService.pool(
+        userId,
+        { ...origin, budget, radius, onlyOpen },
+        false,
+        now,
+        places,
+      );
+      const items = [
+        ...pool.items,
+        ...legacyItems.filter(
+          (item) =>
+            !pool.items.some(
+              (offer) => offer.dishId === item.dishId && offer.restaurantId === item.restaurantId,
+            ),
+        ),
+      ];
       const seen = new Set<string>();
       const restaurants: Place[] = places.items.filter((place) => {
         const key = `${normalizeFoodText(place.name)}:${normalizeFoodText(place.address || `${place.source}:${place.placeId}`)}`;
@@ -153,7 +182,7 @@ export function createNearbyFoodService(
         radiusMeters: radius,
         updatedAt: now.toISOString(),
         repeatAfterHours: 96,
-        candidateLimitReached: menus.length > 200,
+        candidateLimitReached: menus.length > 200 || pool.candidateLimitReached,
         notice:
           "Giá chỉ được xác nhận khi có thực đơn nguồn còn mới. Đánh giá và ảnh là của quán; chưa phải đánh giá riêng từng món.",
       };

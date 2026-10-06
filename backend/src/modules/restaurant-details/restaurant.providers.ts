@@ -141,7 +141,13 @@ export function createRestaurantProviders(
           openNow: typeof opening.openNow === "boolean" ? opening.openNow : null,
           businessStatus:
             source === "google"
-              ? string(data.businessStatus) || "UNKNOWN"
+              ? (
+                  {
+                    OPERATIONAL: "OPERATIONAL",
+                    CLOSED_TEMPORARILY: "TEMPORARILY_CLOSED",
+                    CLOSED_PERMANENTLY: "PERMANENTLY_CLOSED",
+                  } as Record<string, string>
+                )[string(data.businessStatus)] || "UNKNOWN"
               : data.date_closed
                 ? "PERMANENTLY_CLOSED"
                 : "UNKNOWN",

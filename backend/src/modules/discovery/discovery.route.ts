@@ -36,6 +36,7 @@ export const discoveryRoutes: FastifyPluginAsyncTypebox = async (app) => {
             latitude: Type.Optional(Type.Number({ minimum: -90, maximum: 90 })),
             longitude: Type.Optional(Type.Number({ minimum: -180, maximum: 180 })),
             radius: Type.Optional(Type.Integer({ minimum: 3000, maximum: 4000 })),
+            onlyOpen: Type.Optional(Type.Boolean()),
           },
           { additionalProperties: false },
         ),
@@ -51,6 +52,8 @@ export const discoveryRoutes: FastifyPluginAsyncTypebox = async (app) => {
           req.query.budget,
           latitude === undefined ? undefined : { latitude, longitude: longitude! },
           req.query.radius,
+          undefined,
+          req.query.onlyOpen,
         ),
       };
     },

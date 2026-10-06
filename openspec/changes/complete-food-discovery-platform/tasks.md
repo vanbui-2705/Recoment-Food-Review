@@ -22,47 +22,47 @@
 
 - [ ] 3.1 Chốt supplier contract và DTO offers/freshness/currency, không chọn API chưa có tài liệu/quyền sử dụng.
 - [x] 3.2 Migration external restaurant identities/menu offers/sync runs/quarantine; test uniqueness và nhiều options một món.
-- [ ] 3.3 Xây canonical mapping tên/alias và review cho ambiguity; test cross-source collisions.
+- [x] 3.3 Xây canonical mapping tên/alias và review cho ambiguity; test cross-source collisions.
 - [x] 3.4 Xây import dry-run/upsert commit idempotent; test nhập lại và invalid price/currency.
 - [x] 3.5 Xây paginated sync, complete-snapshot removal và delta rules; test partial failure không đánh hết món.
 - [ ] 3.6 Xây freshness/expiry/availability gate và schedule/lease/retry sync; test TTL và worker restart.
-- [ ] 3.7 Thêm ADMIN sync-run/list/retry/import APIs và auth/quota tests.
+- [x] 3.7 Thêm ADMIN sync-run/list/retry/import APIs và auth/quota tests.
 - [ ] 3.8 Viết adapter live theo supplier chính thức khi đã có contract/key; test payload thật và lập live-readiness report.
 
 ## 4. P2 — Safety evidence
 
 - [x] 4.1 Migration offer-specific allergen/diet/cross-contact evidence và review history với expiry/source.
 - [x] 4.2 Xây validator và lifecycle pending/approved/revoked/expired; test evidence mâu thuẫn và quá hạn.
-- [ ] 4.3 Xây hard safety filter không dùng missing mapping làm ABSENT; test dị ứng/diet/cross-contact kết hợp.
+- [x] 4.3 Xây hard safety filter không dùng missing mapping làm ABSENT; test dị ứng/diet/cross-contact kết hợp.
 - [x] 4.4 Thêm ADMIN evidence review APIs và audit transaction; test unauthorized review và rollback.
-- [ ] 4.5 Gắn uncertainty warnings vào discovery chủ động; test không hiển thị nhãn an toàn thiếu evidence.
+- [x] 4.5 Gắn uncertainty warnings vào discovery chủ động; test không hiển thị nhãn an toàn thiếu evidence.
 
 ## 5. P2 — Chi tiết quán và admin ingest UI
 
 - [x] 5.1 Thêm owner-authenticated restaurant detail/menu APIs, pagination, source/freshness và provider-ID validation.
 - [x] 5.2 Hoàn thiện media DTO/attribution và credential-free photo handling; test ảnh quán không gắn nhãn ảnh món.
 - [x] 5.3 Tạo trang quán menu/budget/detail/Maps/contact với missing-source/empty/error states.
-- [ ] 5.4 Gắn restaurant navigation từ discovery/dish/wheel; test mobile/back/refresh và quán chưa có menu.
+- [x] 5.4 Gắn restaurant navigation từ discovery/dish/wheel; test mobile/back/refresh và quán chưa có menu.
 - [x] 5.5 Tạo admin ingest/sync/mapping/evidence views trên API mới; test dry-run/commit/retry/review.
 - [ ] 5.6 Chạy E2E offer đủ giá -> quán -> menu, fake-provider trước và live khi có nguồn.
 
 ## 6. P3 — Candidate pipeline và recommendation API
 
-- [ ] 6.1 Chốt offer/canonical identity cooldown xuyên nguồn; test đúng biên 96h và không gộp món khác nhau.
-- [ ] 6.2 Ghép profile processed + fresh menus/places + history/dislikes; test stale profile/menu không vào strict candidates.
-- [ ] 6.3 Áp hard filters safety/diet/budget/radius/opening/availability trước ranking; test phối hợp và không nới khi empty.
-- [ ] 6.4 Xây bounded weight config, normalized scores 0–100, stable ties và diversity; thêm meaningful ranking tests.
-- [ ] 6.5 Persist permitted request/result snapshots trên foundation hiện có; test owner privacy và forbidden provider content.
-- [ ] 6.6 Thêm POST /recommendations và GET /recommendations/:id owner-only/idempotent; giữ today route tương thích.
-- [ ] 6.7 Lưu budget/radius theo tài khoản và self-load bằng valid location; test GPS thiếu/denied và stale response.
-- [ ] 6.8 Gắn wheel vào eligible pool và choice event refresh; regression CHOSEN/EATEN/96h và unknown-price opt-in.
+- [x] 6.1 Chốt offer/canonical identity cooldown xuyên nguồn; test đúng biên 96h và không gộp món khác nhau.
+- [x] 6.2 Ghép profile processed + fresh menus/places + history/dislikes; test stale profile/menu không vào strict candidates.
+- [x] 6.3 Áp hard filters safety/diet/budget/radius/opening/availability trước ranking; test phối hợp và không nới khi empty.
+- [x] 6.4 Xây bounded weight config, normalized scores 0–100, stable ties và diversity; thêm meaningful ranking tests.
+- [x] 6.5 Persist permitted request/result snapshots trên foundation hiện có; test owner privacy và forbidden provider content.
+- [x] 6.6 Thêm POST /recommendations và GET /recommendations/:id owner-only/idempotent; giữ today route tương thích.
+- [x] 6.7 Lưu budget/radius theo tài khoản và self-load bằng valid location; test GPS thiếu/denied và stale response.
+- [x] 6.8 Gắn wheel vào eligible pool và choice event refresh; regression CHOSEN/EATEN/96h và unknown-price opt-in.
 
 ## 7. P3 — LLM ranking và giải thích
 
 - [ ] 7.1 Viết top-20 candidate prompt/structured result contract và token/deadline/cost limits.
-- [ ] 7.2 Validate allowed/unique candidate IDs và reasons có căn cứ; test invented IDs/prices/allergy claims/injection.
-- [ ] 7.3 Xây deterministic fallback và status/metrics cho timeout/JSON sai/quota; test không mất valid candidates.
-- [ ] 7.4 Gắn reasons/fallback vào frontend và persisted snapshot; test no-match/no-safe-match/pending states.
+- [x] 7.2 Validate allowed/unique candidate IDs và reasons có căn cứ; test invented IDs/prices/allergy claims/injection.
+- [x] 7.3 Xây deterministic fallback và status/metrics cho timeout/JSON sai/quota; test không mất valid candidates.
+- [x] 7.4 Gắn reasons/fallback vào frontend và persisted snapshot; test no-match/no-safe-match/pending states.
 - [ ] 7.5 Kiểm tra live model với bộ ca đã xác định, ghi cost/latency và regression trước bật tính năng.
 
 ## 8. P4 — Chat discovery

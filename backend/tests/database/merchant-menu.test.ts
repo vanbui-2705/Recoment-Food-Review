@@ -319,4 +319,59 @@ describe("merchant menu transactional ingestion", () => {
     expect(JSON.stringify(event.metadata)).not.toContain("password");
     expect(JSON.stringify(event.metadata)).not.toContain("sourceUrl");
   });
+  it("keeps colliding external restaurant and offer IDs separate across authorized sources", async () => {
+    const second = await app.prisma.merchantSupplier.create({
+      data: {
+        code: `secondary-${tag}`,
+        name: "Independent authorized source",
+        documentationUrl: "https://second-supplier.test/docs",
+        authorizationReference: "fixture-contract",
+        enabled: true,
+      },
+    });
+    let secondRestaurantId: string | undefined;
+    try {
+      const run = await service.start(
+        {
+          supplierId: second.id,
+          snapshotId: "same-external-ids",
+          expectedPages: 1,
+          mode: "DELTA",
+          observedAt: observed,
+        },
+        adminId,
+      );
+      await service.stage(run.id, 0, [{ ...row("regular"), price: 60000 }], adminId);
+      await service.commit(run.id, adminId);
+      const identity = await app.prisma.externalRestaurantIdentity.findUniqueOrThrow({
+        where: { supplierId_externalId: { supplierId: second.id, externalId: "restaurant1" } },
+        include: { offers: true },
+      });
+      secondRestaurantId = identity.restaurantId;
+      expect(identity.restaurantId).not.toBe(restaurantId);
+      expect(identity.offers[0]!.id).not.toBe(offerId);
+      expect(identity.offers[0]).toMatchObject({ dishId, price: 60000 });
+    } finally {
+      await app.prisma.externalMenuItem.deleteMany({
+        where: { identity: { supplierId: second.id } },
+      });
+      await app.prisma.externalRestaurantIdentity.deleteMany({ where: { supplierId: second.id } });
+      await app.prisma.menuSyncRun.deleteMany({ where: { supplierId: second.id } });
+      await app.prisma.merchantSupplier.delete({ where: { id: second.id } });
+      if (secondRestaurantId)
+        await app.prisma.restaurant.delete({ where: { id: secondRestaurantId } });
+    }
+  });
+  it("bounds administrative ingestion requests with a retry-after response", async () => {
+    let limited;
+    for (let index = 0; index < 121; index++) {
+      const response = await app.inject({ url: "/admin/menu/suppliers", headers: admin });
+      if (response.statusCode === 429) {
+        limited = response;
+        break;
+      }
+    }
+    expect(limited?.statusCode).toBe(429);
+    expect(Number(limited?.headers["retry-after"])).toBeGreaterThan(0);
+  }, 30000);
 });

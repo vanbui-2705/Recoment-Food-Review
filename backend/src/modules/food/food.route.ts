@@ -154,9 +154,33 @@ export const foodRoutes: FastifyPluginAsyncTypebox = async (app) => {
       }),
     },
   }));
-  app.get("/recommendations/today", auth, async (req) => ({
-    data: await service.today(req.authUser!.id),
-  }));
+  app.get("/recommendations/today", auth, async (req) => {
+    const userId = req.authUser!.id;
+    const [data, settings, profile, note] = await Promise.all([
+      service.today(userId),
+      app.prisma.discoverySettings.findUnique({ where: { userId } }),
+      app.prisma.tasteProfile.findUnique({ where: { userId } }),
+      app.prisma.personalFoodKnowledge.findUnique({ where: { userId } }),
+    ]);
+    return {
+      data: {
+        ...data,
+        discoveryContext: {
+          enabled: true,
+          profileRevision: note?.revision ?? 0,
+          personalizedReady: !["PROFILE_PENDING_ANALYSIS", "ONBOARDING_REQUIRED"].includes(
+            data.status,
+          ),
+          budget: settings?.budget ?? profile?.budgetMax ?? 50000,
+          radius:
+            settings?.radius ?? Math.min(4000, Math.max(3000, profile?.maxDistanceMeters ?? 3500)),
+          latitude: settings?.latitude ?? profile?.latitude ?? null,
+          longitude: settings?.longitude ?? profile?.longitude ?? null,
+          onlyOpen: settings?.onlyOpen ?? false,
+        },
+      },
+    };
+  });
   app.post(
     "/users/me/dishes/:id/interactions",
     {

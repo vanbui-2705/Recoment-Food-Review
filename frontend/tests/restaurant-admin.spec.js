@@ -57,6 +57,48 @@ test.beforeEach(async ({ page }) => {
     route.fulfill({ json: { data: { status: "NOT_CONFIGURED", items: [] } } }),
   );
 });
+test("navigates from restaurant discovery to menu and back on desktop and mobile", async ({
+  page,
+}) => {
+  await page.route("**/api/discovery/restaurants?*", (route) =>
+    route.fulfill({
+      json: {
+        data: {
+          status: "SUCCESS",
+          sources: [],
+          items: [
+            {
+              source: "google",
+              placeId: "place_1",
+              name: "Quán thực đơn thật",
+              address: "Quận 1",
+              distanceMeters: 100,
+              rating: null,
+              openNow: null,
+              attributions: [],
+              matchType: "DISH_QUERY",
+              mapsUrl: null,
+              menuConfirmed: false,
+            },
+          ],
+        },
+      },
+    }),
+  );
+  await page.route("**/api/restaurants/places/google/place_1?*", (route) =>
+    route.fulfill({ json: { data: result } }),
+  );
+  await page.goto("/#discover");
+  await page.getByRole("textbox", { name: "Món bạn đang thèm" }).fill("Phở bò");
+  await page.getByRole("button", { name: "Tìm quán phù hợp" }).click();
+  await page.getByRole("button", { name: /Chi tiết quán/ }).click();
+  await expect(page.getByRole("heading", { name: /Phở bò/ })).toBeVisible();
+  await expect(page).toHaveURL(/#restaurant\/place\/google\/place_1$/);
+  await page.getByRole("button", { name: "← Quay lại danh sách", exact: true }).click();
+  await expect(
+    page.getByRole("textbox", { name: "Món bạn đang thèm" }),
+  ).toHaveValue("Phở bò");
+});
 test("restaurant menu survives refresh and distinguishes unconfirmed or expired prices", async ({
   page,
 }) => {
@@ -171,16 +213,14 @@ test("admin preview is read-only until confirmed and interrupted commit can retr
   });
   await page.goto("/#admin");
   await page.getByLabel("Nguồn được cấp quyền").selectOption(id);
-  await page
-    .getByLabel("Nội dung snapshot")
-    .fill(
-      JSON.stringify({
-        snapshotId: "unique-snapshot",
-        mode: "DELTA",
-        observedAt: new Date().toISOString(),
-        pages: [[{}]],
-      }),
-    );
+  await page.getByLabel("Nội dung snapshot").fill(
+    JSON.stringify({
+      snapshotId: "unique-snapshot",
+      mode: "DELTA",
+      observedAt: new Date().toISOString(),
+      pages: [[{}]],
+    }),
+  );
   await page
     .getByRole("button", { name: "Xem trước, chưa ghi dữ liệu" })
     .click();
@@ -223,17 +263,74 @@ test("admin access denial displays a notice without write forms", async ({
   );
 });
 
-test("admin reviews mapping and evidence with stale-write protection", async ({ page }) => {
-  const evidence = { id: "evidence-id", kind: "ALLERGEN", code: "MILK", claim: "ABSENT", status: "PENDING", sourceUrl: "https://example.org/ingredients", excerpt: "Nguồn xác nhận không dùng sữa cho lựa chọn này", expiresAt: new Date(Date.now() + 3600000).toISOString(), reviews: [] };
-  const offer = { id: offerId, title: "Phở bò", price: 60000, active: true, isAvailable: true, updatedAt: new Date().toISOString(), expiresAt: evidence.expiresAt, sourceUrl: "https://example.org/menu", identity: { restaurant: { name: "Quán thật" }, supplier }, dishId: null, dish: null, evidence: [evidence] };
+test("admin reviews mapping and evidence with stale-write protection", async ({
+  page,
+}) => {
+  const evidence = {
+    id: "evidence-id",
+    kind: "ALLERGEN",
+    code: "MILK",
+    claim: "ABSENT",
+    status: "PENDING",
+    sourceUrl: "https://example.org/ingredients",
+    excerpt: "Nguồn xác nhận không dùng sữa cho lựa chọn này",
+    expiresAt: new Date(Date.now() + 3600000).toISOString(),
+    reviews: [],
+  };
+  const offer = {
+    id: offerId,
+    title: "Phở bò",
+    price: 60000,
+    active: true,
+    isAvailable: true,
+    updatedAt: new Date().toISOString(),
+    expiresAt: evidence.expiresAt,
+    sourceUrl: "https://example.org/menu",
+    identity: { restaurant: { name: "Quán thật" }, supplier },
+    dishId: null,
+    dish: null,
+    evidence: [evidence],
+  };
   let review, mapping;
-  await page.route("**/api/catalogs/*", (route) => route.fulfill({ json: { data: { items: [{ code: "MILK", name: "Sữa" }] } } }));
-  await page.route("**/api/dishes?*", (route) => route.fulfill({ json: { data: { items: [{ id, name: "Phở bò chuẩn" }] } } }));
+  await page.route("**/api/catalogs/*", (route) =>
+    route.fulfill({
+      json: { data: { items: [{ code: "MILK", name: "Sữa" }] } },
+    }),
+  );
+  await page.route("**/api/dishes?*", (route) =>
+    route.fulfill({
+      json: { data: { items: [{ id, name: "Phở bò chuẩn" }] } },
+    }),
+  );
   await page.route("**/api/admin/menu/**", (route) => {
     const path = new URL(route.request().url()).pathname;
-    if (route.request().method() === "GET") return route.fulfill({ json: { data: { items: path.endsWith("offers") ? [offer] : path.endsWith("suppliers") ? [supplier] : [] } } });
-    if (path.endsWith("mapping")) { mapping = route.request().postDataJSON(); offer.dishId = id; offer.dish = { id, name: "Phở bò chuẩn" }; }
-    if (path.endsWith("review")) { review = route.request().postDataJSON(); evidence.status = review.status; evidence.reviews.push({ id: "review", status: review.status, reason: review.reason, createdAt: new Date().toISOString() }); }
+    if (route.request().method() === "GET")
+      return route.fulfill({
+        json: {
+          data: {
+            items: path.endsWith("offers")
+              ? [offer]
+              : path.endsWith("suppliers")
+                ? [supplier]
+                : [],
+          },
+        },
+      });
+    if (path.endsWith("mapping")) {
+      mapping = route.request().postDataJSON();
+      offer.dishId = id;
+      offer.dish = { id, name: "Phở bò chuẩn" };
+    }
+    if (path.endsWith("review")) {
+      review = route.request().postDataJSON();
+      evidence.status = review.status;
+      evidence.reviews.push({
+        id: "review",
+        status: review.status,
+        reason: review.reason,
+        createdAt: new Date().toISOString(),
+      });
+    }
     return route.fulfill({ json: { data: {} } });
   });
   await page.goto("/#admin");
@@ -243,10 +340,22 @@ test("admin reviews mapping and evidence with stale-write protection", async ({ 
   await page.getByRole("button", { name: "Lưu liên kết" }).click();
   await expect(page.getByText("Đã cập nhật liên kết món chuẩn.")).toBeVisible();
   expect(mapping).toEqual({ dishId: id, expectedUpdatedAt: offer.updatedAt });
-  await page.getByText("Bằng chứng dị ứng và chế độ ăn (1)", { exact: true }).click();
-  await expect(page.getByRole("button", { name: "Duyệt bằng chứng" })).toBeDisabled();
-  await page.getByLabel("Lý do duyệt hoặc thu hồi").fill("Đã kiểm tra tài liệu nhà cung cấp");
+  await page
+    .getByText("Bằng chứng dị ứng và chế độ ăn (1)", { exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Duyệt bằng chứng" }),
+  ).toBeDisabled();
+  await page
+    .getByLabel("Lý do duyệt hoặc thu hồi")
+    .fill("Đã kiểm tra tài liệu nhà cung cấp");
   await page.getByRole("button", { name: "Duyệt bằng chứng" }).click();
-  await expect(page.getByText("Đã duyệt bằng chứng.", { exact: true })).toBeVisible();
-  expect(review).toEqual({ status: "APPROVED", expectedStatus: "PENDING", reason: "Đã kiểm tra tài liệu nhà cung cấp" });
+  await expect(
+    page.getByText("Đã duyệt bằng chứng.", { exact: true }),
+  ).toBeVisible();
+  expect(review).toEqual({
+    status: "APPROVED",
+    expectedStatus: "PENDING",
+    reason: "Đã kiểm tra tài liệu nhà cung cấp",
+  });
 });

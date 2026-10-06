@@ -296,6 +296,7 @@ export function createDiscoveryService(
         idempotencyKey: undefined,
         userId: undefined,
         eligibleAgainAt: new Date(action.createdAt.getTime() + REPEAT_WINDOW_MS),
+        canonicalName: action.canonicalName,
       };
     },
   };

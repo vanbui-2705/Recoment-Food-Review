@@ -104,6 +104,7 @@ export default function Today({
   return (
     <>
       <NearbyFood
+        context={data?.discoveryContext}
         onCandidates={onNearbyCandidates}
         notice={notice}
         onRestaurant={onRestaurant}
@@ -181,42 +182,43 @@ export default function Today({
         </p>
       )}
       <div className="food-grid">
-        {data?.items.map((dish) => (
-          <article className="food-card" key={dish.id}>
-            <p className="food-eyebrow">{dish.cuisine.name}</p>
-            <h2>{dish.name}</h2>
-            <p>{dish.description}</p>
-            <strong>
-              {money(dish.priceMin)} – {money(dish.priceMax)}
-            </strong>
-            <small>Khoảng giá công thức tham khảo · chưa phải giá quán</small>
-            <p className="food-reason">{dish.reason}</p>
-            <button onClick={() => onDish(dish)}>
-              Xem kiến thức & tìm quán
-            </button>
-            <div className="food-actions">
-              <button
-                className="food-primary"
-                disabled={!!busy}
-                onClick={() => action(dish, "CHOSEN")}
-              >
-                Chọn món hôm nay
+        {!data?.discoveryContext?.enabled &&
+          data?.items.map((dish) => (
+            <article className="food-card" key={dish.id}>
+              <p className="food-eyebrow">{dish.cuisine.name}</p>
+              <h2>{dish.name}</h2>
+              <p>{dish.description}</p>
+              <strong>
+                {money(dish.priceMin)} – {money(dish.priceMax)}
+              </strong>
+              <small>Khoảng giá công thức tham khảo · chưa phải giá quán</small>
+              <p className="food-reason">{dish.reason}</p>
+              <button onClick={() => onDish(dish)}>
+                Xem kiến thức & tìm quán
               </button>
-              <button disabled={!!busy} onClick={() => action(dish, "EATEN")}>
-                Đã ăn
-              </button>
-              <button disabled={!!busy} onClick={() => action(dish, "LIKED")}>
-                Thích
-              </button>
-              <button
-                disabled={!!busy}
-                onClick={() => action(dish, "DISLIKED")}
-              >
-                Không thích
-              </button>
-            </div>
-          </article>
-        ))}
+              <div className="food-actions">
+                <button
+                  className="food-primary"
+                  disabled={!!busy}
+                  onClick={() => action(dish, "CHOSEN")}
+                >
+                  Chọn món hôm nay
+                </button>
+                <button disabled={!!busy} onClick={() => action(dish, "EATEN")}>
+                  Đã ăn
+                </button>
+                <button disabled={!!busy} onClick={() => action(dish, "LIKED")}>
+                  Thích
+                </button>
+                <button
+                  disabled={!!busy}
+                  onClick={() => action(dish, "DISLIKED")}
+                >
+                  Không thích
+                </button>
+              </div>
+            </article>
+          ))}
       </div>
       <RecipeIdeas key={data?.status} onRecipe={onRecipe} navigate={navigate} />
       <section className="food-section">

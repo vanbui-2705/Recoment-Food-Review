@@ -2,9 +2,13 @@ import "dotenv/config";
 import { randomBytes } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import pg from "pg";
+import process from "node:process";
+import { URL } from "node:url";
+import console from "node:console";
 
 // Apply every migration in an isolated disposable schema, never the app schema.
 const schema = `migration_check_${randomBytes(8).toString("hex")}`;
+if (!/^migration_check_[a-f0-9]{16}$/.test(schema)) throw new Error("Invalid cleanup target");
 const url = new URL(process.env.DATABASE_URL);
 const client = new pg.Client({ connectionString: url.href });
 await client.connect();
@@ -27,7 +31,6 @@ try {
   );
   console.log(`Migration-from-empty passed: ${result.rows[0].migrations} migrations.`);
 } finally {
-  if (!/^migration_check_[a-f0-9]{16}$/.test(schema)) throw new Error("Invalid cleanup target");
   await client.query(`DROP SCHEMA IF EXISTS "${schema}" CASCADE`);
   await client.end();
 }

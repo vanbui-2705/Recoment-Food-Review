@@ -1,4 +1,20 @@
 const messages = {
+  RECOMMENDATION_IN_PROGRESS:
+    "Lượt gợi ý đang xử lý. Hãy chờ một chút rồi thử lại.",
+  RECOMMENDATION_PROFILE_CHANGED:
+    "Khẩu vị đã thay đổi trong lúc tìm món. Hãy tìm lại để dùng thông tin mới nhất.",
+  OFFER_NO_LONGER_ELIGIBLE:
+    "Món đã thay đổi, hết hạn dữ liệu hoặc chưa đủ bằng chứng cho ràng buộc ăn uống. Hãy tải lại gợi ý trước khi xác nhận.",
+  WRITE_CONFLICT:
+    "Dữ liệu đang được cập nhật. Thao tác chưa được xác nhận; hãy thử lại.",
+  OFFER_CHANGED:
+    "Thực đơn đã được cập nhật. Hãy tải lại dữ liệu rồi kiểm tra liên kết món chuẩn.",
+  EVIDENCE_REVIEW_CONFLICT:
+    "Bằng chứng đã được xét duyệt ở phiên khác hoặc đã bị thu hồi. Hãy tải lại trạng thái mới nhất.",
+  SYNC_INCOMPLETE:
+    "Snapshot chưa đủ trang. Hãy thử lại bằng đúng tệp ban đầu; thực đơn hiện tại vẫn được giữ.",
+  SYNC_HAS_QUARANTINE:
+    "Snapshot có dòng dữ liệu không hợp lệ. Kiểm tra kết quả xem trước và sửa tại nguồn trước khi áp dụng.",
   PLACES_NOT_CONFIGURED: "Tìm quán chưa được cấu hình",
   NETWORK_ERROR:
     "Không kết nối được. Kiểm tra mạng rồi thử lại; thao tác vừa rồi chưa được xác nhận thành công.",

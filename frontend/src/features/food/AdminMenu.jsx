@@ -302,7 +302,9 @@ export default function AdminMenu() {
     [message, setMessage] = useState("");
   const [reload, setReload] = useState(0),
     [page, setPage] = useState(1),
-    [busy, setBusy] = useState(false);
+    [working, setBusy] = useState(false);
+  const [refreshing, setRefreshing] = useState(true);
+  const busy = working || refreshing;
   const [supplierId, setSupplierId] = useState(""),
     [batch, setBatch] = useState(""),
     [preview, setPreview] = useState(null),
@@ -310,7 +312,7 @@ export default function AdminMenu() {
   useEffect(() => {
     let active = true;
     setError("");
-    setData(null);
+    setRefreshing(true);
     Promise.all([
       apiRequest("/admin/menu/suppliers"),
       apiRequest("/admin/menu/sync-runs?limit=20"),
@@ -331,7 +333,13 @@ export default function AdminMenu() {
           });
       })
       .catch((failure) => {
-        if (active) setError(failure.message);
+        if (active) {
+          setError(failure.message);
+          if ([401, 403].includes(failure.status)) setData(null);
+        }
+      })
+      .finally(() => {
+        if (active) setRefreshing(false);
       });
     return () => {
       active = false;
@@ -394,6 +402,9 @@ export default function AdminMenu() {
         </UserNotice>
       )}
       {!data && !error && <p role="status">Đang tải dữ liệu quản trị…</p>}
+      {data && refreshing && (
+        <p role="status">Đang cập nhật dữ liệu quản trị…</p>
+      )}
       {data && (
         <>
           <details className="food-panel">

@@ -5,7 +5,12 @@ import PlacePhoto from "./PlacePhoto";
 import { sourceNames } from "./Discovery";
 import UserNotice from "./UserNotice";
 
-export default function NearbyFood({ onCandidates, notice, onRestaurant }) {
+export default function NearbyFood({
+  onCandidates,
+  notice,
+  onRestaurant,
+  context,
+}) {
   const [budget, setBudget] = useState("50000");
   const [radius, setRadius] = useState("3500");
   const [location, setLocation] = useState(null);
@@ -14,8 +19,43 @@ export default function NearbyFood({ onCandidates, notice, onRestaurant }) {
   const [error, setError] = useState("");
   const [allowUnknown, setAllowUnknown] = useState(false);
   const [saving, setSaving] = useState("");
+  const [onlyOpen, setOnlyOpen] = useState(false);
+  const [saveLocation, setSaveLocation] = useState(false);
+  const initialized = useRef(false),
+    automatic = useRef(null),
+    requestKey = useRef(null);
   const pending = useRef(new Map());
   const generation = useRef(0);
+  useEffect(() => {
+    if (!context?.enabled) return;
+    if (!initialized.current) {
+      initialized.current = true;
+      setBudget(String(context.budget));
+      setRadius(String(context.radius));
+      setOnlyOpen(context.onlyOpen);
+      if (context.latitude != null && context.longitude != null)
+        setLocation({
+          latitude: context.latitude,
+          longitude: context.longitude,
+        });
+    }
+    const autoSignature = `${context.profileRevision ?? 0}:${context.latitude}:${context.longitude}`;
+    if (!context.personalizedReady && automatic.current) {
+      generation.current++;
+      setData(null);
+      setBusy(false);
+      automatic.current = null;
+    }
+    if (
+      automatic.current !== autoSignature &&
+      context.personalizedReady &&
+      context.latitude != null &&
+      context.longitude != null
+    ) {
+      automatic.current = autoSignature;
+      search(null, context);
+    }
+  }, [context]);
   useEffect(
     () => () => {
       generation.current++;
@@ -29,7 +69,14 @@ export default function NearbyFood({ onCandidates, notice, onRestaurant }) {
           ? {
               ...old,
               items: old.items.filter(
-                (item) => item.dishId !== event.detail.dishId,
+                (item) =>
+                  (!event.detail?.dishId ||
+                    item.dishId !== event.detail.dishId) &&
+                  (!event.detail?.canonicalName ||
+                    (item.canonicalName !== event.detail.canonicalName &&
+                      !item.canonicalAliases?.includes(
+                        event.detail.canonicalName,
+                      ))),
               ),
             }
           : old,
@@ -38,10 +85,15 @@ export default function NearbyFood({ onCandidates, notice, onRestaurant }) {
     return () => window.removeEventListener("food-choice-saved", chosen);
   }, []);
   useEffect(() => {
-    const confirmed = (data?.items || []).map((item) => ({
-      ...item,
-      kind: "DISH",
-    }));
+    const confirmed = (data?.items || [])
+      .filter(
+        (item) => !item.expiresAt || Date.parse(item.expiresAt) > Date.now(),
+      )
+      .map((item) => ({
+        ...item,
+        kind: "DISH",
+        recommendationRequestId: data?.id,
+      }));
     const unknown = allowUnknown
       ? (data?.restaurants || [])
           .filter((place) => place.openNow !== false)
@@ -79,15 +131,54 @@ export default function NearbyFood({ onCandidates, notice, onRestaurant }) {
         { timeout: 10000, maximumAge: 60000 },
       );
     });
-  const search = async (event) => {
-    event.preventDefault();
+  const search = async (event, initial) => {
+    event?.preventDefault();
     const current = ++generation.current;
     setBusy(true);
     setError("");
     setData(null);
     setAllowUnknown(false);
-    const fetchNearby = (point) => {
-      const params = new URLSearchParams({ budget, radius });
+    const activeBudget = String(initial?.budget ?? budget),
+      activeRadius = String(initial?.radius ?? radius),
+      activeOnlyOpen = initial?.onlyOpen ?? onlyOpen;
+    const fetchNearby = async (point) => {
+      if (context?.enabled && context.personalizedReady) {
+        const input = {
+          budget: Number(activeBudget),
+          radius: Number(activeRadius),
+          onlyOpen: activeOnlyOpen,
+          ...(point ? point : {}),
+        };
+        const fingerprint = JSON.stringify({
+          ...input,
+          profileRevision:
+            initial?.profileRevision ?? context?.profileRevision ?? 0,
+        });
+        if (requestKey.current?.fingerprint !== fingerprint)
+          requestKey.current = { fingerprint, key: crypto.randomUUID() };
+        const submittedKey = requestKey.current.key;
+        const response = await apiRequest("/recommendations", {
+          method: "POST",
+          body: JSON.stringify({
+            ...input,
+            idempotencyKey: submittedKey,
+          }),
+        });
+        if (requestKey.current?.key === submittedKey) requestKey.current = null;
+        return {
+          data: {
+            ...response.data,
+            restaurants: response.data.restaurants || [],
+            notice:
+              "Giá lấy từ thực đơn được cấp quyền còn hạn. Ảnh và đánh giá thuộc quán. Hãy xác nhận nguyên liệu và thời gian mở cửa trước khi đến.",
+          },
+        };
+      }
+      const params = new URLSearchParams({
+        budget: activeBudget,
+        radius: activeRadius,
+        onlyOpen: String(activeOnlyOpen),
+      });
       if (point) {
         params.set("latitude", String(point.latitude));
         params.set("longitude", String(point.longitude));
@@ -95,14 +186,39 @@ export default function NearbyFood({ onCandidates, notice, onRestaurant }) {
       return apiRequest(`/discovery/nearby-food?${params}`);
     };
     try {
+      if (context?.enabled && !initial) {
+        await apiRequest("/users/me/discovery-settings", {
+          method: "PUT",
+          body: JSON.stringify({
+            budget: Number(activeBudget),
+            radius: Number(activeRadius),
+            onlyOpen: activeOnlyOpen,
+            ...(saveLocation && location ? location : {}),
+          }),
+        });
+      }
       let response;
       try {
-        response = await fetchNearby(location);
+        response = await fetchNearby(
+          initial
+            ? { latitude: initial.latitude, longitude: initial.longitude }
+            : location,
+        );
       } catch (err) {
         if (err.code !== "LOCATION_REQUIRED") throw err;
         const point = await gps();
         if (current !== generation.current) return;
         setLocation(point);
+        if (context?.enabled && saveLocation)
+          await apiRequest("/users/me/discovery-settings", {
+            method: "PUT",
+            body: JSON.stringify({
+              budget: Number(activeBudget),
+              radius: Number(activeRadius),
+              onlyOpen: activeOnlyOpen,
+              ...point,
+            }),
+          });
         response = await fetchNearby(point);
       }
       if (current === generation.current) setData(response.data);
@@ -118,13 +234,20 @@ export default function NearbyFood({ onCandidates, notice, onRestaurant }) {
     if (!pending.current.has(item.dishId))
       pending.current.set(item.dishId, crypto.randomUUID());
     try {
-      await apiRequest(`/users/me/dishes/${item.dishId}/interactions`, {
-        method: "POST",
-        body: JSON.stringify({
-          type: "CHOSEN",
-          idempotencyKey: pending.current.get(item.dishId),
-        }),
-      });
+      const resultFeedback = item.offerId && data?.id;
+      await apiRequest(
+        resultFeedback
+          ? `/recommendations/${data.id}/feedback`
+          : `/users/me/dishes/${item.dishId}/interactions`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            type: "CHOSEN",
+            idempotencyKey: pending.current.get(item.dishId),
+            ...(resultFeedback ? { resultId: item.id } : {}),
+          }),
+        },
+      );
       pending.current.delete(item.dishId);
       window.dispatchEvent(
         new CustomEvent("food-choice-saved", {
@@ -164,6 +287,20 @@ export default function NearbyFood({ onCandidates, notice, onRestaurant }) {
             }}
           />
         </label>
+        {context?.enabled && (
+          <label>
+            <input
+              type="checkbox"
+              checked={onlyOpen}
+              disabled={busy}
+              onChange={(event) => {
+                setOnlyOpen(event.target.checked);
+                setData(null);
+              }}
+            />{" "}
+            Chỉ quán xác nhận đang mở
+          </label>
+        )}
         <label>
           Bán kính
           <select
@@ -185,6 +322,22 @@ export default function NearbyFood({ onCandidates, notice, onRestaurant }) {
           {busy ? "Đang tìm quanh bạn…" : "Tìm món quanh tôi"}
         </button>
       </form>
+      {context?.enabled && (
+        <label>
+          <input
+            type="checkbox"
+            checked={saveLocation}
+            onChange={(event) => setSaveLocation(event.target.checked)}
+          />{" "}
+          Lưu vị trí này vào tài khoản cho lần mở app tiếp theo
+        </label>
+      )}
+      {context?.enabled && !location && (
+        <UserNotice>
+          Cho phép vị trí bằng nút “Tìm món quanh tôi”. App không tự xin GPS mỗi
+          lần tải màn hình.
+        </UserNotice>
+      )}
       <p className="food-muted">
         {location
           ? "Đang dùng vị trí GPS hiện tại."
@@ -213,6 +366,22 @@ export default function NearbyFood({ onCandidates, notice, onRestaurant }) {
       {data && (
         <>
           <p className="food-muted">{data.notice}</p>
+          {data.rankingStatus?.startsWith("FALLBACK") && (
+            <UserNotice tone="warning">
+              AI xếp hạng tạm thời chưa sẵn sàng. Kết quả vẫn được lọc theo điều
+              kiện đã lưu và xếp hạng bằng hệ thống mặc định.
+            </UserNotice>
+          )}
+          {data.status === "NO_SAFE_MATCH" && (
+            <UserNotice
+              tone="warning"
+              title="Chưa đủ bằng chứng cho ràng buộc ăn uống"
+            >
+              Không có món đáp ứng đầy đủ bằng chứng dị ứng/chế độ ăn đã lưu. Bộ
+              lọc được giữ nguyên; hãy liên hệ quán để xác nhận hoặc tìm công
+              thức phù hợp.
+            </UserNotice>
+          )}
           {data.sources
             ?.filter(
               (source) => !["OK", "NOT_CONFIGURED"].includes(source.status),
@@ -233,6 +402,15 @@ export default function NearbyFood({ onCandidates, notice, onRestaurant }) {
                     <PlacePhoto photo={item.photo} name={item.restaurantName} />
                     <h3>{item.title}</h3>
                     <p>{item.restaurantName}</p>
+                    {item.reason && (
+                      <p className="food-reason">{item.reason}</p>
+                    )}
+                    {item.warnings?.includes("OPENING_UNCONFIRMED") && (
+                      <p className="food-muted">
+                        Chưa xác nhận giờ mở cửa. Hãy liên hệ quán trước khi
+                        đến.
+                      </p>
+                    )}
                     <strong>{money(item.price)}</strong>
                     <p>
                       {(item.distanceMeters / 1000).toFixed(1)} km ·{" "}

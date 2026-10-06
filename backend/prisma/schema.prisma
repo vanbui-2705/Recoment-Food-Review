@@ -114,6 +114,7 @@ model User {
   recipeInteractions     RecipeInteraction[]
   foodKnowledge          PersonalFoodKnowledge?
   tasteAnalysisJobs      TasteAnalysisJob[]
+  discoverySettings      DiscoverySettings?
 
   @@map("users")
 }
@@ -157,6 +158,19 @@ model TasteProfile {
   user                User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("taste_profiles")
+}
+
+model DiscoverySettings {
+  userId    String   @id @map("user_id") @db.Uuid
+  budget    Int      @default(50000)
+  radius    Int      @default(3500)
+  latitude  Float?   @db.DoublePrecision
+  longitude Float?   @db.DoublePrecision
+  onlyOpen  Boolean  @default(false) @map("only_open")
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("discovery_settings")
 }
 
 model Allergen {
@@ -385,10 +399,20 @@ model RecommendationRequest {
   maxDistanceMeters      Int?                   @map("max_distance_meters")
   naturalLanguageRequest String?                @map("natural_language_request") @db.VarChar(1000)
   status                 RecommendationStatus
+  idempotencyKey         String?                @unique @map("idempotency_key") @db.VarChar(255)
+  inputHash              String?                @map("input_hash") @db.VarChar(64)
+  profileRevision        Int?                   @map("profile_revision")
+  processingState        String                 @default("COMPLETED") @map("processing_state") @db.VarChar(30)
+  leaseUntil             DateTime?              @map("lease_until") @db.Timestamptz(3)
+  leaseToken             String?                @map("lease_token") @db.Uuid
+  rankingStatus          String                 @default("DETERMINISTIC") @map("ranking_status") @db.VarChar(80)
+  outcomeCode            String?                @map("outcome_code") @db.VarChar(80)
+  onlyOpen               Boolean                @default(false) @map("only_open")
   user                   User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
   results                RecommendationResult[]
 
   @@index([userId, requestedAt(sort: Desc)])
+  @@index([processingState, leaseUntil])
   @@map("recommendation_requests")
 }
 
@@ -402,6 +426,10 @@ model RecommendationResult {
   finalScore     Decimal               @map("final_score") @db.Decimal(7, 4)
   reason         String                @db.VarChar(1000)
   safetyWarnings Json                  @map("safety_warnings") @db.JsonB
+  offerId        String?               @map("offer_id") @db.Uuid
+  price          Int?
+  expiresAt      DateTime?             @map("expires_at") @db.Timestamptz(3)
+  offer          ExternalMenuItem?     @relation(fields: [offerId], references: [id], onDelete: Restrict)
   createdAt      DateTime              @default(now()) @map("created_at") @db.Timestamptz(3)
   request        RecommendationRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
   dish           Dish                  @relation(fields: [dishId], references: [id], onDelete: Restrict)
@@ -409,6 +437,7 @@ model RecommendationResult {
   interactions   UserInteraction[]
 
   @@unique([requestId, rank])
+  @@unique([requestId, offerId])
   @@index([dishId])
   @@index([restaurantId])
   @@map("recommendation_results")
@@ -573,26 +602,27 @@ model ExternalRestaurantIdentity {
 }
 
 model ExternalMenuItem {
-  id            String                     @id @default(uuid()) @db.Uuid
-  identityId    String                     @map("identity_id") @db.Uuid
-  externalId    String                     @map("external_id") @db.VarChar(255)
-  title         String                     @db.VarChar(200)
-  optionLabel   String?                    @map("option_label") @db.VarChar(200)
-  price         Int
-  currency      String                     @default("VND") @db.VarChar(3)
-  isAvailable   Boolean                    @default(true) @map("is_available")
-  active        Boolean                    @default(true)
-  sourceUrl     String                     @map("source_url") @db.VarChar(2000)
-  observedAt    DateTime                   @map("observed_at") @db.Timestamptz(3)
-  expiresAt     DateTime                   @map("expires_at") @db.Timestamptz(3)
-  dishId        String?                    @map("dish_id") @db.Uuid
-  mappingStatus OfferMappingStatus         @default(PENDING) @map("mapping_status")
-  lastSyncRunId String                     @map("last_sync_run_id") @db.Uuid
-  lastSyncRun   MenuSyncRun                @relation(fields: [lastSyncRunId], references: [id], onDelete: Restrict)
-  updatedAt     DateTime                   @updatedAt @map("updated_at") @db.Timestamptz(3)
-  identity      ExternalRestaurantIdentity @relation(fields: [identityId], references: [id], onDelete: Restrict)
-  dish          Dish?                      @relation(fields: [dishId], references: [id], onDelete: Restrict)
-  evidence      OfferSafetyEvidence[]
+  id                    String                     @id @default(uuid()) @db.Uuid
+  identityId            String                     @map("identity_id") @db.Uuid
+  externalId            String                     @map("external_id") @db.VarChar(255)
+  title                 String                     @db.VarChar(200)
+  optionLabel           String?                    @map("option_label") @db.VarChar(200)
+  price                 Int
+  currency              String                     @default("VND") @db.VarChar(3)
+  isAvailable           Boolean                    @default(true) @map("is_available")
+  active                Boolean                    @default(true)
+  sourceUrl             String                     @map("source_url") @db.VarChar(2000)
+  observedAt            DateTime                   @map("observed_at") @db.Timestamptz(3)
+  expiresAt             DateTime                   @map("expires_at") @db.Timestamptz(3)
+  dishId                String?                    @map("dish_id") @db.Uuid
+  mappingStatus         OfferMappingStatus         @default(PENDING) @map("mapping_status")
+  lastSyncRunId         String                     @map("last_sync_run_id") @db.Uuid
+  lastSyncRun           MenuSyncRun                @relation(fields: [lastSyncRunId], references: [id], onDelete: Restrict)
+  updatedAt             DateTime                   @updatedAt @map("updated_at") @db.Timestamptz(3)
+  identity              ExternalRestaurantIdentity @relation(fields: [identityId], references: [id], onDelete: Restrict)
+  dish                  Dish?                      @relation(fields: [dishId], references: [id], onDelete: Restrict)
+  evidence              OfferSafetyEvidence[]
+  recommendationResults RecommendationResult[]
 
   @@unique([identityId, externalId])
   @@index([active, isAvailable, expiresAt])

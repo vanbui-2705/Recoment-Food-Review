@@ -47,11 +47,16 @@ export default function RecipeDetail({
       pending.current.set(action, payload);
     }
     try {
-      await apiRequest(
+      const recorded = await apiRequest(
         `/recipes/${selected.source}/${selected.id}/interactions`,
         { method: "POST", body: JSON.stringify(pending.current.get(action)) },
       );
       pending.current.delete(action);
+      window.dispatchEvent(
+        new CustomEvent("food-choice-saved", {
+          detail: { canonicalName: recorded?.data?.canonicalName },
+        }),
+      );
       notice(
         "Đã ghi nhận món. Gợi ý sẽ ẩn món này trong 4 ngày kể từ thời điểm đã chọn/ăn.",
       );

@@ -70,6 +70,20 @@ export default function FoodApp() {
     if (!signedIn) setNearbyCandidates([]);
   }, [signedIn]);
   useEffect(() => {
+    const chosen = (event) =>
+      setNearbyCandidates((items) =>
+        items.filter(
+          (item) =>
+            (!event.detail?.dishId || item.dishId !== event.detail.dishId) &&
+            (!event.detail?.canonicalName ||
+              (item.canonicalName !== event.detail.canonicalName &&
+                !item.canonicalAliases?.includes(event.detail.canonicalName))),
+        ),
+      );
+    window.addEventListener("food-choice-saved", chosen);
+    return () => window.removeEventListener("food-choice-saved", chosen);
+  }, []);
+  useEffect(() => {
     const expire = () => {
       setSessionExpired(true);
       setSignedIn(false);

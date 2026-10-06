@@ -14,6 +14,7 @@ import { tasteAnalysisRoutes } from "./modules/taste-analysis/taste-analysis.rou
 import { usersRoutes } from "./modules/users/users.route.js";
 import { merchantRoutes } from "./modules/merchant-menu/merchant.route.js";
 import { restaurantRoutes } from "./modules/restaurant-details/restaurant.route.js";
+import { recommendationRoutes } from "./modules/recommendations/recommendation.route.js";
 import { authPlugin } from "./plugins/auth.plugin.js";
 import { databasePlugin } from "./plugins/database.plugin.js";
 
@@ -43,6 +44,7 @@ export function buildApp(options: BuildAppOptions = {}) {
     app.register(tasteAnalysisRoutes);
     app.register(merchantRoutes);
     app.register(restaurantRoutes);
+    app.register(recommendationRoutes);
   }
 
   app.register(healthRoutes);

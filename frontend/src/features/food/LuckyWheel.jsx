@@ -70,13 +70,20 @@ export default function LuckyWheel({
     setError("");
     pending.current ||= crypto.randomUUID();
     try {
-      await apiRequest(`/users/me/dishes/${result.dishId}/interactions`, {
-        method: "POST",
-        body: JSON.stringify({
-          type: "CHOSEN",
-          idempotencyKey: pending.current,
-        }),
-      });
+      const resultFeedback = result.offerId && result.recommendationRequestId;
+      await apiRequest(
+        resultFeedback
+          ? `/recommendations/${result.recommendationRequestId}/feedback`
+          : `/users/me/dishes/${result.dishId}/interactions`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            type: "CHOSEN",
+            idempotencyKey: pending.current,
+            ...(resultFeedback ? { resultId: result.id } : {}),
+          }),
+        },
+      );
       pending.current = null;
       close();
       window.dispatchEvent(
