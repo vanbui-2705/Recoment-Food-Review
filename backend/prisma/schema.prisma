@@ -115,8 +115,74 @@ model User {
   foodKnowledge          PersonalFoodKnowledge?
   tasteAnalysisJobs      TasteAnalysisJob[]
   discoverySettings      DiscoverySettings?
+  conversations          Conversation[]
 
   @@map("users")
+}
+
+model Conversation {
+  id        String        @id @default(uuid()) @db.Uuid
+  userId    String        @map("user_id") @db.Uuid
+  title     String        @db.VarChar(100)
+  context   Json          @default("{}")
+  createdAt DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  ChatMessage[]
+  runs      ChatRun[]
+
+  @@index([userId, updatedAt(sort: Desc), id])
+  @@map("conversations")
+}
+
+model ChatMessage {
+  id             String       @id @default(uuid()) @db.Uuid
+  conversationId String       @map("conversation_id") @db.Uuid
+  role           String       @db.VarChar(10)
+  content        String       @db.VarChar(4000)
+  createdAt      DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  run            ChatRun?
+
+  @@index([conversationId, createdAt, id])
+  @@map("chat_messages")
+}
+
+model ChatRun {
+  id             String       @id @default(uuid()) @db.Uuid
+  conversationId String       @map("conversation_id") @db.Uuid
+  messageId      String       @unique @map("message_id") @db.Uuid
+  idempotencyKey String       @unique @map("idempotency_key") @db.VarChar(255)
+  inputHash      String       @map("input_hash") @db.VarChar(64)
+  context        Json
+  status         String       @default("QUEUED") @db.VarChar(12)
+  attempts       Int          @default(0)
+  leaseToken     String?      @map("lease_token") @db.Uuid
+  leaseUntil     DateTime?    @map("lease_until") @db.Timestamptz(3)
+  nextSeq        Int          @default(0) @map("next_seq")
+  errorCode      String?      @map("error_code") @db.VarChar(50)
+  createdAt      DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  message        ChatMessage  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  events         ChatEvent[]
+
+  @@index([status, leaseUntil, createdAt])
+  @@index([conversationId, createdAt])
+  @@map("chat_runs")
+}
+
+model ChatEvent {
+  id        String   @id @default(uuid()) @db.Uuid
+  runId     String   @map("run_id") @db.Uuid
+  seq       Int
+  type      String   @db.VarChar(20)
+  payload   Json
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  run       ChatRun  @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@unique([runId, seq])
+  @@map("chat_events")
 }
 
 model RefreshToken {

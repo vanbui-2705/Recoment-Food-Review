@@ -16,6 +16,7 @@ import { merchantRoutes } from "./modules/merchant-menu/merchant.route.js";
 import { restaurantRoutes } from "./modules/restaurant-details/restaurant.route.js";
 import { recommendationRoutes } from "./modules/recommendations/recommendation.route.js";
 import { historyRoutes } from "./modules/history/history.route.js";
+import { chatRoutes } from "./modules/chat/chat.route.js";
 import { authPlugin } from "./plugins/auth.plugin.js";
 import { databasePlugin } from "./plugins/database.plugin.js";
 
@@ -47,6 +48,7 @@ export function buildApp(options: BuildAppOptions = {}) {
     app.register(restaurantRoutes);
     app.register(recommendationRoutes);
     app.register(historyRoutes);
+    app.register(chatRoutes);
   }
 
   app.register(healthRoutes);

@@ -3,6 +3,7 @@ import { buildApp } from "./app.js";
 import { loadAiConfig } from "./modules/ai/ai.config.js";
 import { createGeminiProvider } from "./modules/ai/ai.provider.js";
 import { createTasteAnalysisService } from "./modules/taste-analysis/taste-analysis.service.js";
+import { createChatService } from "./modules/chat/chat.service.js";
 
 const config = loadAiConfig();
 const app = buildApp({ logger: true });
@@ -19,6 +20,7 @@ process.once("SIGTERM", () => {
 try {
   await app.ready();
   const service = createTasteAnalysisService(app.prisma, config, createGeminiProvider(config));
+  const chat = createChatService(app.prisma);
   if (!config.workerEnabled || !service.configured) {
     app.log.info(
       { enabled: config.workerEnabled, configured: service.configured },
@@ -30,6 +32,7 @@ try {
       let worked = false;
       try {
         worked = await service.tick();
+        if (!stopping) worked = (await chat.tick()) || worked;
       } catch {
         app.log.error({ code: "WORKER_TICK_FAILED" }, "Worker tick failed");
       }

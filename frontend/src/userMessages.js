@@ -1,4 +1,15 @@
 const messages = {
+  CHAT_RUN_ACTIVE:
+    "Có lượt tìm đang xử lý. Hãy chờ kết quả hoặc hủy lượt trước khi gửi tiếp.",
+  CHAT_DEADLINE: "Lượt tìm món quá thời gian. Bạn có thể gửi lại câu hỏi.",
+  CHAT_ATTEMPTS_EXHAUSTED:
+    "Lượt tìm bị gián đoạn nhiều lần. Hãy gửi lại câu hỏi để bắt đầu lượt mới.",
+  CHAT_UNAVAILABLE:
+    "Chat tạm thời chưa trả lời được. Câu hỏi đã lưu; bạn có thể thử lại.",
+  CHAT_STREAM_INTERRUPTED:
+    "Kết nối kết quả bị gián đoạn. Bấm kết nối lại; không cần gửi lại câu hỏi.",
+  CONVERSATION_NOT_FOUND:
+    "Cuộc trò chuyện không còn trong tài khoản của bạn. Hãy tải lại danh sách.",
   HISTORY_CHANGED:
     "Nhật ký đã thay đổi. Kiểm tra lại thời gian chờ trước khi xác nhận xóa.",
   HISTORY_NOT_FOUND:

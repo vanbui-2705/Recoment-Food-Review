@@ -6,6 +6,7 @@ import Today from "./features/food/Today";
 import DishDetail from "./features/food/DishDetail";
 import Onboarding from "./features/food/Onboarding";
 import History from "./features/food/History";
+import Chat from "./features/food/Chat";
 import PublicLegal from "./features/food/PublicLegal";
 import Discovery from "./features/food/Discovery";
 import RecipeDetail from "./features/food/RecipeDetail";
@@ -23,6 +24,7 @@ const readScreen = () => {
     "today",
     "profile",
     "history",
+    "chat",
     "dish",
     "terms",
     "privacy",
@@ -149,13 +151,19 @@ export default function FoodApp() {
     navigate("discover");
   };
   const openRecipe = (recipe) => {
-    setRecipeBack(screen === "today" ? "today" : "discover");
+    setRecipeBack(
+      screen === "chat" ? "chat" : screen === "today" ? "today" : "discover",
+    );
     setSelectedRecipe(recipe);
     navigate("recipe", `recipe/${recipe.source}/${recipe.id}`);
   };
   const openRestaurant = (place) => {
     setRestaurantBack(
-      screen === "today" || screen === "dish" ? "today" : "discover",
+      screen === "chat"
+        ? "chat"
+        : screen === "today" || screen === "dish"
+          ? "today"
+          : "discover",
     );
     const target = place.restaurantId
       ? { kind: "local", id: place.restaurantId }
@@ -273,6 +281,13 @@ export default function FoodApp() {
           />
         )}
         {screen === "history" && <History />}
+        {(screen === "chat" ||
+          (screen === "recipe" && recipeBack === "chat") ||
+          (screen === "restaurant" && restaurantBack === "chat")) && (
+          <div hidden={screen !== "chat"}>
+            <Chat onRecipe={openRecipe} onRestaurant={openRestaurant} />
+          </div>
+        )}
         {(screen === "discover" ||
           (screen === "recipe" && recipeBack === "discover") ||
           (screen === "restaurant" && restaurantBack === "discover")) && (
@@ -319,6 +334,7 @@ export default function FoodApp() {
         {[
           ["today", "Hôm nay"],
           ["discover", "Tìm món / Nấu ăn"],
+          ["chat", "Chat tìm món"],
           ["history", "Đã chọn / đã ăn"],
           ["profile", "Khẩu vị của tôi"],
         ].map(([id, label]) => (

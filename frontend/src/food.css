@@ -502,6 +502,19 @@ body {
   flex-wrap: wrap;
   margin: 20px 0;
 }
+.food-chat-text {
+  white-space: pre-wrap;
+}
+.food-chat-history > div {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0;
+}
+.food-chat-history > div > button:first-child {
+  flex: 1;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
 .food-filters label {
   display: grid;
   gap: 8px;

@@ -67,13 +67,13 @@
 
 ## 8. P4 — Chat discovery
 
-- [ ] 8.1 Migration conversations/messages/runs/events, owner indexes và idempotency; test lifecycle/cleanup.
-- [ ] 8.2 Xây conversation/list/detail/messages/delete APIs và ownership tests.
-- [ ] 8.3 Xây structured context budget/location/profile version và câu hỏi khi thiếu; test multi-turn không đoán tọa độ.
-- [ ] 8.4 Xây allowlisted tool dispatcher với backend user identity và max-five/deadline; test unauthorized tools/injection.
-- [ ] 8.5 Xây idempotent run, một run active, authenticated SSE sequence/reconnect/cancel; test disconnect/double submit.
-- [ ] 8.6 Tạo chat UI streaming/history/retry/cancel và result cards link đến quán/công thức.
-- [ ] 8.7 Xử lý yêu cầu đặt món/pay/delivery bằng Coming soon; test không tạo giao dịch hoặc expose transaction tools.
+- [x] 8.1 Migration conversations/messages/runs/events, owner indexes và idempotency; test lifecycle/cleanup.
+- [x] 8.2 Xây conversation/list/detail/messages/delete APIs và ownership tests.
+- [x] 8.3 Xây structured context budget/location/profile version và câu hỏi khi thiếu; test multi-turn không đoán tọa độ.
+- [x] 8.4 Xây allowlisted tool dispatcher với backend user identity và max-five/deadline; test unauthorized tools/injection.
+- [x] 8.5 Xây idempotent run, một run active, authenticated SSE sequence/reconnect/cancel; test disconnect/double submit.
+- [x] 8.6 Tạo chat UI streaming/history/retry/cancel và result cards link đến quán/công thức.
+- [x] 8.7 Xử lý yêu cầu đặt món/pay/delivery bằng Coming soon; test không tạo giao dịch hoặc expose transaction tools.
 - [ ] 8.8 Chạy desktop/mobile E2E nhiều lượt và provider unavailable; live smoke khi đủ credentials.
 
 ## 9. P5 — Feedback và lịch sử

@@ -26,6 +26,7 @@ export function hasLiveSession() {
 
 let refreshing = null;
 export async function apiRequest(path, options = {}, retry = true) {
+  const { responseType, ...fetchOptions } = options;
   const token = getAccessToken();
   const headers = new Headers(options.headers || {});
   headers.set("Accept", "application/json");
@@ -35,8 +36,12 @@ export async function apiRequest(path, options = {}, retry = true) {
 
   let response;
   try {
-    response = await fetch(`${API_BASE_URL}${path}`, { ...options, headers });
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      ...fetchOptions,
+      headers,
+    });
   } catch (error) {
+    if (error.name === "AbortError") throw error;
     throw new ProfileApiError(
       userErrorMessage("NETWORK_ERROR"),
       0,
@@ -44,6 +49,7 @@ export async function apiRequest(path, options = {}, retry = true) {
     );
   }
 
+  if (response.ok && responseType === "stream") return response;
   const payload =
     response.status === 204 ? null : await response.json().catch(() => null);
   if (response.status === 401 && !path.startsWith("/auth/")) {
