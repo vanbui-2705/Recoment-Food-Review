@@ -2,6 +2,8 @@
 
 Ngày chốt phạm vi: 06/10/2026. Đã bắt đầu thực hiện P0/P1; nghiệm thu và giới hạn hiện tại ở [bản ghi validation](PLAN_P0_P1_VALIDATION.md). Các mục còn lại tiếp tục là kế hoạch, chưa phải chức năng đã triển khai.
 
+Các thông báo/cảnh báo cho luồng đang có được bổ sung trong [User notifications](USER_NOTIFICATIONS.md): mạng, phiên đăng nhập, lưu dữ liệu, phân tích khẩu vị, vị trí và độ chắc chắn của dữ liệu quán. Việc này không đồng nghĩa các module còn lại hoặc push/email/SMS đã hoàn thành.
+
 ## 1. Phạm vi phát hành
 
 Giữ số nhóm của bản rà soát để theo dõi:

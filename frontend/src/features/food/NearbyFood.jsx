@@ -3,6 +3,7 @@ import { apiRequest } from "../../profileApi";
 import { money } from "./foodUtils";
 import PlacePhoto from "./PlacePhoto";
 import { sourceNames } from "./Discovery";
+import UserNotice from "./UserNotice";
 
 export default function NearbyFood({ onCandidates, notice }) {
   const [budget, setBudget] = useState("50000");
@@ -65,10 +66,14 @@ export default function NearbyFood({ onCandidates, notice }) {
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
           }),
-        () =>
+        (err) =>
           reject(
             new Error(
-              "Chưa lấy được vị trí. Hãy cho phép GPS để tìm trong bán kính quanh bạn.",
+              err.code === 1
+                ? "Bạn chưa cho phép truy cập vị trí. Mở quyền vị trí trong trình duyệt rồi bấm tìm lại."
+                : err.code === 3
+                  ? "Lấy vị trí mất quá lâu. Kiểm tra GPS và kết nối rồi bấm tìm lại."
+                  : "Chưa xác định được vị trí. Kiểm tra GPS rồi bấm tìm lại.",
             ),
           ),
         { timeout: 10000, maximumAge: 60000 },
@@ -208,6 +213,17 @@ export default function NearbyFood({ onCandidates, notice }) {
       {data && (
         <>
           <p className="food-muted">{data.notice}</p>
+          {data.sources
+            ?.filter(
+              (source) => !["OK", "NOT_CONFIGURED"].includes(source.status),
+            )
+            .map((source) => (
+              <UserNotice key={source.source} tone="warning">
+                {sourceNames[source.source] || "Một nguồn dữ liệu"} tạm thời
+                chưa trả được kết quả. Danh sách hiện tại có thể chưa đầy đủ;
+                bạn có thể thử tìm lại sau.
+              </UserNotice>
+            ))}
           {data.items.length > 0 && (
             <>
               <h3>Món có giá xác nhận, tối đa {money(data.budget)}</h3>
@@ -267,6 +283,11 @@ export default function NearbyFood({ onCandidates, notice }) {
           {data.restaurants.length > 0 && (
             <>
               <h3>Quán quanh bạn · giá món chưa xác nhận</h3>
+              <UserNotice tone="warning" title="Cần kiểm tra thực đơn với quán">
+                Danh sách này chưa xác nhận món đang bán hoặc giá trong ngân
+                sách. Ảnh và đánh giá là của quán; hãy hỏi giá, nguyên liệu và
+                dị ứng trước khi chọn.
+              </UserNotice>
               <label className="food-check-option">
                 <input
                   type="checkbox"

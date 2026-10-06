@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { apiRequest } from "../../profileApi";
 import "./taste-analysis.css";
+import UserNotice from "./UserNotice";
+import { userErrorMessage } from "../../userMessages";
 
 const labels = {
   QUEUED: "Đang chờ phân tích khẩu vị…",
@@ -26,6 +28,7 @@ export default function TasteAnalysis({ revision, onApplied, onEdit }) {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [refresh, setRefresh] = useState(0);
+  const [waiting, setWaiting] = useState(false);
   const appliedCallback = useRef(onApplied);
   const notifiedAnalysis = useRef(null);
   useEffect(() => {
@@ -37,6 +40,7 @@ export default function TasteAnalysis({ revision, onApplied, onEdit }) {
     const deadline = Date.now() + 120000;
     setData(null);
     setError("");
+    setWaiting(false);
     const read = async () => {
       try {
         const response = await apiRequest("/users/me/food-knowledge/analyses");
@@ -54,6 +58,11 @@ export default function TasteAnalysis({ revision, onApplied, onEdit }) {
           Date.now() < deadline
         )
           timer = setTimeout(read, 3000);
+        else if (
+          response.data.configured &&
+          ["QUEUED", "RUNNING"].includes(status)
+        )
+          setWaiting(true);
       } catch (err) {
         if (active) setError(err.message);
       }
@@ -111,6 +120,31 @@ export default function TasteAnalysis({ revision, onApplied, onEdit }) {
             <p role="status">
               {labels[job?.status] || "Bạn có thể phân tích mô tả đã lưu."}
             </p>
+            {waiting && (
+              <UserNotice
+                tone="info"
+                title="Phân tích đang mất nhiều thời gian"
+              >
+                Mô tả vẫn được lưu. Bạn có thể tiếp tục tìm món và bấm cập nhật
+                trạng thái sau; không cần gửi lại mô tả.
+              </UserNotice>
+            )}
+            {job?.status === "FAILED" && (
+              <UserNotice tone="warning">
+                {userErrorMessage(
+                  job.errorCode,
+                  0,
+                  "Phân tích chưa hoàn tất. Hãy thử lại; mô tả vẫn được lưu.",
+                )}
+              </UserNotice>
+            )}
+            {job?.status === "NEEDS_REVIEW" && (
+              <UserNotice tone="warning" title="Cần kiểm tra ràng buộc ăn uống">
+                Kiểm tra tên dị nguyên và chế độ ăn bên dưới trước khi xác nhận.
+                Nếu thông tin chưa đúng, hãy sửa mô tả. Việc phân tích khẩu vị
+                chưa xác minh món tại quán an toàn.
+              </UserNotice>
+            )}
             {job?.result && (
               <>
                 {job.result.fields?.map((f) => (

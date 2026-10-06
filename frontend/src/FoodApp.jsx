@@ -10,6 +10,7 @@ import PublicLegal from "./features/food/PublicLegal";
 import Discovery from "./features/food/Discovery";
 import RecipeDetail from "./features/food/RecipeDetail";
 import LuckyWheel from "./features/food/LuckyWheel";
+import UserNotice from "./features/food/UserNotice";
 
 const readScreen = () => {
   const name = window.location.hash.slice(1).split("/")[0];
@@ -44,15 +45,42 @@ export default function FoodApp() {
   const [discoveryMode, setDiscoveryMode] = useState("restaurants");
   const [recipeBack, setRecipeBack] = useState("discover");
   const [message, setMessage] = useState("");
+  const [online, setOnline] = useState(() => navigator.onLine);
+  const [sessionExpired, setSessionExpired] = useState(false);
   const [nearbyCandidates, setNearbyCandidates] = useState([]);
   useEffect(() => {
     if (!signedIn) setNearbyCandidates([]);
   }, [signedIn]);
   useEffect(() => {
-    const expire = () => setSignedIn(false);
+    const expire = () => {
+      setSessionExpired(true);
+      setSignedIn(false);
+      setMessage("");
+    };
     window.addEventListener("food-session-expired", expire);
     return () => window.removeEventListener("food-session-expired", expire);
   }, []);
+  useEffect(() => {
+    const offline = () => setOnline(false);
+    const reconnect = () => {
+      setOnline(true);
+      setMessage(
+        "Đã có kết nối mạng trở lại. Bạn có thể thử lại thao tác trước đó.",
+      );
+    };
+    window.addEventListener("offline", offline);
+    window.addEventListener("online", reconnect);
+    return () => {
+      window.removeEventListener("offline", offline);
+      window.removeEventListener("online", reconnect);
+    };
+  }, []);
+  const connectionNotice = !online && (
+    <UserNotice tone="warning" title="Bạn đang ngoại tuyến">
+      Kiểm tra kết nối mạng. Dữ liệu đang hiển thị có thể chưa cập nhật; thao
+      tác lưu cần kết nối và xác nhận từ hệ thống.
+    </UserNotice>
+  );
   useEffect(() => {
     const sync = () => {
       const next = readScreen();
@@ -85,6 +113,22 @@ export default function FoodApp() {
   if (!signedIn)
     return (
       <div className="food-shell">
+        <div className="food-connection-notice">
+          {connectionNotice}
+          {sessionExpired && (
+            <UserNotice
+              tone="warning"
+              title="Phiên đăng nhập đã hết hạn"
+              onDismiss={() => setSessionExpired(false)}
+            >
+              Hãy đăng nhập lại để tiếp tục. Dữ liệu đã lưu trong tài khoản vẫn
+              được giữ.
+            </UserNotice>
+          )}
+          {message && (
+            <UserNotice onDismiss={() => setMessage("")}>{message}</UserNotice>
+          )}
+        </div>
         {screen === "terms" || screen === "privacy" ? (
           <main className="food-main">
             <button onClick={() => navigate("today")}>← Đăng nhập</button>
@@ -94,6 +138,7 @@ export default function FoodApp() {
           <Auth
             onLogin={() => {
               setSignedIn(true);
+              setSessionExpired(false);
               navigate("today");
             }}
           />
@@ -132,10 +177,11 @@ export default function FoodApp() {
         </button>
       </header>
       <main className="food-main">
+        {connectionNotice}
         {message && (
-          <p className="food-notice" role="status">
+          <UserNotice tone="success" onDismiss={() => setMessage("")}>
             {message}
-          </p>
+          </UserNotice>
         )}
         {screen === "today" && (
           <Today

@@ -1,6 +1,7 @@
 ﻿import { useEffect, useState } from "react";
 import { apiRequest } from "../../profileApi";
 import TasteAnalysis from "./TasteAnalysis";
+import UserNotice from "./UserNotice";
 
 export default function Onboarding({ onSaved }) {
   const [description, setDescription] = useState("");
@@ -11,6 +12,16 @@ export default function Onboarding({ onSaved }) {
   const [busy, setBusy] = useState(false);
   const [conflict, setConflict] = useState(false);
   const [reload, setReload] = useState(0);
+  const dirty = loaded && description.trim() !== savedDescription;
+  useEffect(() => {
+    if (!dirty) return;
+    const warn = (event) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [dirty]);
   useEffect(() => {
     let active = true;
     setLoaded(false);
@@ -94,6 +105,12 @@ export default function Onboarding({ onSaved }) {
           <small>
             {description.length.toLocaleString("vi-VN")} / 6.000 ký tự
           </small>
+          {dirty && (
+            <UserNotice tone="info">
+              Bạn có thay đổi chưa lưu. Bấm “Lưu mô tả khẩu vị” trước khi rời
+              màn hình để giữ nội dung.
+            </UserNotice>
+          )}
           {conflict && (
             <p>
               Bản bạn đang nhập vẫn được giữ.{" "}

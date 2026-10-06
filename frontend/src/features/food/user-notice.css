@@ -1,0 +1,68 @@
+.food-user-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  margin: 16px 0;
+  border: 1px solid #cbd8e0;
+  border-radius: 14px;
+  background: #eef4f7;
+  color: #294756;
+  font-size: 14px;
+  line-height: 1.65;
+}
+.food-user-notice--success {
+  background: #edf5ec;
+  border-color: #c4d9c0;
+  color: #245339;
+}
+.food-user-notice--warning {
+  background: #fff5df;
+  border-color: #e6d2a4;
+  color: #735018;
+}
+.food-user-notice--error {
+  background: #fff0ec;
+  border-color: #e6c5bc;
+  color: #8a3529;
+}
+.food-user-notice-mark {
+  display: grid;
+  place-items: center;
+  flex: 0 0 22px;
+  height: 22px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font-weight: 700;
+  margin-top: 2px;
+}
+.food-user-notice-content {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.food-user-notice-content strong {
+  display: block;
+}
+.food-shell .food-user-notice-close {
+  flex: 0 0 40px;
+  min-height: 40px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  font-size: 24px;
+}
+.food-user-notice button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+.food-connection-notice {
+  padding: 0 20px;
+}
+@media (max-width: 480px) {
+  .food-user-notice {
+    padding: 12px;
+    gap: 8px;
+  }
+}
