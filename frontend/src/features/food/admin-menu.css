@@ -1,0 +1,96 @@
+.admin-menu {
+  max-width: 1000px;
+  margin: auto;
+}
+.admin-menu .food-panel {
+  margin-block: 1rem;
+  padding: 1.25rem;
+  border: 1px solid #d8e4d9;
+  border-radius: 16px;
+  background: #fff;
+}
+.admin-menu label {
+  display: grid;
+  gap: 0.4rem;
+  margin-block: 0.6rem;
+  color: #234735;
+}
+.admin-menu input,
+.admin-menu select,
+.admin-menu textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 0.7rem;
+  border: 1px solid #b9cbbd;
+  border-radius: 8px;
+  font: inherit;
+  background: #fff;
+}
+.admin-menu textarea {
+  resize: vertical;
+}
+.admin-menu button {
+  min-height: 42px;
+  margin: 0.3rem 0.4rem 0.3rem 0;
+}
+.admin-menu .admin-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+.admin-menu .admin-checkbox input {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+.admin-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem 1rem;
+  align-items: end;
+}
+.admin-preview {
+  overflow: auto;
+  margin-block: 1rem;
+  max-height: 360px;
+}
+.admin-preview table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.admin-preview th,
+.admin-preview td {
+  padding: 0.65rem;
+  text-align: left;
+  border-bottom: 1px solid #e1e9e1;
+}
+.admin-run,
+.admin-evidence {
+  padding-block: 1rem;
+  border-top: 1px solid #e1e9e1;
+}
+.admin-evidence blockquote {
+  margin: 0.7rem 0;
+  border-left: 3px solid #b9cbbd;
+  padding-left: 1rem;
+  overflow-wrap: anywhere;
+}
+.admin-menu summary {
+  cursor: pointer;
+  padding-block: 0.5rem;
+  font-weight: 600;
+}
+.admin-menu p,
+.admin-menu h3 {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 600px) {
+  .admin-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .admin-menu .food-panel {
+    padding: 1rem;
+  }
+}

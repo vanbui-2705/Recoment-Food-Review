@@ -1,11 +1,13 @@
 import { defineConfig } from "@playwright/test";
+const preview = process.env.PLAYWRIGHT_PREVIEW === "true";
+const baseURL = preview ? "http://127.0.0.1:4173" : "http://127.0.0.1:5173";
 export default defineConfig({
   testDir: "./tests",
   fullyParallel: false,
   workers: 2,
   timeout: 60000,
   use: {
-    baseURL: "http://127.0.0.1:5173",
+    baseURL,
     browserName: "chromium",
     trace: "retain-on-failure",
     launchOptions: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE
@@ -24,8 +26,10 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "node node_modules/vite/bin/vite.js --host 127.0.0.1",
-    url: "http://127.0.0.1:5173",
+    command: preview
+      ? "node node_modules/vite/bin/vite.js preview --host 127.0.0.1 --port 4173 --strictPort"
+      : "node node_modules/vite/bin/vite.js --host 127.0.0.1",
+    url: baseURL,
     reuseExistingServer: !process.env.CI,
   },
 });

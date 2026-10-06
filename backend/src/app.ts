@@ -12,6 +12,8 @@ import { personalFoodKnowledgeRoutes } from "./modules/personal-food-knowledge/p
 import { placePhotoRoutes } from "./modules/places/place-photo.route.js";
 import { tasteAnalysisRoutes } from "./modules/taste-analysis/taste-analysis.route.js";
 import { usersRoutes } from "./modules/users/users.route.js";
+import { merchantRoutes } from "./modules/merchant-menu/merchant.route.js";
+import { restaurantRoutes } from "./modules/restaurant-details/restaurant.route.js";
 import { authPlugin } from "./plugins/auth.plugin.js";
 import { databasePlugin } from "./plugins/database.plugin.js";
 
@@ -39,6 +41,8 @@ export function buildApp(options: BuildAppOptions = {}) {
     app.register(personalFoodKnowledgeRoutes);
     app.register(placePhotoRoutes);
     app.register(tasteAnalysisRoutes);
+    app.register(merchantRoutes);
+    app.register(restaurantRoutes);
   }
 
   app.register(healthRoutes);

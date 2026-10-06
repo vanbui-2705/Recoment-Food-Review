@@ -115,6 +115,7 @@ export function createNearbyFoodService(
             {
               id: `menu:${menu.restaurantId}:${menu.dishId}`,
               dishId: menu.dishId,
+              restaurantId: menu.restaurantId,
               title: menu.dish.name,
               restaurantName: menu.restaurant.name,
               address: menu.restaurant.address,

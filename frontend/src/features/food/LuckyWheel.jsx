@@ -9,7 +9,12 @@ function randomIndex(length) {
   } while (value[0] >= ceiling);
   return value[0] % length;
 }
-export default function LuckyWheel({ candidates, onFind, notice }) {
+export default function LuckyWheel({
+  candidates,
+  onFind,
+  notice,
+  onRestaurant,
+}) {
   const [open, setOpen] = useState(false);
   const [rotation, setRotation] = useState(0);
   const [busy, setBusy] = useState(false);
@@ -189,6 +194,16 @@ export default function LuckyWheel({ candidates, onFind, notice }) {
                     : "Quán chưa có giá món xác nhận. Hãy xem thực đơn trước khi quyết định."}
                 </p>
                 <div className="food-actions">
+                  {(result.restaurantId || result.placeId) && (
+                    <button
+                      onClick={() => {
+                        close();
+                        onRestaurant(result);
+                      }}
+                    >
+                      Chi tiết quán / thực đơn
+                    </button>
+                  )}
                   {result.dishId && (
                     <button disabled={saving} onClick={confirm}>
                       {saving ? "Đang lưu…" : "Chọn món này"}

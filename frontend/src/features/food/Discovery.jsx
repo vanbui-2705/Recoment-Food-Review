@@ -19,7 +19,7 @@ const safeLink = (value) => {
   }
 };
 
-export function PlaceResults({ data }) {
+export function PlaceResults({ data, onRestaurant }) {
   if (!data) return null;
   return (
     <section aria-label="Kết quả tìm quán" aria-live="polite">
@@ -55,6 +55,11 @@ export function PlaceResults({ data }) {
               : "Liên quan từ khóa"}
           </p>
           <h3>{p.name}</h3>
+          {onRestaurant && (
+            <button onClick={() => onRestaurant(p)}>
+              Chi tiết quán / thực đơn
+            </button>
+          )}
           <p>{p.address}</p>
           <p>
             {p.distanceMeters < 1000
@@ -140,6 +145,7 @@ export default function Discovery({
   initialMode = "restaurants",
   onRecipe,
   navigate,
+  onRestaurant,
 }) {
   const [mode, setMode] = useState(initialMode);
   const [query, setQuery] = useState(initialQuery);
@@ -330,7 +336,9 @@ export default function Discovery({
         </p>
       )}
       {busy && <p role="status">Đang tìm từ các nguồn đã kết nối…</p>}
-      {mode === "restaurants" && <PlaceResults data={data} />}
+      {mode === "restaurants" && (
+        <PlaceResults data={data} onRestaurant={onRestaurant} />
+      )}
       {mode === "recipes" && data && (
         <section aria-live="polite">
           <p className="food-muted">{data.notice}</p>

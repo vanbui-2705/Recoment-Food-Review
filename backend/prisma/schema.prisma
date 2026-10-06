@@ -258,6 +258,7 @@ model Dish {
   restaurants           RestaurantDish[]
   recommendationResults RecommendationResult[]
   interactions          UserInteraction[]
+  externalOffers        ExternalMenuItem[]
 
   @@index([cuisineId])
   @@map("dishes")
@@ -332,22 +333,23 @@ model UserDishPreference {
 }
 
 model Restaurant {
-  id                    String                   @id @default(uuid()) @db.Uuid
-  googlePlaceId         String?                  @unique @map("google_place_id") @db.VarChar(255)
-  name                  String                   @db.VarChar(200)
-  address               String                   @db.VarChar(500)
-  latitude              Decimal                  @db.Decimal(9, 6)
-  longitude             Decimal                  @db.Decimal(9, 6)
-  rating                Decimal?                 @db.Decimal(2, 1)
-  ratingCount           Int                      @default(0) @map("rating_count")
-  priceLevel            Int?                     @map("price_level") @db.SmallInt
-  businessStatus        RestaurantBusinessStatus @default(UNKNOWN) @map("business_status")
-  placesDataUpdatedAt   DateTime?                @map("places_data_updated_at") @db.Timestamptz(3)
-  createdAt             DateTime                 @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt             DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(3)
+  id                    String                       @id @default(uuid()) @db.Uuid
+  googlePlaceId         String?                      @unique @map("google_place_id") @db.VarChar(255)
+  name                  String                       @db.VarChar(200)
+  address               String                       @db.VarChar(500)
+  latitude              Decimal                      @db.Decimal(9, 6)
+  longitude             Decimal                      @db.Decimal(9, 6)
+  rating                Decimal?                     @db.Decimal(2, 1)
+  ratingCount           Int                          @default(0) @map("rating_count")
+  priceLevel            Int?                         @map("price_level") @db.SmallInt
+  businessStatus        RestaurantBusinessStatus     @default(UNKNOWN) @map("business_status")
+  placesDataUpdatedAt   DateTime?                    @map("places_data_updated_at") @db.Timestamptz(3)
+  createdAt             DateTime                     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt             DateTime                     @updatedAt @map("updated_at") @db.Timestamptz(3)
   dishes                RestaurantDish[]
   recommendationResults RecommendationResult[]
   interactions          UserInteraction[]
+  externalIdentities    ExternalRestaurantIdentity[]
 
   @@index([latitude, longitude])
   @@map("restaurants")
@@ -503,4 +505,187 @@ model AiRequestUsage {
   requests Int    @default(0)
 
   @@map("ai_request_usage")
+}
+
+enum MenuSyncMode {
+  COMPLETE
+  DELTA
+}
+
+enum MenuSyncStatus {
+  STAGING
+  COMMITTED
+  FAILED
+}
+
+enum OfferMappingStatus {
+  PENDING
+  APPROVED
+}
+
+enum SafetyEvidenceKind {
+  ALLERGEN
+  DIET
+  CROSS_CONTACT
+}
+
+enum SafetyEvidenceClaim {
+  PRESENT
+  ABSENT
+  UNKNOWN
+}
+
+enum SafetyEvidenceStatus {
+  PENDING
+  APPROVED
+  REVOKED
+}
+
+model MerchantSupplier {
+  id                     String                       @id @default(uuid()) @db.Uuid
+  code                   String                       @unique @db.VarChar(80)
+  name                   String                       @db.VarChar(200)
+  documentationUrl       String                       @map("documentation_url") @db.VarChar(2000)
+  authorizationReference String                       @map("authorization_reference") @db.VarChar(500)
+  maxEvidenceAgeHours    Int                          @default(24) @map("max_evidence_age_hours")
+  enabled                Boolean                      @default(false)
+  createdAt              DateTime                     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt              DateTime                     @updatedAt @map("updated_at") @db.Timestamptz(3)
+  lastCommittedAt        DateTime?                    @map("last_committed_at") @db.Timestamptz(3)
+  identities             ExternalRestaurantIdentity[]
+  syncRuns               MenuSyncRun[]
+
+  @@map("merchant_suppliers")
+}
+
+model ExternalRestaurantIdentity {
+  id           String             @id @default(uuid()) @db.Uuid
+  supplierId   String             @map("supplier_id") @db.Uuid
+  externalId   String             @map("external_id") @db.VarChar(255)
+  restaurantId String             @map("restaurant_id") @db.Uuid
+  supplier     MerchantSupplier   @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+  restaurant   Restaurant         @relation(fields: [restaurantId], references: [id], onDelete: Restrict)
+  offers       ExternalMenuItem[]
+
+  @@unique([supplierId, externalId])
+  @@index([restaurantId])
+  @@map("external_restaurant_identities")
+}
+
+model ExternalMenuItem {
+  id            String                     @id @default(uuid()) @db.Uuid
+  identityId    String                     @map("identity_id") @db.Uuid
+  externalId    String                     @map("external_id") @db.VarChar(255)
+  title         String                     @db.VarChar(200)
+  optionLabel   String?                    @map("option_label") @db.VarChar(200)
+  price         Int
+  currency      String                     @default("VND") @db.VarChar(3)
+  isAvailable   Boolean                    @default(true) @map("is_available")
+  active        Boolean                    @default(true)
+  sourceUrl     String                     @map("source_url") @db.VarChar(2000)
+  observedAt    DateTime                   @map("observed_at") @db.Timestamptz(3)
+  expiresAt     DateTime                   @map("expires_at") @db.Timestamptz(3)
+  dishId        String?                    @map("dish_id") @db.Uuid
+  mappingStatus OfferMappingStatus         @default(PENDING) @map("mapping_status")
+  lastSyncRunId String                     @map("last_sync_run_id") @db.Uuid
+  lastSyncRun   MenuSyncRun                @relation(fields: [lastSyncRunId], references: [id], onDelete: Restrict)
+  updatedAt     DateTime                   @updatedAt @map("updated_at") @db.Timestamptz(3)
+  identity      ExternalRestaurantIdentity @relation(fields: [identityId], references: [id], onDelete: Restrict)
+  dish          Dish?                      @relation(fields: [dishId], references: [id], onDelete: Restrict)
+  evidence      OfferSafetyEvidence[]
+
+  @@unique([identityId, externalId])
+  @@index([active, isAvailable, expiresAt])
+  @@index([dishId])
+  @@map("external_menu_items")
+}
+
+model MenuSyncRun {
+  id            String             @id @default(uuid()) @db.Uuid
+  supplierId    String             @map("supplier_id") @db.Uuid
+  snapshotId    String             @map("snapshot_id") @db.VarChar(255)
+  mode          MenuSyncMode
+  status        MenuSyncStatus     @default(STAGING)
+  expectedPages Int                @map("expected_pages")
+  observedAt    DateTime           @map("observed_at") @db.Timestamptz(3)
+  createdAt     DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
+  committedAt   DateTime?          @map("committed_at") @db.Timestamptz(3)
+  errorCode     String?            @map("error_code") @db.VarChar(80)
+  supplier      MerchantSupplier   @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+  pages         MenuSyncPage[]
+  quarantine    MenuQuarantine[]
+  offers        ExternalMenuItem[]
+
+  @@unique([supplierId, snapshotId])
+  @@index([supplierId, status, createdAt])
+  @@map("menu_sync_runs")
+}
+
+model MenuSyncPage {
+  id    String      @id @default(uuid()) @db.Uuid
+  runId String      @map("run_id") @db.Uuid
+  page  Int
+  hash  String      @db.VarChar(64)
+  items Json
+  run   MenuSyncRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@unique([runId, page])
+  @@map("menu_sync_pages")
+}
+
+model MenuQuarantine {
+  id       String      @id @default(uuid()) @db.Uuid
+  runId    String      @map("run_id") @db.Uuid
+  page     Int
+  rowIndex Int         @map("row_index")
+  code     String      @db.VarChar(80)
+  run      MenuSyncRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@unique([runId, page, rowIndex])
+  @@map("menu_quarantine")
+}
+
+model OfferSafetyEvidence {
+  id         String               @id @default(uuid()) @db.Uuid
+  offerId    String               @map("offer_id") @db.Uuid
+  kind       SafetyEvidenceKind
+  code       String               @db.VarChar(80)
+  claim      SafetyEvidenceClaim
+  status     SafetyEvidenceStatus @default(PENDING)
+  sourceUrl  String               @map("source_url") @db.VarChar(2000)
+  excerpt    String               @db.VarChar(2000)
+  observedAt DateTime             @map("observed_at") @db.Timestamptz(3)
+  expiresAt  DateTime             @map("expires_at") @db.Timestamptz(3)
+  createdAt  DateTime             @default(now()) @map("created_at") @db.Timestamptz(3)
+  offer      ExternalMenuItem     @relation(fields: [offerId], references: [id], onDelete: Restrict)
+  reviews    EvidenceReview[]
+
+  @@index([offerId, status, expiresAt])
+  @@map("offer_safety_evidence")
+}
+
+model EvidenceReview {
+  id         String               @id @default(uuid()) @db.Uuid
+  evidenceId String               @map("evidence_id") @db.Uuid
+  actorId    String               @map("actor_id") @db.Uuid
+  status     SafetyEvidenceStatus
+  reason     String               @db.VarChar(1000)
+  createdAt  DateTime             @default(now()) @map("created_at") @db.Timestamptz(3)
+  evidence   OfferSafetyEvidence  @relation(fields: [evidenceId], references: [id], onDelete: Restrict)
+
+  @@index([evidenceId, createdAt])
+  @@map("evidence_reviews")
+}
+
+model AdminAudit {
+  id        String   @id @default(uuid()) @db.Uuid
+  actorId   String   @map("actor_id") @db.Uuid
+  action    String   @db.VarChar(80)
+  targetId  String   @map("target_id") @db.VarChar(255)
+  metadata  Json
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@index([createdAt])
+  @@index([targetId])
+  @@map("admin_audit")
 }

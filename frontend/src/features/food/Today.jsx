@@ -11,6 +11,7 @@ export default function Today({
   onRecipe,
   notice,
   onNearbyCandidates,
+  onRestaurant,
 }) {
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
@@ -102,7 +103,11 @@ export default function Today({
   };
   return (
     <>
-      <NearbyFood onCandidates={onNearbyCandidates} notice={notice} />
+      <NearbyFood
+        onCandidates={onNearbyCandidates}
+        notice={notice}
+        onRestaurant={onRestaurant}
+      />
       <p className="food-eyebrow">
         {new Date().toLocaleDateString("vi-VN", {
           weekday: "long",

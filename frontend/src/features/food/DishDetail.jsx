@@ -8,6 +8,7 @@ export default function DishDetail({
   onBack,
   onFindRecipes,
   onFindRestaurants,
+  onRestaurant,
 }) {
   const [places, setPlaces] = useState(null);
   const [error, setError] = useState("");
@@ -128,6 +129,11 @@ export default function DishDetail({
             {places.items.map((p) => (
               <article className="food-place" key={p.placeId}>
                 <h3>{p.name}</h3>
+                <button
+                  onClick={() => onRestaurant({ ...p, source: "google" })}
+                >
+                  Chi tiết quán / thực đơn
+                </button>
                 <p>{p.address}</p>
                 <p>
                   {p.distanceMeters} m ·{" "}

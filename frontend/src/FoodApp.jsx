@@ -11,9 +11,14 @@ import Discovery from "./features/food/Discovery";
 import RecipeDetail from "./features/food/RecipeDetail";
 import LuckyWheel from "./features/food/LuckyWheel";
 import UserNotice from "./features/food/UserNotice";
+import AdminMenu from "./features/food/AdminMenu";
+import RestaurantDetail, {
+  restaurantTarget,
+} from "./features/food/RestaurantDetail";
 
 const readScreen = () => {
   const name = window.location.hash.slice(1).split("/")[0];
+  if (name === "restaurant" && !restaurantTarget()) return "discover";
   return [
     "today",
     "profile",
@@ -23,6 +28,8 @@ const readScreen = () => {
     "privacy",
     "discover",
     "recipe",
+    "restaurant",
+    "admin",
   ].includes(name)
     ? name
     : "today";
@@ -44,10 +51,21 @@ export default function FoodApp() {
   const [discoveryQuery, setDiscoveryQuery] = useState("");
   const [discoveryMode, setDiscoveryMode] = useState("restaurants");
   const [recipeBack, setRecipeBack] = useState("discover");
+  const [restaurantBack, setRestaurantBack] = useState("discover");
+  const [restaurant, setRestaurant] = useState(restaurantTarget);
   const [message, setMessage] = useState("");
   const [online, setOnline] = useState(() => navigator.onLine);
   const [sessionExpired, setSessionExpired] = useState(false);
   const [nearbyCandidates, setNearbyCandidates] = useState([]);
+  let adminHint = false;
+  try {
+    const payload = getAccessToken().split(".")[1];
+    adminHint =
+      JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/"))).role ===
+      "ADMIN";
+  } catch {
+    /* Navigation hint only; every admin API checks role on the server. */
+  }
   useEffect(() => {
     if (!signedIn) setNearbyCandidates([]);
   }, [signedIn]);
@@ -85,11 +103,17 @@ export default function FoodApp() {
     const sync = () => {
       const next = readScreen();
       const recipe = readRecipe();
+      if (next === "restaurant") setRestaurant(restaurantTarget());
       if (recipe)
         setSelectedRecipe((old) =>
           old?.source === recipe.source && old?.id === recipe.id ? old : recipe,
         );
-      setScreen(next === "recipe" && !recipe ? "discover" : next);
+      setScreen(
+        (next === "recipe" && !recipe) ||
+          (next === "restaurant" && !restaurantTarget())
+          ? "discover"
+          : next,
+      );
     };
     window.addEventListener("hashchange", sync);
     return () => window.removeEventListener("hashchange", sync);
@@ -109,6 +133,22 @@ export default function FoodApp() {
     setRecipeBack(screen === "today" ? "today" : "discover");
     setSelectedRecipe(recipe);
     navigate("recipe", `recipe/${recipe.source}/${recipe.id}`);
+  };
+  const openRestaurant = (place) => {
+    setRestaurantBack(
+      screen === "today" || screen === "dish" ? "today" : "discover",
+    );
+    const target = place.restaurantId
+      ? { kind: "local", id: place.restaurantId }
+      : { kind: "place", source: place.source || "google", id: place.placeId };
+    if (!target.id) return;
+    setRestaurant(target);
+    navigate(
+      "restaurant",
+      target.kind === "local"
+        ? `restaurant/local/${target.id}`
+        : `restaurant/place/${target.source}/${encodeURIComponent(target.id)}`,
+    );
   };
   if (!signedIn)
     return (
@@ -155,6 +195,14 @@ export default function FoodApp() {
         <button className="food-brand" onClick={() => navigate("today")}>
           EatWise <span>Ăn ngon, đúng gu</span>
         </button>
+        {adminHint && (
+          <button
+            onClick={() => navigate("admin")}
+            aria-current={screen === "admin" ? "page" : undefined}
+          >
+            Quản trị
+          </button>
+        )}
         <button
           onClick={async () => {
             try {
@@ -177,6 +225,7 @@ export default function FoodApp() {
         </button>
       </header>
       <main className="food-main">
+        {screen === "admin" && <AdminMenu />}
         {connectionNotice}
         {message && (
           <UserNotice tone="success" onDismiss={() => setMessage("")}>
@@ -188,6 +237,7 @@ export default function FoodApp() {
             navigate={navigate}
             onNearbyCandidates={setNearbyCandidates}
             onRecipe={openRecipe}
+            onRestaurant={openRestaurant}
             onDish={(dish) => {
               setSelected(dish);
               navigate("dish");
@@ -205,7 +255,8 @@ export default function FoodApp() {
         )}
         {screen === "history" && <History />}
         {(screen === "discover" ||
-          (screen === "recipe" && recipeBack === "discover")) && (
+          (screen === "recipe" && recipeBack === "discover") ||
+          (screen === "restaurant" && restaurantBack === "discover")) && (
           <div hidden={screen !== "discover"}>
             <Discovery
               key={`${discoveryMode}:${discoveryQuery}`}
@@ -213,6 +264,7 @@ export default function FoodApp() {
               initialMode={discoveryMode}
               onRecipe={openRecipe}
               navigate={navigate}
+              onRestaurant={openRestaurant}
             />
           </div>
         )}
@@ -228,9 +280,19 @@ export default function FoodApp() {
           <DishDetail
             dish={selected}
             notice={notice}
+            onRestaurant={openRestaurant}
             onBack={() => navigate("today")}
             onFindRecipes={() => openDiscovery(selected.name, "recipes")}
             onFindRestaurants={() => openDiscovery(selected.name)}
+          />
+        )}
+        {screen === "restaurant" && restaurant && (
+          <RestaurantDetail
+            key={`${restaurant.kind}:${restaurant.source}:${restaurant.id}`}
+            target={restaurant}
+            onBack={() => navigate(restaurantBack)}
+            notice={notice}
+            onFindRecipes={(name) => openDiscovery(name, "recipes")}
           />
         )}
       </main>
@@ -253,6 +315,7 @@ export default function FoodApp() {
       <LuckyWheel
         candidates={nearbyCandidates}
         notice={notice}
+        onRestaurant={openRestaurant}
         onFind={() => {
           navigate("today");
           setTimeout(

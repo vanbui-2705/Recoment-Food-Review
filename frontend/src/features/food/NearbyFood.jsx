@@ -5,7 +5,7 @@ import PlacePhoto from "./PlacePhoto";
 import { sourceNames } from "./Discovery";
 import UserNotice from "./UserNotice";
 
-export default function NearbyFood({ onCandidates, notice }) {
+export default function NearbyFood({ onCandidates, notice, onRestaurant }) {
   const [budget, setBudget] = useState("50000");
   const [radius, setRadius] = useState("3500");
   const [location, setLocation] = useState(null);
@@ -249,6 +249,9 @@ export default function NearbyFood({ onCandidates, notice }) {
                       >
                         Chọn món này
                       </button>
+                      <button onClick={() => onRestaurant(item)}>
+                        Chi tiết quán / thực đơn
+                      </button>
                       <a href={item.mapsUrl} target="_blank" rel="noreferrer">
                         Xem quán ↗
                       </a>
@@ -304,6 +307,9 @@ export default function NearbyFood({ onCandidates, notice }) {
                   >
                     <PlacePhoto photo={place.photo} name={place.name} />
                     <p className="food-eyebrow">{sourceNames[place.source]}</p>
+                    <button onClick={() => onRestaurant(place)}>
+                      Chi tiết quán / thực đơn
+                    </button>
                     <h3>{place.name}</h3>
                     <p>
                       {(place.distanceMeters / 1000).toFixed(1)} km ·{" "}
