@@ -25,11 +25,15 @@ Thông báo dành cho những chức năng đang triển khai, không hiển th�
 
 Component dùng chung `UserNotice` có mức info/success/warning/error, ký hiệu và nội dung văn bản; không dùng màu làm dấu hiệu duy nhất. Thông báo thành công có thể đóng, không tự biến mất; cảnh báo theo dữ liệu được giữ tại màn hình liên quan. Error dùng `role=alert`, trạng thái dùng `role=status`; layout có kiểm tra desktop/mobile.
 
-Phạm vi hiện tại là thông báo trong app. Chưa có push notification/email/SMS, hộp thư thông báo lưu server, nhắc bữa ăn theo lịch hoặc nhắc đơn hàng; những phần đó không được gọi là đã triển khai.
+Thông báo trong app đã gắn vào các luồng hiện có. Email xác minh tài khoản/đặt lại mật khẩu đã có adapter Resend, outbox mã hóa, lease/retry và giao diện; gửi email thật còn chờ cấu hình/domain và nghiệm thu. Chưa có push/SMS, hộp thư thông báo lưu server, nhắc bữa ăn theo lịch hoặc nhắc đơn hàng.
 
-Plan chính vẫn 13/86 mục đã hoàn tất. P2 menu/supplier/evidence và chi tiết quán, P3 ranking/recommendation thống nhất, P4 chat, P5 feedback/admin đầy đủ, P6 account/email/vận hành vẫn còn. Key hợp lệ và kiểm tra live riêng vẫn cần để chứng minh dữ liệu provider hoạt động thật.
+Checkpoint 07/10/2026: 78/86 mục, còn tám điều kiện supplier/provider/staging live. Các trạng thái thông báo cho chat, feedback/report, admin content, account/privacy và menu sync đã gắn frontend/backend. Sync chỉ báo đã xếp hàng khi enqueue thành công; retry không khẳng định menu đã cập nhật; revision lỗi giữ bản nhập và yêu cầu tải lại rõ ràng. Xem [runbook](RELEASE_RUNBOOK.md) và checklist OpenSpec để phân biệt code-ready/live-ready.
 
-## Kiểm tra đợt bổ sung
+## Kiểm tra hiện tại
+
+71 unit, 132 database và 112 browser desktop/mobile đạt trong đợt hoàn thiện gần nhất; 31 migrations chạy từ database mới. Các số đo bên dưới là lịch sử của đợt thông báo đầu tiên, không phải tổng hiện tại.
+
+## Kiểm tra đợt bổ sung ban đầu
 
 - Production frontend build và Prettier các file thay đổi: pass.
 - Đã xem ảnh chụp màn hình review/cảnh báo ở mobile 390 px; không tràn ngang, thông tin và nút xác nhận hiển thị theo luồng dọc.

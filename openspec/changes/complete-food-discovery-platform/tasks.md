@@ -118,4 +118,4 @@
 - [x] 12.8 Viết/run rollback rehearsal về image tương thích, worker pause/lease recovery, không drop additive data.
 - [x] 12.9 Load test discovery/analysis/chat và lập dashboard/alert thresholds từ số đo.
 - [ ] 12.10 Chạy toàn bộ release gates, live-provider checks và Coming soon checks; ghi rõ nguồn chưa live-ready.
-- [ ] 12.11 Cập nhật docs/schema/config/runbook và commit từng PR hoàn chỉnh theo đợt; chỉ đánh dấu chức năng hoàn thành khi đủ nghiệm thu.
+- [x] 12.11 Cập nhật docs/schema/config/runbook và commit từng PR hoàn chỉnh theo đợt; chỉ đánh dấu chức năng hoàn thành khi đủ nghiệm thu.

@@ -1,5 +1,7 @@
 # Lộ trình phát triển theo module — Rec-Food
 
+Checkpoint 07/10/2026: lộ trình M01–M12 dưới đây mô tả mục tiêu sản phẩm ban đầu. Nghiệm thu triển khai hiện tại dùng [86 tasks OpenSpec](../openspec/changes/complete-food-discovery-platform/tasks.md) và [release runbook](RELEASE_RUNBOOK.md): 78 hoàn tất, tám điều kiện live còn chờ. Product sections 9/10 (cart/order/payment/delivery) giữ Coming soon; nhóm tasks 9/10 (feedback/admin) đã triển khai.
+
 ## Cách sử dụng tài liệu
 
 Triển khai các module theo thứ tự từ **M01** đến **M12**. Mỗi module chỉ được xem là hoàn thành khi đạt toàn bộ tiêu chí trong phần **Definition of Done**.

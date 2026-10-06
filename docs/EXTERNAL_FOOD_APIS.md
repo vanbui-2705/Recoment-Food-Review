@@ -85,10 +85,11 @@ Sources run independently: missing keys, quota failures or malformed responses
 do not hide healthy sources. Requests have deadlines, reject redirects, and bound
 decoded JSON responses to 3 MB. Goong uses at most five place-detail requests per
 search. Discovery endpoints share a 15 requests/minute/IP limiter; provider JSON
-requests have an additional 120 requests/minute/source/process cap, including Google.
-These limits are process-local;
-deployments with multiple replicas need a shared gateway/Redis rate limit and
-provider-side billing limits. Do not enable shared caching of Google content.
+requests have an additional configurable 120 requests/minute/source cap, including Google.
+These limits now use atomic PostgreSQL counters shared across web/worker replicas;
+authenticated limits use owner identity, public auth endpoints use verified client IP.
+The same SECURITY_NAMESPACE must be used in one deployment. Provider-side billing
+limits remain necessary. Do not enable shared caching of Google content.
 
 Place results are labelled by source and evidence: Google/Foursquare/Goong are
 keyword-related places, while Geoapify supplies nearby restaurants. None certifies
@@ -107,10 +108,16 @@ authenticated providers cannot be fully verified until real keys are configured.
 Automated tests use provider contract fixtures to check request shapes,
 normalization, attribution, failure isolation, history, authentication and cooldown.
 
-Validation completed: backend TypeScript build/lint; 37 unit/integration tests;
+Historical discovery checkpoint: backend TypeScript build/lint; 37 unit/integration tests;
 49 database tests; 12 desktop/mobile browser tests. After the final identity and
 navigation changes, relevant database/provider/browser tests were rerun. A live
 TheMealDB smoke test used authenticated backend routes to fetch a recipe, record
 history, and verify the shared pho cooldown. A real browser also exercised the
 running frontend `/api` proxy with register/login, location validation and missing-key
 states. Temporary smoke-test users were removed afterwards.
+
+Current full-system validation and code-ready/live-ready boundaries are recorded in
+[RELEASE_RUNBOOK.md](RELEASE_RUNBOOK.md). The older TheMealDB development-key smoke
+is not a production credential or a current release gate. Merchant sync has a bounded
+schedule/lease/retry engine but no production supplier adapter until official contract
+and permission are provided. See [sync validation](PLAN_MENU_SYNC_VALIDATION.md).

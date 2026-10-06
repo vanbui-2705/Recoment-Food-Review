@@ -1,6 +1,10 @@
 import { AppError } from "../../common/errors/app-error.js";
 import type { ProfilePayload } from "./taste-profile.schema.js";
-import type { CatalogRecord, StoredProfile, TasteProfileRepository } from "./taste-profile.repository.js";
+import type {
+  CatalogRecord,
+  StoredProfile,
+  TasteProfileRepository,
+} from "./taste-profile.repository.js";
 
 export type CatalogKind = "allergens" | "dietary-restrictions" | "cuisines";
 
@@ -51,9 +55,12 @@ function validateBusinessRules(input: ProfilePayload): void {
     throw new AppError(400, "INVALID_LOCATION", "Cần cung cấp cả vĩ độ và kinh độ");
   }
   if (input.budgetMin > input.budgetMax) {
-    throw new AppError(400, "INVALID_BUDGET_RANGE", "Ngân sách tối thiểu không được lớn hơn ngân sách tối đa", [
-      { field: "budgetMin", message: "budgetMin must be less than or equal to budgetMax" },
-    ]);
+    throw new AppError(
+      400,
+      "INVALID_BUDGET_RANGE",
+      "Ngân sách tối thiểu không được lớn hơn ngân sách tối đa",
+      [{ field: "budgetMin", message: "budgetMin must be less than or equal to budgetMax" }],
+    );
   }
 
   assertUniqueCodes("allergies", input.allergies);
@@ -61,11 +68,7 @@ function validateBusinessRules(input: ProfilePayload): void {
   assertUniqueCodes("cuisinePreferences", input.cuisinePreferences);
 }
 
-function resolveCodes(
-  field: string,
-  codes: string[],
-  catalog: CatalogRecord[],
-): string[] {
+function resolveCodes(field: string, codes: string[], catalog: CatalogRecord[]): string[] {
   const byCode = new Map(catalog.map((item) => [normalizeCode(item.code), item]));
   const missing = codes.find((code) => !byCode.has(code));
 
@@ -142,7 +145,11 @@ export function createTasteProfileService(repository: TasteProfileRepository) {
       const cuisineCodes = assertUniqueCodes("cuisinePreferences", input.cuisinePreferences);
       const resolved = {
         allergenIds: resolveCodes("allergies", allergyCodes, allergens),
-        dietaryRestrictionIds: resolveCodes("dietaryRestrictions", dietaryCodes, dietaryRestrictions),
+        dietaryRestrictionIds: resolveCodes(
+          "dietaryRestrictions",
+          dietaryCodes,
+          dietaryRestrictions,
+        ),
         cuisineIds: resolveCodes("cuisinePreferences", cuisineCodes, cuisines),
       };
 
@@ -161,7 +168,12 @@ export function createTasteProfileService(repository: TasteProfileRepository) {
           code: cuisineCodes[index]!,
         })),
       };
-      const saved = await repository.replaceProfile(userId, normalizedInput, resolved, markOnboardingCompleted);
+      const saved = await repository.replaceProfile(
+        userId,
+        normalizedInput,
+        resolved,
+        markOnboardingCompleted,
+      );
       const response = toResponse(saved);
 
       if (!response) {

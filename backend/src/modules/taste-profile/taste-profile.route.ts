@@ -8,11 +8,15 @@ import {
 } from "./taste-profile.schema.js";
 import { createTasteProfileService } from "./taste-profile.service.js";
 
-export const tasteProfileRoutes: FastifyPluginAsyncTypebox = async function tasteProfileRoutes(app) {
+export const tasteProfileRoutes: FastifyPluginAsyncTypebox = async function tasteProfileRoutes(
+  app,
+) {
   const repository = createTasteProfileRepository(app.prisma);
   const service = createTasteProfileService(repository);
 
-  const catalogRoute = (path: "/catalogs/allergens" | "/catalogs/dietary-restrictions" | "/catalogs/cuisines") => {
+  const catalogRoute = (
+    path: "/catalogs/allergens" | "/catalogs/dietary-restrictions" | "/catalogs/cuisines",
+  ) => {
     app.get(
       path,
       {
@@ -20,7 +24,8 @@ export const tasteProfileRoutes: FastifyPluginAsyncTypebox = async function tast
         schema: { response: { 200: CatalogResponseSchema } },
       },
       async (_request, reply) => {
-        const kind = path.slice("/catalogs/".length) as "allergens" | "dietary-restrictions" | "cuisines";
+        const kind = path.slice("/catalogs/".length) as
+          "allergens" | "dietary-restrictions" | "cuisines";
         return reply.status(200).send({ data: { items: await service.listCatalog(kind) } });
       },
     );
@@ -41,7 +46,9 @@ export const tasteProfileRoutes: FastifyPluginAsyncTypebox = async function tast
         throw new Error("Authenticated user missing after authentication hook");
       }
 
-      return reply.status(200).send({ data: { profile: await service.getProfile(request.authUser.id) } });
+      return reply
+        .status(200)
+        .send({ data: { profile: await service.getProfile(request.authUser.id) } });
     },
   );
 

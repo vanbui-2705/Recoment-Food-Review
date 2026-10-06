@@ -202,15 +202,15 @@ Test/Done: reset/verify replay/expiry/enumeration, logout-all, export/delete own
 
 ## 11. Cấu hình cần bổ sung khi triển khai
 
-| Nhóm | Biến dự kiến | Ghi chú |
+| Nhóm | Biến runtime | Ghi chú |
 |---|---|---|
-| LLM | `LLM_PROVIDER`, `LLM_API_KEY`, `LLM_MODEL`, `LLM_TIMEOUT_MS`, `LLM_MAX_TOKENS`, `LLM_DAILY_BUDGET` | Chọn một provider đầu tiên, structured output; endpoint cố định/allowlist |
-| Merchant | `MERCHANT_PROVIDER`, `MERCHANT_API_BASE_URL`, `MERCHANT_API_KEY`, `MENU_FRESHNESS_HOURS` | Hợp đồng supplier phải có trước adapter live; không fetch URL tùy ý |
-| Jobs | `WORKER_ENABLED`, `JOB_MAX_ATTEMPTS`, `JOB_LEASE_SECONDS` | Validate bounds, lease phải đủ cho deadline |
-| Email | `EMAIL_PROVIDER`, `EMAIL_API_KEY`, `EMAIL_FROM`, `PUBLIC_APP_ORIGIN` | Blank -> chức năng báo chưa cấu hình |
-| Vận hành | `METRICS_ENABLED`, `RETENTION_*_DAYS`, `EXPORT_TTL_HOURS` | Secret backend-only; không có key mới trong Vite |
+| LLM | `LLM_PROVIDER`, `LLM_API_KEY`, `LLM_MODEL`, `LLM_TIMEOUT_MS`, `LLM_MAX_TOKENS`, `LLM_DAILY_REQUEST_LIMIT`, `LLM_DAILY_BUDGET_USD`, `LLM_INPUT_USD_PER_MILLION`, `LLM_OUTPUT_USD_PER_MILLION`, `LLM_PRICING_VALID_UNTIL`, `LLM_INPUT_MAX_BYTES` | Gemini adapter; quota và budget dùng chung PostgreSQL; giá cấu hình phải được operator xác minh trước live |
+| Merchant | `MENU_SYNC_WORKER_ENABLED` | Registry live hiện trống, cần hợp đồng trước adapter. Lịch/freshness lưu theo supplier trong DB; chưa có biến API key merchant để cấu hình một provider chưa được chọn |
+| Jobs | `WORKER_ENABLED`, `JOB_MAX_ATTEMPTS`, `JOB_LEASE_SECONDS`, `CHAT_RUN_TIMEOUT_MS` | Worker tách web; menu jobs có lease/retry riêng theo contract đã kiểm thử |
+| Email | `EMAIL_PROVIDER`, `RESEND_API_KEY`, `EMAIL_FROM`, `PUBLIC_APP_URL`, `EMAIL_ALLOWED_ORIGINS`, `EMAIL_OUTBOX_ENCRYPTION_KEY`, `EMAIL_TIMEOUT_MS` | Resend outbox; thiếu cấu hình không báo đã gửi; domain gửi cần xác minh |
+| Vận hành | `SECURITY_NAMESPACE`, `TRUST_PROXY_IPS`, `PROVIDER_REQUESTS_PER_MINUTE` | Metrics yêu cầu ADMIN; retention là defaults có kiểm thử, không có runtime `RETENTION_*`/`METRICS_ENABLED` |
 
-Sáu provider key hiện có được giữ nguyên. Các biến mới ở bảng là thiết kế, chưa được thêm vào runtime/.env trong đợt lập kế hoạch này. Model/provider cụ thể, giá/quota/chính sách cache cần xác minh tài liệu chính thức tại lúc viết adapter; không ghi giả định hiện hành thành hợp đồng live.
+Sáu provider key hiện có được giữ nguyên. Tên biến và defaults chính thức nằm trong [backend/.env.example](../backend/.env.example), staging wiring trong [deploy/staging.env.example](../deploy/staging.env.example). Không đưa key vào Vite hoặc git. Các tên biến dự kiến trong bản kế hoạch ban đầu đã được thay bằng cấu hình thực tế ở bảng trên; xem [runbook](RELEASE_RUNBOOK.md) để bật từng nguồn và nghiệm thu live.
 
 ## 12. Cách chia PR và nghiệm thu
 

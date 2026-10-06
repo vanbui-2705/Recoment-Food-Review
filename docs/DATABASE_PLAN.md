@@ -1,5 +1,7 @@
 # Rec-Food — Database Implementation Plan
 
+Checkpoint schema 07/10/2026: 50 Prisma models và 31 migrations append-only, đã migrate từ database rỗng. DB01–DB05 bên dưới là kế hoạch foundation ban đầu; schema runtime chính thức nằm trong [schema.prisma](../backend/prisma/schema.prisma). Các nhóm mở rộng và quy trình recovery/rollback được ghi ở cuối tài liệu và trong [runbook](RELEASE_RUNBOOK.md).
+
 ## 1. Mục tiêu
 
 Xây dựng PostgreSQL database cho Rec-Food theo từng migration nhỏ, bắt đầu từ authentication và mở rộng dần sang taste profile, kho món ăn, nhà hàng và recommendation history.
@@ -549,3 +551,24 @@ DB05 đã hoàn thành các bước:
 **Next milestone:** Repository/service/API implementation trên schema đã hoàn thành
 
 **Last updated:** 2026-09-18
+
+## 19. Schema hiện tại — 07/10/2026
+
+Foundation DB01–DB05 đã được mở rộng thành 50 models và 31 migrations. Những số test/migration trong các mục trước là kết quả lịch sử. Tên bảng thực tế xem `@@map` trong Prisma; không suy luận SQL table names từ tên model.
+
+| Nhóm | Models và invariant chính |
+|---|---|
+| Account/session | User, RefreshToken, EmailActionToken, EmailOutbox, MaintenanceLease, AccountDeletionJob; token hash/single-use, outbox encrypted, ownership và session revocation |
+| Profile/catalog | TasteProfile, DiscoverySettings, Allergen, UserAllergy, DietaryRestriction, UserDietaryRestriction, Cuisine, UserCuisinePreference; revision/CAS và constraints có nguồn |
+| Food/restaurant | Dish, DishAlias, Ingredient, DishIngredient, DishAllergen, UserDishPreference, Restaurant, RestaurantDish; canonical identity và soft deactivate bảo toàn history |
+| Recommendation/feedback | RecommendationRequest, RecommendationResult, UserInteraction, RecipeInteraction; owner/idempotency, rating 1–5, canonical cooldown 96 giờ |
+| Personal knowledge/analysis | PersonalFoodKnowledge, TasteAnalysisJob; revision superseded/review, claim/lease/retry |
+| Quota/AI usage | AiRequestCounter, AiBudgetUsage, SharedQuotaBucket, ProviderObservation, AiRequestUsage; atomic shared counters và conservative budget reservation |
+| Chat | Conversation, ChatMessage, ChatRun, ChatEvent; một active run, owner isolation, sequence/reconnect, structured context và bounded trace |
+| Supplier/menu | MerchantSupplier, ExternalRestaurantIdentity, ExternalMenuItem, MenuSyncRun, MenuSyncPage, MenuQuarantine; source identity, freshness/availability, complete snapshot/delta và idempotent pages |
+| Safety/audit/report | OfferSafetyEvidence, EvidenceReview, AdminAudit, DataReport, ReportReview; review history, expiry/revocation, transactional redacted audit |
+| Scheduled sync | MenuSyncSchedule, MenuSyncJob; immutable adapter binding, due CAS, unique job key, SKIP LOCKED và fenced commit |
+
+Migration 29 thêm moderation/catalog activation; 30 thêm scheduled menu sync jobs; 31 siết lease invariant: RUNNING phải có cả token/expiry, các trạng thái khác phải xóa cả hai. Không sửa migration đã apply. Job token cũ không được commit sau reclaim hoặc source pause.
+
+Kiểm tra hiện tại: 31 migrations từ DB rỗng, 132 database tests; restore/rollback schema 31 với image trước tương thích đạt. Backup dataset nhỏ là synthetic, không đại diện production SLA. Xem [release runbook](RELEASE_RUNBOOK.md) để vận hành và phân biệt tám điều kiện live chưa hoàn tất.

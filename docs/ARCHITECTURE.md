@@ -1,5 +1,7 @@
 # Rec-Food — Architecture & Codebase Guide
 
+Checkpoint 07/10/2026: backend/frontend đã nối discovery, recommendation, AI jobs/chat, menu ingest/evidence/sync, feedback/admin và account/email/privacy. Web, worker và migrations chạy riêng; quotas/budget dùng PostgreSQL. Tài liệu này giữ mô tả kiến trúc và mục tiêu ban đầu; trạng thái triển khai, cấu hình runtime, 31 migrations và release gates hiện tại được ghi trong [RELEASE_RUNBOOK.md](RELEASE_RUNBOOK.md). Tám điều kiện live còn chờ supplier/credentials/staging; cart/order/payment/delivery là Coming soon.
+
 ## 1. Mục đích tài liệu
 
 Tài liệu này là bản đồ kỹ thuật dành cho:

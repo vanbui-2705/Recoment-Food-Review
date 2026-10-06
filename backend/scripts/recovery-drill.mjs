@@ -13,7 +13,7 @@ const suffix = randomBytes(8).toString("hex");
 const name = `rec-food-drill-${suffix}`,
   network = `${name}-net`,
   password = randomBytes(24).toString("hex");
-const current = process.env.DRILL_CURRENT_IMAGE || "rec-food-backend:plan-content";
+const current = process.env.DRILL_CURRENT_IMAGE || "rec-food-backend:plan-sync";
 const previous = process.env.DRILL_PREVIOUS_IMAGE || "rec-food-backend:plan-ai-budget";
 const migrate = process.env.DRILL_MIGRATION_IMAGE || "rec-food-migrate:plan-ops";
 const label = `rec-food.drill=${suffix}`;

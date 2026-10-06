@@ -5,10 +5,10 @@ services:
   migrate:
     image: rec-food-migrate:plan-ops
   backend:
-    image: rec-food-backend:plan-content
+    image: ${DRILL_CURRENT_IMAGE:-rec-food-backend:plan-sync}
     ports: !reset []
   worker:
-    image: rec-food-backend:plan-content
+    image: ${DRILL_CURRENT_IMAGE:-rec-food-backend:plan-sync}
   frontend:
-    image: rec-food-frontend:plan-content
+    image: ${DRILL_FRONTEND_IMAGE:-rec-food-frontend:plan-sync}
     ports: !override ["127.0.0.1::80"]

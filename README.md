@@ -28,25 +28,25 @@ Backend mặc định chạy tại `http://localhost:3001`. Kiểm tra bằng `G
 Từ thư mục root của dự án:
 
 ```bash
-docker compose up --build
+docker compose --env-file backend/.env up --build -d
 ```
 
 Compose sẽ chạy theo thứ tự:
 
 ```text
-PostgreSQL -> Prisma migrations -> development seed -> backend
+PostgreSQL -> Prisma migrations -> backend readiness -> frontend
 ```
 
-Backend chạy tại `http://localhost:3001`; kiểm tra bằng:
+Seed bootstrap chạy riêng: `docker compose --env-file backend/.env --profile bootstrap run --rm seed`. Cần SEED_ADMIN_EMAIL/PASSWORD trong private env để tạo ADMIN. Không seed lại mỗi lần rollout. Backend chạy tại `http://127.0.0.1:3001`; kiểm tra dependency bằng:
 
 ```bash
-curl http://localhost:3001/health
+curl http://127.0.0.1:3001/ready
 ```
 
 Chạy nền:
 
 ```bash
-docker compose up --build -d
+docker compose --env-file backend/.env up --build -d
 docker compose ps
 docker compose logs -f backend
 ```
@@ -100,3 +100,11 @@ npm run db:seed
 ```
 
 Không dùng `prisma db push` làm quy trình thay đổi schema chính thức.
+
+## Chức năng và vận hành hiện tại
+
+Checkpoint 07/10/2026: **78/86 mục đã nghiệm thu**. Frontend gọi backend qua `/api`: nhập khẩu vị tự do, phân tích/xác nhận theo revision, gợi ý hôm nay/budget/vị trí 3–4 km, cooldown 96 giờ, wheel, tìm quán, hướng dẫn nấu, lịch sử/rating/báo cáo, quản trị nội dung/evidence/tài khoản/sync, email và export/delete. Đặt món/thanh toán/giao hàng giữ Coming soon. Provider chưa có credentials báo chưa cấu hình; không dùng dữ liệu giả để lấp kết quả.
+
+Để chạy background, đặt WORKER_ENABLED=true trong cùng private env của web và worker; Compose dùng `--profile background up -d` hoặc từ backend chạy riêng `npm run worker`. Thiếu key AI vẫn chạy email/retention/deletion nếu cấu hình tương ứng. MENU_SYNC_WORKER_ENABLED mặc định false và registry merchant rỗng cho tới khi có tài liệu/quyền supplier; bật flag hoặc Maps key không tự tạo giá món thật. API keys chỉ đặt trong [backend env example](backend/.env.example) tương ứng với private env; Vite không có key provider.
+
+[Runbook phát hành](docs/RELEASE_RUNBOOK.md) có cấu hình, status code-ready/live-ready, validation, backup/rollback, TLS và các gate chưa thể nghiệm thu. [Checklist 86 mục](openspec/changes/complete-food-discovery-platform/tasks.md) là nguồn tiến độ chính thức. Live AI/menu/email và release staging chưa hoàn tất chỉ vì tests dùng fixture đạt.

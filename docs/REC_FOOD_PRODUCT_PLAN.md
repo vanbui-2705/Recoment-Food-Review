@@ -437,16 +437,16 @@ Không xác nhận đơn hoặc thanh toán nếu chưa có hành động đồn
 - food knowledge API và ADMIN write API có nguồn;
 - Google Places Text Search adapter backend và link Maps.
 
-Chưa có implementation hoàn chỉnh:
+Các điều kiện live còn thiếu và phạm vi Coming soon:
 
 - nguồn thực đơn/giá món trực tiếp từ merchant;
-- bằng chứng an toàn dị ứng theo từng quán;
+- dữ liệu bằng chứng an toàn dị ứng từ nguồn được phép theo từng offer/quán; lifecycle review, expiry và hard filter đã triển khai;
 - AI/chat đã có adapter, jobs, fallback và UI; chưa nghiệm thu live với key thật;
 - cart/order — Coming soon, ngoài scope đợt này;
 - payment/delivery — Coming soon, ngoài scope đợt này;
-- admin UI/API đầy đủ.
+- Các API/UI quản trị, email, export/delete, retention, shared quotas, AI budget, lịch sync, TLS và recovery/load drills đã code-ready; nguồn thật và release live vẫn cần nghiệm thu.
 
-## 9. Change tiếp theo đề xuất
+## 9. Change đang thực hiện
 
 Change tiếp theo nên là:
 
@@ -454,6 +454,6 @@ Change tiếp theo nên là:
 complete-food-discovery-platform
 ```
 
-Taste profile và daily discovery đã triển khai. Change mới có proposal, design, chín capability specs và tasks theo P0–P6. Bắt đầu P0/P1; xây pipeline merchant/evidence và tài khoản/vận hành ở các nhánh độc lập tiếp theo. Nguồn merchant cần hợp đồng/key thật để đạt live-ready; không dùng Google Text Search thay bằng chứng thực đơn hoặc an toàn. Chi tiết API, UX, dữ liệu, test và điều kiện phát hành nằm trong [REC_FOOD_COMPLETION_PLAN.md](REC_FOOD_COMPLETION_PLAN.md).
+Change có proposal, design, chín capability specs và tasks theo P0–P6. Phần code độc lập với credentials đã triển khai và kiểm tra. Nguồn merchant cần hợp đồng/key thật để đạt live-ready; không dùng Google Text Search thay bằng chứng thực đơn hoặc an toàn. Chi tiết API, UX, dữ liệu, test và điều kiện phát hành nằm trong [REC_FOOD_COMPLETION_PLAN.md](REC_FOOD_COMPLETION_PLAN.md).
 
-Checkpoint 07/10/2026: **60/86** mục đã nghiệm thu. Đã có discovery/cooldown, menu import/mapping/evidence review, chat, báo cáo, rating, tài khoản/thiết bị, moderation/audit, readiness/metrics và luồng email khôi phục/xác minh. Frontend đã nối các API này. Export/delete/retention, quản trị nội dung đầy đủ và release drills còn tiếp tục. Xem [kiểm chứng tài khoản/phản hồi](PLAN_ACCOUNT_FEEDBACK_VALIDATION.md), [kiểm chứng email](PLAN_EMAIL_VALIDATION.md); checklist là nguồn tiến độ chính thức. Email live cần sender/key thật.
+Checkpoint 07/10/2026: **78/86** mục đã nghiệm thu. Frontend đã nối backend cho discovery/cooldown/wheel/recipes, AI/chat, báo cáo/rating/lịch sử, tài khoản/thiết bị/email, export/delete/retention, quản trị nội dung/evidence/audit và schedule/retry sync. Shared quotas/AI budget, Docker web-worker-migration, dashboard/alerts, backup/rollback và HTTPS đã kiểm tra trong môi trường cô lập. Xem [runbook và readiness](RELEASE_RUNBOOK.md); checklist là nguồn tiến độ chính thức. Tám mục còn lại cần supplier contract, credentials/provider live và staging release thật.

@@ -53,12 +53,21 @@ const allergyInclude = { allergen: true } as const;
 const dietaryInclude = { dietaryRestriction: true } as const;
 const cuisineInclude = { cuisine: true } as const;
 
-async function findStoredProfile(db: ProfileDatabase, userId: string): Promise<StoredProfile | null> {
+async function findStoredProfile(
+  db: ProfileDatabase,
+  userId: string,
+): Promise<StoredProfile | null> {
   // A transaction uses one connection; execute its queries sequentially.
   const profile = await db.tasteProfile.findUnique({ where: { userId } });
   const allergies = await db.userAllergy.findMany({ where: { userId }, include: allergyInclude });
-  const dietaryRestrictions = await db.userDietaryRestriction.findMany({ where: { userId }, include: dietaryInclude });
-  const cuisinePreferences = await db.userCuisinePreference.findMany({ where: { userId }, include: cuisineInclude });
+  const dietaryRestrictions = await db.userDietaryRestriction.findMany({
+    where: { userId },
+    include: dietaryInclude,
+  });
+  const cuisinePreferences = await db.userCuisinePreference.findMany({
+    where: { userId },
+    include: cuisineInclude,
+  });
 
   if (!profile) {
     return null;
@@ -124,7 +133,8 @@ export function createTasteProfileRepository(prisma: PrismaClient) {
     ): Promise<StoredProfile> {
       return prisma.$transaction(async (transaction) => {
         const currentProfile = await transaction.tasteProfile.findUnique({ where: { userId } });
-        const onboardingCompleted = markOnboardingCompleted || currentProfile?.onboardingCompleted === true;
+        const onboardingCompleted =
+          markOnboardingCompleted || currentProfile?.onboardingCompleted === true;
 
         await transaction.tasteProfile.upsert({
           where: { userId },
