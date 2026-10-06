@@ -362,6 +362,34 @@ describe("merchant menu transactional ingestion", () => {
         await app.prisma.restaurant.delete({ where: { id: secondRestaurantId } });
     }
   });
+  it("source synchronization cannot undo an operator pause", async () => {
+    const rowBefore = await app.prisma.externalMenuItem.findUniqueOrThrow({
+      where: { id: offerId },
+    });
+    const paused = await app.inject({
+      method: "PUT",
+      url: `/admin/content/offers/${offerId}/status`,
+      headers: admin,
+      payload: {
+        confirm: true,
+        isActive: false,
+        expectedUpdatedAt: rowBefore.updatedAt.toISOString(),
+        reasonCode: "SOURCE_REVIEW",
+      },
+    });
+    expect(paused.statusCode).toBe(200);
+    const run = await start("after-operator-pause", 1, "DELTA", new Date().toISOString());
+    await service.stage(
+      run.id,
+      0,
+      [{ ...row(rowBefore.externalId), observedAt: new Date().toISOString(), price: 47000 }],
+      adminId,
+    );
+    await service.commit(run.id, adminId);
+    expect(
+      await app.prisma.externalMenuItem.findUniqueOrThrow({ where: { id: offerId } }),
+    ).toMatchObject({ moderationEnabled: false, price: 47000, active: true });
+  });
   it("bounds administrative ingestion requests with a retry-after response", async () => {
     let limited;
     for (let index = 0; index < 121; index++) {

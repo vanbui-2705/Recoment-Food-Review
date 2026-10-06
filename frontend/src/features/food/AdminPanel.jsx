@@ -3,11 +3,19 @@ import AdminMenu from "./AdminMenu";
 import AdminReports from "./AdminReports";
 import AdminAccounts from "./AdminAccounts";
 import AdminOperations from "./AdminOperations";
+import AdminContent from "./AdminContent";
 export default function AdminPanel({ onSignedOut }) {
   const [tab, setTab] = useState("menu");
   return (
     <>
       <nav aria-label="Chức năng quản trị" className="food-actions">
+        <button
+          type="button"
+          aria-current={tab === "content" ? "page" : undefined}
+          onClick={() => setTab("content")}
+        >
+          Danh mục và quán
+        </button>
         <button
           type="button"
           aria-current={tab === "menu" ? "page" : undefined}
@@ -43,7 +51,9 @@ export default function AdminPanel({ onSignedOut }) {
           Nhật ký quản trị
         </button>
       </nav>
-      {tab === "menu" ? (
+      {tab === "content" ? (
+        <AdminContent />
+      ) : tab === "menu" ? (
         <AdminMenu />
       ) : tab === "reports" ? (
         <AdminReports />

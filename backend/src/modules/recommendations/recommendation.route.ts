@@ -86,6 +86,7 @@ export const recommendationRoutes: FastifyPluginAsyncTypebox = async (app) => {
                 include: {
                   identity: { include: { supplier: true, restaurant: true } },
                   evidence: true,
+                  dish: { include: { cuisine: true } },
                 },
               },
             },
@@ -119,6 +120,10 @@ export const recommendationRoutes: FastifyPluginAsyncTypebox = async (app) => {
               !offer ||
               !supplier?.enabled ||
               !offer.active ||
+              !offer.moderationEnabled ||
+              !offer.identity.restaurant.isActive ||
+              !offer.dish?.isActive ||
+              !offer.dish.cuisine.isActive ||
               !offer.isAvailable ||
               offer.mappingStatus !== "APPROVED" ||
               offer.dishId !== result.dishId ||

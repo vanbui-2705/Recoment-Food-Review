@@ -47,7 +47,12 @@ export const restaurantRoutes: FastifyPluginAsyncTypebox = async (app) => {
     )
       throw new AppError(400, "INVALID_CURSOR", "Trang thực đơn không hợp lệ");
     const rows = await app.prisma.externalMenuItem.findMany({
-      where: { identity: { restaurantId, supplier: { enabled: true } }, active: true },
+      where: {
+        identity: { restaurantId, restaurant: { isActive: true }, supplier: { enabled: true } },
+        active: true,
+        moderationEnabled: true,
+        OR: [{ dishId: null }, { dish: { isActive: true, cuisine: { isActive: true } } }],
+      },
       include: { identity: { include: { supplier: true } }, evidence: true },
       orderBy: { id: "asc" },
       ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),

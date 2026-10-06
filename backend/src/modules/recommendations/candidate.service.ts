@@ -87,6 +87,8 @@ export function createCandidateService(
         prisma.externalMenuItem.findMany({
           where: {
             active: true,
+            moderationEnabled: true,
+            dish: { isActive: true, cuisine: { isActive: true } },
             isAvailable: true,
             mappingStatus: "APPROVED",
             dishId: { not: null },
@@ -97,6 +99,7 @@ export function createCandidateService(
             identity: {
               supplier: { enabled: true },
               restaurant: {
+                isActive: true,
                 latitude: {
                   gte: Math.max(-90, context.latitude - latitudeDelta),
                   lte: Math.min(90, context.latitude + latitudeDelta),

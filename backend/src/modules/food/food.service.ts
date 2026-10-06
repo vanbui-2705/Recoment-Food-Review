@@ -8,6 +8,7 @@ import { dishInclude } from "./food.repository.js";
 import { REPEAT_WINDOW_MS } from "./food.policy.js";
 import { foodIdentity } from "./food.identity.js";
 import { AppError } from "../../common/errors/app-error.js";
+import { serializableWrite } from "../../common/security/transaction-retry.js";
 import { hasUnprocessedFoodKnowledge } from "../personal-food-knowledge/personal-food-knowledge.policy.js";
 type Candidate = {
   id: string;
@@ -69,7 +70,12 @@ export function createFoodService(prisma: PrismaClient) {
       const [dishes, preferences, history, recipeHistory] = await Promise.all([
         prisma.dish.findMany({
           include: dishInclude,
-          where: { priceMin: { gte: profile.budgetMin }, priceMax: { lte: profile.budgetMax } },
+          where: {
+            isActive: true,
+            cuisine: { isActive: true },
+            priceMin: { gte: profile.budgetMin },
+            priceMax: { lte: profile.budgetMax },
+          },
           orderBy: { id: "asc" },
           take: 501,
         }),
@@ -151,10 +157,23 @@ export function createFoodService(prisma: PrismaClient) {
         createdAt.getTime() < Date.now() - 30 * 86400000
       )
         throw new AppError(400, "INVALID_EATEN_AT", "Chỉ ghi nhận trong 30 ngày vừa qua");
-      return prisma.$transaction(async (tx) => {
-        if (!(await tx.dish.findUnique({ where: { id: dishId } })))
-          throw new AppError(404, "DISH_NOT_FOUND", "Không tìm thấy món");
+      return serializableWrite(prisma, async (tx) => {
+        const dish = await tx.dish.findUnique({
+          where: { id: dishId },
+          include: { cuisine: true },
+        });
+        if (!dish) throw new AppError(404, "DISH_NOT_FOUND", "Không tìm thấy món");
         const idempotencyKey = `${userId}:${key}`;
+        if (
+          type === "CHOSEN" &&
+          (!dish.isActive || !dish.cuisine.isActive) &&
+          !(await tx.userInteraction.findUnique({ where: { idempotencyKey } }))
+        )
+          throw new AppError(
+            409,
+            "DISH_UNAVAILABLE",
+            "Món tạm ngừng gợi ý. Hãy chọn món khác hoặc tải lại danh sách.",
+          );
         const action = await tx.userInteraction.upsert({
           where: { idempotencyKey },
           update: {},

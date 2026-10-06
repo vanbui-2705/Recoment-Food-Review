@@ -88,12 +88,12 @@
 ## 10. P5 — Admin đầy đủ
 
 - [x] 10.1 Migration immutable/redacted admin audit và transactional writer; test rollback/no secret fields.
-- [ ] 10.2 Hoàn thiện content/catalog/restaurant/offer APIs với soft deactivate; test referenced history bảo toàn.
+- [x] 10.2 Hoàn thiện content/catalog/restaurant/offer APIs với soft deactivate; test referenced history bảo toàn.
 - [x] 10.3 Thêm user list/block/unblock/session revocation và last-admin guard; test access/refresh sau khóa.
 - [x] 10.4 Thêm report triage/resolve/reopen reason và audit; test lifecycle/race.
-- [ ] 10.5 Tạo ADMIN layout và views content/users/restaurants/reports/audit với pagination/error states.
+- [x] 10.5 Tạo ADMIN layout và views content/users/restaurants/reports/audit với pagination/error states.
 - [ ] 10.6 Gắn provider health/quota và retry sync vào admin, không render key; test USER bị 403 ở mọi write.
-- [ ] 10.7 Chạy admin E2E review mapping/evidence/report/block/deactivate và cập nhật hướng dẫn vận hành.
+- [x] 10.7 Chạy admin E2E review mapping/evidence/report/block/deactivate và cập nhật hướng dẫn vận hành.
 
 ## 11. P6a — Tài khoản, email và riêng tư
 

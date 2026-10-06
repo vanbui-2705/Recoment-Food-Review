@@ -6,6 +6,7 @@ import { registerErrorHandlers } from "./common/errors/error-handler.js";
 import { adminRoutes } from "./modules/admin/admin.route.js";
 import { adminUserRoutes } from "./modules/admin/admin.users.js";
 import { adminOperationsRoutes } from "./modules/admin/admin.operations.js";
+import { adminContentRoutes } from "./modules/admin/admin.content.js";
 import { authRoutes } from "./modules/auth/auth.route.js";
 import { accountEmailRoutes } from "./modules/email/email.route.js";
 import { accountDataRoutes } from "./modules/account/account.route.js";
@@ -69,6 +70,7 @@ export function buildApp(options: BuildAppOptions = {}) {
     app.register(adminRoutes);
     app.register(adminUserRoutes);
     app.register(adminOperationsRoutes);
+    app.register(adminContentRoutes);
     app.register(foodRoutes);
     app.register(discoveryRoutes);
     app.register(personalFoodKnowledgeRoutes);

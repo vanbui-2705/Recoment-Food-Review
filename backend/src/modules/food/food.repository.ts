@@ -1,6 +1,7 @@
 import type { PrismaClient } from "../../generated/prisma/client.js";
 import { AppError } from "../../common/errors/app-error.js";
 import { normalizeFoodText, type DishWrite } from "./food.schema.js";
+import { audit } from "../admin/admin.audit.js";
 export const dishInclude = {
   cuisine: true,
   aliases: true,
@@ -9,7 +10,12 @@ export const dishInclude = {
 } as const;
 export function createFoodRepository(prisma: PrismaClient) {
   return {
-    async save(id: string | undefined, input: DishWrite) {
+    async save(
+      id: string | undefined,
+      input: DishWrite,
+      actorId?: string,
+      expectedUpdatedAt?: string,
+    ) {
       if (input.priceMin > input.priceMax)
         throw new AppError(400, "INVALID_PRICE", "Khoảng giá không hợp lệ");
       const normalizedAliases = input.aliases.map(normalizeFoodText);
@@ -44,8 +50,18 @@ export function createFoodRepository(prisma: PrismaClient) {
             diets !== input.dietaryCodes.length
           )
             throw new AppError(400, "UNKNOWN_CATALOG_CODE", "Mã kiến thức món ăn không tồn tại");
-          if (id && !(await tx.dish.findUnique({ where: { id } })))
-            throw new AppError(404, "DISH_NOT_FOUND", "Không tìm thấy món");
+          const previous = id ? await tx.dish.findUnique({ where: { id } }) : null;
+          if (id && !previous) throw new AppError(404, "DISH_NOT_FOUND", "Không tìm thấy món");
+          if (
+            previous &&
+            expectedUpdatedAt &&
+            previous.updatedAt.toISOString() !== new Date(expectedUpdatedAt).toISOString()
+          )
+            throw new AppError(
+              409,
+              "CONTENT_CHANGED",
+              "Danh mục đã thay đổi. Tải lại trước khi lưu.",
+            );
           const { aliases, allergens: allergenSelections } = input;
           const fields = {
             slug: input.slug,
@@ -62,10 +78,15 @@ export function createFoodRepository(prisma: PrismaClient) {
             dietaryCodes: input.dietaryCodes,
             mealPeriods: input.mealPeriods,
           };
-          const data = { ...fields, name: input.name.trim(), cuisineId: cuisine.id };
+          const data = {
+            ...fields,
+            name: input.name.trim(),
+            cuisineId: cuisine.id,
+            updatedAt: new Date(Math.max(Date.now(), (previous?.updatedAt.getTime() ?? 0) + 1)),
+          };
           if (!data.name) throw new AppError(400, "INVALID_NAME", "Tên món không được trống");
           const dish = id
-            ? await tx.dish.update({ where: { id }, data })
+            ? await tx.dish.update({ where: { id, updatedAt: previous!.updatedAt }, data })
             : await tx.dish.create({ data });
           await tx.dishAlias.deleteMany({ where: { dishId: dish.id } });
           await tx.dishIngredient.deleteMany({ where: { dishId: dish.id } });
@@ -93,9 +114,26 @@ export function createFoodRepository(prisma: PrismaClient) {
               verifiedAt: input.verificationStatus === "VERIFIED" ? new Date() : null,
             })),
           });
+          if (actorId)
+            await audit(tx, actorId, id ? "DISH_UPDATED" : "DISH_CREATED", dish.id, {
+              aliases: aliases.length,
+              ingredients: ingredients.length,
+              allergens: allergenSelections.length,
+            });
           return tx.dish.findUniqueOrThrow({ where: { id: dish.id }, include: dishInclude });
         })
         .catch((error: unknown) => {
+          if (
+            typeof error === "object" &&
+            error !== null &&
+            "code" in error &&
+            error.code === "P2025"
+          )
+            throw new AppError(
+              409,
+              "CONTENT_CHANGED",
+              "Danh mục đã thay đổi. Tải lại trước khi lưu.",
+            );
           if (
             typeof error === "object" &&
             error !== null &&

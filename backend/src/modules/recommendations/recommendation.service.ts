@@ -34,7 +34,7 @@ export function createRecommendationService(
         results: {
           orderBy: { rank: "asc" },
           include: {
-            dish: { include: { aliases: true } },
+            dish: { include: { aliases: true, cuisine: true } },
             offer: {
               include: {
                 identity: { include: { restaurant: true, supplier: true } },
@@ -145,7 +145,11 @@ export function createRecommendationService(
         offer.mappingStatus === "APPROVED" &&
         offer.dishId === result.dishId &&
         supplier?.enabled &&
+        offer?.moderationEnabled &&
+        result.dish.isActive &&
+        result.dish.cuisine.isActive &&
         restaurant &&
+        restaurant.isActive &&
         liveOpening !== false &&
         (!request.onlyOpen || liveOpening === true) &&
         !["PERMANENTLY_CLOSED", "TEMPORARILY_CLOSED"].includes(restaurant.businessStatus)

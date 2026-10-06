@@ -1,4 +1,11 @@
 const messages = {
+  CONTENT_CHANGED:
+    "Dữ liệu đã thay đổi ở phiên khác. Tải lại và xem trước khi xác nhận.",
+  CONTENT_NOT_FOUND: "Dữ liệu không còn tồn tại. Hãy tải lại danh sách.",
+  DISH_UNAVAILABLE:
+    "Món đang tạm ngừng gợi ý. Hãy tải lại danh sách để chọn món khác.",
+  CATALOG_CODE_EXISTS:
+    "Mã danh mục đã tồn tại. Tìm trong danh sách trước khi tạo lại.",
   AI_BUDGET_EXCEEDED:
     "AI tạm thời chạm giới hạn ngân sách xử lý. Bạn vẫn có thể tìm món và quán; phần gợi ý dùng cách xếp hạng dự phòng.",
   RATE_LIMIT_UNAVAILABLE:

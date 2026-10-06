@@ -6,6 +6,8 @@ import { createFoodRepository, dishInclude } from "./food.repository.js";
 import { DishIdSchema, DishWriteSchema, normalizeFoodText } from "./food.schema.js";
 import { createFoodService } from "./food.service.js";
 import { quotaFetch } from "../discovery/provider.quota.js";
+import { audit } from "../admin/admin.audit.js";
+import { serializableWrite } from "../../common/security/transaction-retry.js";
 export const foodRoutes: FastifyPluginAsyncTypebox = async (app) => {
   const repository = createFoodRepository(app.prisma);
   const service = createFoodService(app.prisma);
@@ -28,6 +30,7 @@ export const foodRoutes: FastifyPluginAsyncTypebox = async (app) => {
           {
             name: Type.String({ minLength: 1, maxLength: 150 }),
             description: Type.String({ maxLength: 3000 }),
+            expectedUpdatedAt: Type.Optional(Type.String({ format: "date-time" })),
           },
           { additionalProperties: false },
         ),
@@ -38,17 +41,48 @@ export const foodRoutes: FastifyPluginAsyncTypebox = async (app) => {
       if (!name) throw new AppError(400, "INVALID_NAME", "Tên nguyên liệu không được trống");
       return {
         data: {
-          ingredient: await app.prisma.ingredient.upsert({
-            where: { code: req.params.code },
-            update: { name, description: req.body.description },
-            create: { code: req.params.code, name, description: req.body.description },
+          ingredient: await serializableWrite(app.prisma, async (tx) => {
+            const previous = await tx.ingredient.findUnique({ where: { code: req.params.code } });
+            if (
+              previous &&
+              (!req.body.expectedUpdatedAt ||
+                previous.updatedAt.toISOString() !==
+                  new Date(req.body.expectedUpdatedAt).toISOString())
+            )
+              throw new AppError(
+                409,
+                "CONTENT_CHANGED",
+                "Nguyên liệu đã thay đổi. Tải lại trước khi lưu.",
+              );
+            const ingredient = await tx.ingredient.upsert({
+              where: { code: req.params.code },
+              update: {
+                name,
+                description: req.body.description,
+                updatedAt: new Date(Math.max(Date.now(), (previous?.updatedAt.getTime() ?? 0) + 1)),
+              },
+              create: { code: req.params.code, name, description: req.body.description },
+            });
+            await audit(
+              tx,
+              req.authUser!.id,
+              previous ? "INGREDIENT_UPDATED" : "INGREDIENT_CREATED",
+              ingredient.id,
+            );
+            return ingredient;
           }),
         },
       };
     },
   );
   app.get("/catalogs/ingredients", auth, async () => ({
-    data: { items: await app.prisma.ingredient.findMany({ orderBy: { code: "asc" }, take: 1000 }) },
+    data: {
+      items: await app.prisma.ingredient.findMany({
+        where: { isActive: true },
+        orderBy: { code: "asc" },
+        take: 1000,
+      }),
+    },
   }));
   app.get(
     "/dishes",
@@ -69,7 +103,7 @@ export const foodRoutes: FastifyPluginAsyncTypebox = async (app) => {
       const q = req.query.q?.trim();
       const limit = req.query.limit ?? 20;
       const page = req.query.page ?? 1;
-      const where = q
+      const search = q
         ? {
             OR: [
               { name: { contains: q, mode: "insensitive" as const } },
@@ -77,6 +111,7 @@ export const foodRoutes: FastifyPluginAsyncTypebox = async (app) => {
             ],
           }
         : {};
+      const where = { isActive: true, cuisine: { isActive: true }, ...search };
       const [items, total] = await Promise.all([
         app.prisma.dish.findMany({
           where,
@@ -105,15 +140,35 @@ export const foodRoutes: FastifyPluginAsyncTypebox = async (app) => {
       schema: { body: DishWriteSchema },
     },
     async (req, reply) =>
-      reply.code(201).send({ data: { dish: await repository.save(undefined, req.body) } }),
+      reply
+        .code(201)
+        .send({ data: { dish: await repository.save(undefined, req.body, req.authUser!.id) } }),
   );
   app.put(
     "/admin/dishes/:id",
     {
       preHandler: [app.authenticate, app.requireRoles("ADMIN")],
-      schema: { ...params, body: DishWriteSchema },
+      schema: {
+        ...params,
+        body: Type.Object(
+          {
+            ...DishWriteSchema.properties,
+            expectedUpdatedAt: Type.String({ format: "date-time" }),
+          },
+          { additionalProperties: false },
+        ),
+      },
     },
-    async (req) => ({ data: { dish: await repository.save(req.params.id, req.body) } }),
+    async (req) => ({
+      data: {
+        dish: await repository.save(
+          req.params.id,
+          req.body,
+          req.authUser!.id,
+          req.body.expectedUpdatedAt,
+        ),
+      },
+    }),
   );
   app.put(
     "/users/me/dishes/:id/preference",

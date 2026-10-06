@@ -50,6 +50,12 @@ export default function DishDetail({
       <button onClick={onBack}>← Gợi ý hôm nay</button>
       <p className="food-eyebrow">{dish.cuisine.name}</p>
       <h1>{dish.name}</h1>
+      {(dish.isActive === false || dish.cuisine.isActive === false) && (
+        <p role="status" className="food-muted">
+          Món đang tạm ngừng gợi ý. Thông tin được giữ để bạn xem lại lịch sử đã
+          ăn.
+        </p>
+      )}
       <p>{dish.description}</p>
       <div className="food-actions">
         <button onClick={onFindRecipes}>Tìm hướng dẫn nấu món này</button>

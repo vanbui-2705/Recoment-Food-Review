@@ -407,6 +407,8 @@ model UserDietaryRestriction {
 }
 
 model Cuisine {
+  isActive Boolean @default(true) @map("is_active")
+  updatedAt DateTime @updatedAt @default(now()) @map("updated_at") @db.Timestamptz(3)
   id          String                  @id @default(uuid()) @db.Uuid
   code        String                  @unique @db.VarChar(50)
   name        String                  @db.VarChar(100)
@@ -432,6 +434,7 @@ model UserCuisinePreference {
 }
 
 model Dish {
+  isActive Boolean @default(true) @map("is_active")
   id                    String                 @id @default(uuid()) @db.Uuid
   slug                  String                 @unique @db.VarChar(120)
   name                  String                 @db.VarChar(150)
@@ -461,6 +464,7 @@ model Dish {
   recipeInteractions    RecipeInteraction[]
 
   @@index([cuisineId])
+  @@index([isActive, id], map: "dishes_moderation_idx")
   @@map("dishes")
 }
 
@@ -478,6 +482,8 @@ model DishAlias {
 }
 
 model Ingredient {
+  isActive Boolean @default(true) @map("is_active")
+  updatedAt DateTime @updatedAt @default(now()) @map("updated_at") @db.Timestamptz(3)
   id          String           @id @default(uuid()) @db.Uuid
   code        String           @unique @db.VarChar(80)
   name        String           @db.VarChar(150)
@@ -533,6 +539,7 @@ model UserDishPreference {
 }
 
 model Restaurant {
+  isActive Boolean @default(true) @map("is_active")
   id                    String                       @id @default(uuid()) @db.Uuid
   googlePlaceId         String?                      @unique @map("google_place_id") @db.VarChar(255)
   name                  String                       @db.VarChar(200)
@@ -552,6 +559,7 @@ model Restaurant {
   externalIdentities    ExternalRestaurantIdentity[]
 
   @@index([latitude, longitude])
+  @@index([isActive, id], map: "restaurants_moderation_idx")
   @@map("restaurants")
 }
 
@@ -804,6 +812,7 @@ model ExternalRestaurantIdentity {
 }
 
 model ExternalMenuItem {
+  moderationEnabled Boolean @default(true) @map("moderation_enabled")
   id                    String                     @id @default(uuid()) @db.Uuid
   identityId            String                     @map("identity_id") @db.Uuid
   externalId            String                     @map("external_id") @db.VarChar(255)
@@ -829,6 +838,7 @@ model ExternalMenuItem {
   @@unique([identityId, externalId])
   @@index([active, isAvailable, expiresAt])
   @@index([dishId])
+  @@index([moderationEnabled, id], map: "external_menu_items_moderation_idx")
   @@map("external_menu_items")
 }
 
