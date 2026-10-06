@@ -107,7 +107,7 @@ export default function Today({ navigate, onDish, onRecipe, notice }) {
       {data?.status === "ONBOARDING_REQUIRED" && (
         <section className="food-empty">
           <h2>Cho chúng mình biết khẩu vị của bạn</h2>
-          <p>Thêm ngân sách, vị trí và chế độ ăn để bắt đầu.</p>
+          <p>Nhập mô tả về món bạn thích và những điều cần lưu ý.</p>
           <button className="food-primary" onClick={() => navigate("profile")}>
             Thiết lập khẩu vị
           </button>
@@ -117,10 +117,21 @@ export default function Today({ navigate, onDish, onRecipe, notice }) {
         <section className="food-empty">
           <h2>Chưa đủ dữ liệu an toàn để gợi ý</h2>
           <p>
-            Hồ sơ có dị ứng. Kiến thức công thức và Google Maps chưa xác minh
-            được thành phần, nguy cơ nhiễm chéo tại quán. Bạn vẫn có thể tra cứu
-            món bên dưới và xác nhận trực tiếp với quán.
+            Hồ sơ có dị ứng. Hãy xác nhận thành phần trực tiếp với quán trước
+            khi chọn món.
           </p>
+        </section>
+      )}
+      {data?.status === "PROFILE_PENDING_ANALYSIS" && (
+        <section className="food-empty">
+          <h2>Đã lưu khẩu vị của bạn</h2>
+          <p>
+            Mô tả chưa được phân tích thành bộ lọc gợi ý. Bạn vẫn có thể tìm
+            quán hoặc công thức cho món đang thèm.
+          </p>
+          <button className="food-primary" onClick={() => navigate("discover")}>
+            Tìm món / Nấu ăn
+          </button>
         </section>
       )}
       {data?.status === "NO_MATCH" && (

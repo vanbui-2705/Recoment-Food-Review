@@ -87,7 +87,7 @@ GET  /catalogs/cuisines
 GET  /catalogs/dietary-restrictions
 ```
 
-Trạng thái: đã triển khai API và onboarding thật, gồm vị trí, bữa ăn, ngân sách, khoảng cách, bốn vị và các catalog constraint. Món thích/không thích được lưu theo ID món. Xem [implementation và giới hạn dữ liệu](FOOD_DISCOVERY_IMPLEMENTATION.md).
+Trạng thái: màn hình “Khẩu vị của tôi” hiện chỉ có một ô nhập mô tả tự do và nút lưu, không liệt kê catalog hoặc yêu cầu chọn từng mức vị. Mô tả lưu riêng theo tài khoản vào personal food knowledge; các API/hồ sơ cấu trúc và món thích/không thích đã có được giữ để AI sử dụng sau này. Chưa tích hợp AI trích xuất: mô tả mới có trạng thái chưa phân tích; không coi dữ liệu chưa phân tích là bộ lọc khẩu vị/dị ứng đã xác minh. Xem [luồng nhập khẩu vị](PERSONAL_FOOD_KNOWLEDGE.md).
 
 ### 3.3. Food Knowledge Base
 

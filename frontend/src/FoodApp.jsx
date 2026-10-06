@@ -147,9 +147,7 @@ export default function FoodApp() {
           <Onboarding
             onSaved={() => {
               navigate("today");
-              notice(
-                "Đã lưu hồ sơ. Gợi ý được cập nhật theo lựa chọn của bạn.",
-              );
+              notice("Đã lưu mô tả khẩu vị vào tài khoản của bạn.");
             }}
           />
         )}

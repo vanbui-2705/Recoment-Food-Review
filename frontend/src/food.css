@@ -370,6 +370,22 @@ body {
   margin: 12px 0;
   line-height: 1.7;
 }
+.food-taste-description {
+  max-width: 760px;
+  margin: 32px 0;
+}
+.food-taste-description textarea {
+  width: 100%;
+  min-height: 220px;
+  padding: 18px;
+  resize: vertical;
+  font: inherit;
+  line-height: 1.7;
+  color: var(--food-ink);
+  background: white;
+  border: 1px solid var(--food-line);
+  border-radius: 12px;
+}
 .food-place, .food-card {
   overflow-wrap: anywhere;
 }

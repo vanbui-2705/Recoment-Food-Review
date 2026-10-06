@@ -112,6 +112,7 @@ model User {
   recommendationRequests RecommendationRequest[]
   interactions           UserInteraction[]
   recipeInteractions     RecipeInteraction[]
+  foodKnowledge          PersonalFoodKnowledge?
 
   @@map("users")
 }
@@ -448,4 +449,17 @@ model RecipeInteraction {
   @@index([userId, createdAt(sort: Desc)])
   @@index([userId, canonicalName])
   @@map("recipe_interactions")
+}
+
+// A future extractor must process the exact revision of this user-owned text.
+model PersonalFoodKnowledge {
+  userId           String   @id @map("user_id") @db.Uuid
+  description      String   @db.VarChar(6000)
+  revision         Int      @default(1)
+  analyzedRevision Int      @default(0) @map("analyzed_revision")
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt        DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("personal_food_knowledge")
 }

@@ -8,6 +8,7 @@ import { healthRoutes } from "./modules/health/health.route.js";
 import { tasteProfileRoutes } from "./modules/taste-profile/taste-profile.route.js";
 import { foodRoutes } from "./modules/food/food.route.js";
 import { discoveryRoutes } from "./modules/discovery/discovery.route.js";
+import { personalFoodKnowledgeRoutes } from "./modules/personal-food-knowledge/personal-food-knowledge.route.js";
 import { usersRoutes } from "./modules/users/users.route.js";
 import { authPlugin } from "./plugins/auth.plugin.js";
 import { databasePlugin } from "./plugins/database.plugin.js";
@@ -33,6 +34,7 @@ export function buildApp(options: BuildAppOptions = {}) {
     app.register(adminRoutes);
     app.register(foodRoutes);
     app.register(discoveryRoutes);
+    app.register(personalFoodKnowledgeRoutes);
   }
 
   app.register(healthRoutes);

@@ -21,7 +21,8 @@ export default function RecipeIdeas({ onRecipe, navigate }) {
   }, [retry]);
   if (
     data?.status === "ONBOARDING_REQUIRED" ||
-    data?.status === "INSUFFICIENT_SAFETY_DATA"
+    data?.status === "INSUFFICIENT_SAFETY_DATA" ||
+    data?.status === "PROFILE_PENDING_ANALYSIS"
   )
     return null;
   return (

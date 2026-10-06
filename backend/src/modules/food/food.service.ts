@@ -8,6 +8,7 @@ import { dishInclude } from "./food.repository.js";
 import { REPEAT_WINDOW_MS } from "./food.policy.js";
 import { foodIdentity } from "./food.identity.js";
 import { AppError } from "../../common/errors/app-error.js";
+import { hasUnprocessedFoodKnowledge } from "../personal-food-knowledge/personal-food-knowledge.policy.js";
 type Candidate = {
   id: string;
   priceMin: number;
@@ -60,6 +61,8 @@ export function createFoodService(prisma: PrismaClient) {
   const profiles = createTasteProfileService(createTasteProfileRepository(prisma));
   return {
     async today(userId: string, now = new Date()) {
+      if (await hasUnprocessedFoodKnowledge(prisma, userId))
+        return { status: "PROFILE_PENDING_ANALYSIS", items: [], repeatAfterHours: 96 };
       const profile = await profiles.getProfile(userId);
       if (!profile?.onboardingCompleted)
         return { status: "ONBOARDING_REQUIRED", items: [], repeatAfterHours: 96 };

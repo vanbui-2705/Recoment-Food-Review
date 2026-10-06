@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+﻿import { test, expect } from "@playwright/test";
 const dish = {
   id: "11111111-1111-4111-8111-111111111111",
   name: "Phở bò",
@@ -15,6 +15,9 @@ const dish = {
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() =>
     localStorage.setItem("eatwise_access_token", "test-token"),
+  );
+  await page.route("**/api/recipes/today", (route) =>
+    route.fulfill({ json: { data: { status: "NOT_CONFIGURED", items: [] } } }),
   );
 });
 test("loads today immediately and removes chosen dish after persisting", async ({
@@ -103,70 +106,4 @@ test("keeps safety and provider errors visible without fabricated restaurants", 
   await expect(
     page.getByRole("link", { name: /Xem quán & chỉ đường/ }),
   ).toHaveCount(0);
-});
-test("saves all profile fields and preserves dietary/allergy selections", async ({
-  page,
-}) => {
-  const profile = {
-    spicyLevel: 10,
-    sweetLevel: 20,
-    sourLevel: 30,
-    saltyLevel: 40,
-    budgetMin: 20000,
-    budgetMax: 90000,
-    maxDistanceMeters: 3500,
-    latitude: 10.77,
-    longitude: 106.7,
-    mealPeriod: "LUNCH",
-    allergies: [{ code: "FISH", severity: "SEVERE", notes: "Nước mắm" }],
-    dietaryRestrictions: [{ code: "VEGAN", isMandatory: true }],
-    cuisinePreferences: [],
-  };
-  let saved;
-  await page.route("**/api/recommendations/today", (route) =>
-    route.fulfill({ json: { data: { status: "NO_MATCH", items: [] } } }),
-  );
-  await page.route("**/api/users/me/profile", (route) =>
-    route.fulfill({ json: { data: { profile } } }),
-  );
-  await page.route("**/api/catalogs/*", (route) => {
-    const path = route.request().url();
-    const items = path.includes("allergens")
-      ? [{ code: "FISH", name: "Cá" }]
-      : path.includes("dietary")
-        ? [{ code: "VEGAN", name: "Thuần chay" }]
-        : [{ code: "VIETNAMESE", name: "Việt Nam" }];
-    return route.fulfill({ json: { data: { items } } });
-  });
-  await page.route("**/api/users/me/dish-preferences", (route) =>
-    route.fulfill({ json: { data: { items: [] } } }),
-  );
-  await page.route("**/api/users/me/onboarding", (route) => {
-    saved = route.request().postDataJSON();
-    return route.fulfill({ json: { data: { profile: saved } } });
-  });
-  await page.goto("/");
-  await page
-    .getByRole("button", { name: "Khẩu vị của tôi", exact: true })
-    .click();
-  await expect(
-    page.getByRole("checkbox", { name: "Thuần chay", exact: true }),
-  ).toBeChecked();
-  await page.getByLabel("Tối đa (đ)").fill("100000");
-  await page.getByLabel("Thời điểm ăn").selectOption("DINNER");
-  await page.getByRole("button", { name: "Lưu & xem gợi ý hôm nay" }).click();
-  await expect(
-    page.getByRole("heading", { name: "Gợi ý cho hôm nay" }),
-  ).toBeVisible();
-  expect(saved).toMatchObject({
-    budgetMax: 100000,
-    mealPeriod: "DINNER",
-    latitude: 10.77,
-    spicyLevel: 10,
-    sweetLevel: 20,
-    sourLevel: 30,
-    saltyLevel: 40,
-    allergies: profile.allergies,
-    dietaryRestrictions: profile.dietaryRestrictions,
-  });
 });

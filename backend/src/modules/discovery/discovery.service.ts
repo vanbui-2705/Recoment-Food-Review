@@ -3,6 +3,7 @@ import type { PrismaClient } from "../../generated/prisma/client.js";
 import { AppError } from "../../common/errors/app-error.js";
 import { normalizeFoodText } from "../food/food.schema.js";
 import { foodIdentity } from "../food/food.identity.js";
+import { hasUnprocessedFoodKnowledge } from "../personal-food-knowledge/personal-food-knowledge.policy.js";
 import { REPEAT_WINDOW_MS } from "../food/food.policy.js";
 import {
   createRecipeProviders,
@@ -189,6 +190,8 @@ export function createDiscoveryService(
       };
     },
     async today(userId: string, now = new Date()) {
+      if (await hasUnprocessedFoodKnowledge(prisma, userId))
+        return { status: "PROFILE_PENDING_ANALYSIS", items: [], sources: [] };
       const profile = await prisma.tasteProfile.findUnique({ where: { userId } });
       if (!profile?.onboardingCompleted)
         return { status: "ONBOARDING_REQUIRED", items: [], sources: [] };
