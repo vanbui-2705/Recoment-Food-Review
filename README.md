@@ -83,6 +83,8 @@ npm run test:db
 npm run build
 ```
 
+Kiểm tra release sau build: `npm run release:check` chỉ kiểm tra cấu hình; `npm run release:check:db` đọc migration status. Sau khi cấu hình AI, `npm run release:smoke:ai` chạy năm model contracts có cap reservation và quota chung. Xem [runbook](docs/RELEASE_RUNBOOK.md) để phân biệt kết nối đã cấu hình với nghiệm thu live; lệnh không tự đánh dấu tasks hoàn tất.
+
 ## Database commands
 
 ```bash

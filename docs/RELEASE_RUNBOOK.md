@@ -68,6 +68,30 @@ Frontend Compose tại loopback port 8080; API/DB không cần public ports. Boo
 
 ## Bằng chứng kiểm thử
 
+### Kiểm tra cấu hình và smoke AI
+
+Trong backend, build trước rồi chạy:
+
+```powershell
+npm run build
+npm run release:check
+npm run release:check:db
+# Sau khi thêm key/model và kiểm tra giá/quota của project:
+npm run release:smoke:ai
+# Chọn cap reservation riêng (0,01–10 USD), không đổi daily budget chung:
+node scripts/release-check.mjs --live-ai --max-reservation-usd=5
+```
+
+Mặc định chỉ đọc cấu hình, không gọi provider và không truy cập DB. `release:check:db` chỉ SELECT migration metadata, so sánh đủ 31 migrations và phát hiện migrations lạ/chưa hoàn tất; không apply migration hoặc sửa dữ liệu. JSON chỉ chứa codes/status/counts, không in giá trị key, URL DB, sender, mô tả khẩu vị hoặc provider output. Exit code 2 là thiếu đầu vào, 1 là config/validation/dependency lỗi, 0 là phạm vi lệnh đã đạt; `CONFIGURED_NOT_LIVE_VERIFIED` không phải full release approval.
+
+`release:smoke:ai` dùng model thật với năm inputs tổng hợp: allergy/budget extraction, grounded ranking, hỏi vị trí thiếu, Coming soon cho giao dịch và recipe nhiều lượt. Dùng đúng production prompts/validators, không ghi profile/conversation/history và không thực thi tool/email. Có ghi atomic daily request/USD counters chung deployment; không reset namespace/quota và không hoàn lại reservation sau lỗi. Default tổng reservation tối đa 5 USD, chặn trước call nếu vượt cap, không tự tăng daily limit, không tự retry và dừng ngay lỗi đầu tiên. Reservation là upper bound bảo thủ, không phải invoice hoặc token cost thật; phải đối chiếu usage của provider khi nghiệm thu 7.5.
+
+Thiếu AI key thì không gọi DB/provider trong chế độ live. CLI không tự đánh dấu OpenSpec hoặc xác nhận live-ready cho menu/email/worker/staging. Mặc dù model contract pass, các gates phân tích async/revision, chat SSE/browser, dữ liệu merchant và delivery email thật vẫn cần riêng. Docker production image chứa script và migration metadata để chạy cùng image đã review. Chi tiết đợt bổ sung: [PLAN_RELEASE_CHECK_VALIDATION.md](PLAN_RELEASE_CHECK_VALIDATION.md).
+
+### Regression và diễn tập hệ thống
+
+Đợt bổ sung CLI chạy lại **80 unit tests**, backend lint/build đạt. Các số database/browser/recovery bên dưới là kết quả đã nghiệm thu ở checkpoint trước; CLI không đổi routes, migrations hoặc frontend nên không gọi các số đó là lượt chạy mới.
+
 Đợt code gần nhất: **71 unit, 132 database, 112 browser desktop/mobile** đạt, 31 migrations chạy từ DB rỗng, backend lint/typecheck và frontend/backend builds đạt. Provider fixtures xác nhận contract và failure behavior; không chứng minh provider live. CI chạy regression với provider giả. Nội dung thông báo: [USER_NOTIFICATIONS.md](USER_NOTIFICATIONS.md). Chi tiết menu sync: [PLAN_MENU_SYNC_VALIDATION.md](PLAN_MENU_SYNC_VALIDATION.md).
 
 Diễn tập sau checkpoint menu sync dùng `rec-food-backend:plan-sync`, `rec-food-frontend:plan-sync`, migration image `rec-food-migrate:plan-ops`; rollback về `rec-food-backend:plan-ai-budget`. Tất cả tạo project/DB/network mới, dữ liệu tổng hợp, cleanup chỉ tài nguyên của drill; không dùng DATABASE_URL của app.
