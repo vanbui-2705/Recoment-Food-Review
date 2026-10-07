@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { motion, useAnimation, useMotionValue, useTransform } from 'framer-motion';
 import {
   fetchCatalogs,
   fetchProfile,
@@ -134,9 +135,131 @@ function ProfileHistory({ showToast }) { return <div className="profile-sections
 function HistoryCard({ image, title, restaurant, price, note, onAction }) { return <article className="history-card"><div className="history-status">✓ Vừa hoàn thành <strong>{price}</strong></div><div className="history-content"><img src={image} alt={title} /><div><h3>{title}</h3><p><Icon name="storefront" /> {restaurant}</p><span><Icon name="smart_toy" /> {note}</span></div></div><div className="history-bottom"><small><Icon name="credit_score" /> Thanh toán tự động • Apple Pay</small><button type="button" onClick={onAction}>Đặt lại đơn này</button></div></article>; }
 
 function DiscoverPage({ navigate, showToast }) {
-  const [query, setQuery] = useState('');
-  const [filter, setFilter] = useState(0);
-  return <div className="discover-page"><section className="weather-row"><span><Icon name="partly_cloudy_day" /></span><div><b>GỢI Ý THỜI TIẾT <strong>• 24°C se mát</strong></b><p>Rất hợp xì xụp bún bò nóng hổi hoặc lẩu riêu ấm bụng...</p></div></section><div className="constraint-chips"><span><Icon name="location_on" /> Cầu Giấy • 3.5km</span><span className="red"><Icon name="block" /> Không hải sản</span><span className="red"><Icon name="no_food" /> Không hành lá</span></div><div className="discover-search"><Icon name="search" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Bạn đang thèm vị gì? Ví dụ: Phở bò..." /><button type="button" onClick={() => showToast('Tìm kiếm bằng giọng nói đang được chuẩn bị')}><Icon name="mic" /></button><button type="button" onClick={() => showToast('Camera AI đang sẵn sàng')}><Icon name="document_scanner" /></button></div><div className="discover-filters">{[['bolt', 'Đang vội (< 15p)'], ['savings', 'Dưới 50k'], ['bedtime', 'Ăn đêm'], ['auto_awesome', 'Đổi gió món mới']].map(([icon, label], index) => <button className={filter === index ? 'active' : ''} key={label} type="button" onClick={() => setFilter(index)}><Icon name={icon} /> {label}</button>)}</div><div className="discover-heading"><div><span /><h1>AI Chọn Riêng Cho Bạn</h1><p>Khớp 100% tiêu chí dị ứng &amp; thời tiết</p></div><b>4 Món Top</b></div><article className="discover-hero"><div className="discover-image"><img src={assets.bunBo} alt="Bún bò Huế đặc biệt" /><span><Icon name="verified" filled /> 98% Hợp khẩu vị</span><button type="button" onClick={() => showToast('Đã lưu món yêu thích')}><Icon name="bookmark" /></button><div><strong>55.000đ</strong><small>• 480 kcal</small><em><Icon name="schedule" /> 12 phút</em></div></div><div className="discover-body"><h2>Bún Bò Huế Đặc Biệt Nước Trong</h2><p>Bún Bò O Xuân • 850m (7 phút đi xe)</p><div className="discover-reason"><Icon name="neurology" /><span><b>Lý do gợi ý:</b> Thơm cay tự nhiên, quán có tùy chọn bỏ sạch hành lá &amp; 100% không hải sản theo hồ sơ của bạn.</span></div><div className="discover-actions"><button type="button" onClick={() => navigate('detail')}><Icon name="storefront" /> Xem quán (850m)</button><button type="button" onClick={() => navigate('assistant')}><Icon name="smart_toy" /> AI Đặt ngay</button></div></div></article>{[[assets.pho, 'Phở Bò Tái Lăn Hà Nội', '60k', 'Phở Gia Truyền Bát Đàn • 520 kcal'], [assets.comTam, 'Cơm Tấm Sườn Bì Chả Nướng', '50k', 'Cơm Tấm Ba Ghiền • 610 kcal'], [assets.mienGa, 'Miến Gà Ta Nước Dùng Thanh', '45k', 'Gà Ta Quán • 390 kcal']].map(([image, title, price, meta]) => <article className="discover-list-card" key={title}><img src={image} alt={title} /><div><div><h3>{title}</h3><strong>{price}</strong></div><p>{meta}</p><span><Icon name="check_circle" /> Cam kết chuẩn ghi chú “Không Hành”</span></div><button type="button" onClick={() => showToast(`Đã thêm ${title} vào giỏ hàng`)}><Icon name="add" /></button></article>)}</div>;
+  const [cards, setCards] = useState([
+    { id: 4, img: assets.mienGa, title: 'Miến Gà Ta Nước Dùng Thanh', price: '45.000đ', meta: 'Gà Ta Quán • 600m', reason: 'Gà đồi thả vườn, nước dùng không phụ gia.' },
+    { id: 3, img: assets.comTam, title: 'Cơm Tấm Sườn Bì Chả Nướng', price: '50.000đ', meta: 'Cơm Tấm Ba Ghiền • 1.8km', reason: 'Sườn ướp mật ong nướng than củi tuyệt hảo.' },
+    { id: 2, img: assets.pho, title: 'Phở Bò Tái Lăn Hà Nội', price: '60.000đ', meta: 'Phở Gia Truyền Bát Đàn • 1.2km', reason: 'Cam kết chuẩn ghi chú "Không Hành".' },
+    { id: 1, img: assets.bunBo, title: 'Bún Bò Huế Đặc Biệt Nước Trong', price: '55.000đ', meta: 'Bún Bò O Xuân • 850m (7 phút đi xe)', reason: 'Thơm cay tự nhiên, quán có tùy chọn bỏ sạch hành lá & 100% không hải sản theo hồ sơ của bạn.' }
+  ]);
+  const [likedDishes, setLikedDishes] = useState([]);
+
+  const handleSwipe = (direction, card) => {
+    setCards((prev) => prev.filter(c => c.id !== card.id));
+    if (direction === 'right') {
+      showToast(`Đã lưu ${card.title}`);
+      setLikedDishes((prev) => [card, ...prev]);
+    } else {
+      showToast('Đã bỏ qua');
+    }
+  };
+
+  return <div className="discover-swipe-layout">
+    <div className="discover-swipe-main">
+      <div className="discover-swipe-header">
+        <h1>Khám Phá Món Ngon</h1>
+        <p>Vuốt phải để thích, trái để bỏ qua</p>
+      </div>
+      <div className="swipe-card-container">
+        {cards.length === 0 ? (
+          <div className="empty-state">
+             <div className="empty-icon"><Icon name="restaurant_menu" /></div>
+             <h2>Đã hết món gợi ý!</h2>
+             <p>AI đang tìm kiếm thêm món mới.</p>
+             <button onClick={() => window.location.reload()}>Khám phá lại</button>
+          </div>
+        ) : (
+          cards.map((card, index) => {
+             const isTop = index === cards.length - 1;
+             // calculate stack offset for background cards
+             const stackOffset = cards.length - 1 - index;
+             return <SwipeCard key={card.id} card={card} isTop={isTop} stackOffset={stackOffset} onSwipe={handleSwipe} navigate={navigate} />
+          })
+        )}
+      </div>
+    </div>
+
+    <div className="discover-swipe-sidebar">
+      <h2>Các món đã thích ({likedDishes.length})</h2>
+      <div className="liked-list">
+         {likedDishes.length === 0 && <p className="text-muted">Bạn chưa thích món nào. Vuốt phải thẻ món ăn để thêm vào đây nhé!</p>}
+         {likedDishes.map(d => (
+           <div key={d.id} className="liked-item">
+             <img src={d.img} alt={d.title}/>
+             <div className="liked-info">
+               <h4>{d.title}</h4>
+               <span>{d.price}</span>
+             </div>
+           </div>
+         ))}
+      </div>
+    </div>
+  </div>;
+}
+
+function SwipeCard({ card, isTop, stackOffset, onSwipe, navigate }) {
+  const x = useMotionValue(0);
+  const rotate = useTransform(x, [-200, 200], [-25, 25]);
+  const opacity = useTransform(x, [-200, -100, 0, 100, 200], [0, 1, 1, 1, 0]);
+  const likeOpacity = useTransform(x, [0, 100], [0, 1]);
+  const nopeOpacity = useTransform(x, [0, -100], [0, 1]);
+  const dragControls = useAnimation();
+
+  const handleDragEnd = (event, info) => {
+    const offset = info.offset.x;
+    const velocity = info.velocity.x;
+    if (offset > 100 || velocity > 500) {
+      dragControls.start({ x: window.innerWidth, transition: { duration: 0.3 } }).then(() => onSwipe('right', card));
+    } else if (offset < -100 || velocity < -500) {
+      dragControls.start({ x: -window.innerWidth, transition: { duration: 0.3 } }).then(() => onSwipe('left', card));
+    } else {
+      dragControls.start({ x: 0, transition: { type: "spring", stiffness: 300, damping: 20 } });
+    }
+  };
+
+  const scale = Math.max(1 - (stackOffset * 0.05), 0.8);
+  const translateY = stackOffset * -15;
+
+  return (
+    <motion.div
+      className="tinder-card-modern"
+      style={{
+        x: isTop ? x : 0,
+        rotate: isTop ? rotate : 0,
+        opacity: isTop ? 1 : 1, // Opacity handling removed from card base, managed by drag
+        scale: isTop ? 1 : scale,
+        y: isTop ? 0 : translateY,
+        zIndex: isTop ? 10 : 10 - stackOffset,
+        pointerEvents: isTop ? 'auto' : 'none'
+      }}
+      drag={isTop ? "x" : false}
+      dragConstraints={{ left: 0, right: 0 }}
+      onDragEnd={handleDragEnd}
+      animate={dragControls}
+      whileTap={isTop ? { cursor: "grabbing" } : {}}
+    >
+      <motion.div className="tinder-badge like-badge" style={{ opacity: isTop ? likeOpacity : 0 }}>LIKE</motion.div>
+      <motion.div className="tinder-badge nope-badge" style={{ opacity: isTop ? nopeOpacity : 0 }}>NOPE</motion.div>
+
+      <img src={card.img} alt={card.title} draggable="false" />
+      <div className="card-gradient"></div>
+
+      <div className="tinder-card-content">
+        <div className="card-info">
+          <h2>{card.title}</h2>
+          <span className="price">{card.price}</span>
+        </div>
+        <p className="meta"><Icon name="storefront" /> {card.meta}</p>
+        <div className="reason-box">
+          <Icon name="neurology" />
+          <p><strong>Lý do gợi ý:</strong> {card.reason}</p>
+        </div>
+        <div className="card-actions">
+           <button className="btn-details" onClick={() => navigate('detail')}><Icon name="info" /> Xem chi tiết</button>
+           <button className="btn-order" onClick={() => navigate('assistant')}><Icon name="smart_toy" /> AI Đặt ngay</button>
+        </div>
+      </div>
+    </motion.div>
+  );
 }
 
 const liveCuisineOptions = [

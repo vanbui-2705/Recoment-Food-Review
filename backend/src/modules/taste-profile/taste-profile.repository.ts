@@ -53,6 +53,7 @@ const allergyInclude = { allergen: true } as const;
 const dietaryInclude = { dietaryRestriction: true } as const;
 const cuisineInclude = { cuisine: true } as const;
 
+/** Đọc profile và các relation, sau đó sắp xếp theo code public ổn định. */
 async function findStoredProfile(
   db: ProfileDatabase,
   userId: string,
@@ -103,24 +104,30 @@ async function findStoredProfile(
   };
 }
 
+/** Tạo repository chứa toàn bộ truy vấn Prisma cho taste profile. */
 export function createTasteProfileRepository(prisma: PrismaClient) {
   return {
+    /** Liệt kê allergen catalog theo code tăng dần. */
     async listAllergens(): Promise<CatalogRecord[]> {
       return prisma.allergen.findMany({ orderBy: { code: "asc" } });
     },
 
+    /** Liệt kê dietary restriction catalog theo code tăng dần. */
     async listDietaryRestrictions(): Promise<CatalogRecord[]> {
       return prisma.dietaryRestriction.findMany({ orderBy: { code: "asc" } });
     },
 
+    /** Liệt kê cuisine catalog theo code tăng dần. */
     async listCuisines(): Promise<CatalogRecord[]> {
       return prisma.cuisine.findMany({ orderBy: { code: "asc" } });
     },
 
+    /** Đọc profile cùng các constraint của một user. */
     async findProfile(userId: string): Promise<StoredProfile | null> {
       return findStoredProfile(prisma, userId);
     },
 
+    /** Ghi full replacement trong một transaction để không lưu trạng thái dở dang. */
     async replaceProfile(
       userId: string,
       input: ProfilePayload,

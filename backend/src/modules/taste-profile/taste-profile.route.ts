@@ -8,12 +8,14 @@ import {
 } from "./taste-profile.schema.js";
 import { createTasteProfileService } from "./taste-profile.service.js";
 
+/** Đăng ký toàn bộ endpoint catalog và hồ sơ vị giác. */
 export const tasteProfileRoutes: FastifyPluginAsyncTypebox = async function tasteProfileRoutes(
   app,
 ) {
   const repository = createTasteProfileRepository(app.prisma);
   const service = createTasteProfileService(repository);
 
+  /** Tạo route GET dùng chung cho từng catalog an toàn. */
   const catalogRoute = (
     path: "/catalogs/allergens" | "/catalogs/dietary-restrictions" | "/catalogs/cuisines",
   ) => {
@@ -23,6 +25,7 @@ export const tasteProfileRoutes: FastifyPluginAsyncTypebox = async function tast
         preHandler: app.authenticate,
         schema: { response: { 200: CatalogResponseSchema } },
       },
+      /** Trả về catalog đã sắp xếp ổn định cho client onboarding. */
       async (_request, reply) => {
         const kind = path.slice("/catalogs/".length) as
           "allergens" | "dietary-restrictions" | "cuisines";
@@ -41,6 +44,7 @@ export const tasteProfileRoutes: FastifyPluginAsyncTypebox = async function tast
       preHandler: app.authenticate,
       schema: { response: { 200: ProfileResponseSchema } },
     },
+    /** Đọc hồ sơ của user hiện tại theo access token. */
     async (request, reply) => {
       if (!request.authUser) {
         throw new Error("Authenticated user missing after authentication hook");
@@ -58,6 +62,7 @@ export const tasteProfileRoutes: FastifyPluginAsyncTypebox = async function tast
       preHandler: app.authenticate,
       schema: { body: ProfilePayloadSchema, response: { 200: ProfileResponseSchema } },
     },
+    /** Thay thế toàn bộ hồ sơ hiện tại nhưng giữ trạng thái onboarding đã hoàn tất. */
     async (request, reply) => {
       if (!request.authUser) {
         throw new Error("Authenticated user missing after authentication hook");
@@ -74,6 +79,7 @@ export const tasteProfileRoutes: FastifyPluginAsyncTypebox = async function tast
       preHandler: app.authenticate,
       schema: { body: ProfilePayloadSchema, response: { 200: ProfileResponseSchema } },
     },
+    /** Lưu hồ sơ onboarding đầy đủ và đánh dấu onboarding đã hoàn tất. */
     async (request, reply) => {
       if (!request.authUser) {
         throw new Error("Authenticated user missing after authentication hook");

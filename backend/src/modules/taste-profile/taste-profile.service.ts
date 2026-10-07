@@ -26,10 +26,12 @@ export type ProfileResponse = {
   cuisinePreferences: StoredProfile["cuisinePreferences"];
 };
 
+/** Chuẩn hóa catalog code trước khi tra cứu và lưu dữ liệu. */
 function normalizeCode(code: string): string {
   return code.trim().toUpperCase();
 }
 
+/** Phát hiện lựa chọn trùng trong từng nhóm constraint của hồ sơ. */
 function assertUniqueCodes(field: string, selections: Array<{ code: string }>): string[] {
   const normalized = selections.map((selection) => normalizeCode(selection.code));
   const seen = new Set<string>();
@@ -50,6 +52,7 @@ function assertUniqueCodes(field: string, selections: Array<{ code: string }>): 
   return normalized;
 }
 
+/** Kiểm tra các luật nghiệp vụ không thể mô tả đầy đủ bằng TypeBox. */
 function validateBusinessRules(input: ProfilePayload): void {
   if ((input.latitude == null) !== (input.longitude == null)) {
     throw new AppError(400, "INVALID_LOCATION", "Cần cung cấp cả vĩ độ và kinh độ");
@@ -68,6 +71,7 @@ function validateBusinessRules(input: ProfilePayload): void {
   assertUniqueCodes("cuisinePreferences", input.cuisinePreferences);
 }
 
+/** Đổi danh sách code public thành ID catalog nội bộ của Prisma. */
 function resolveCodes(field: string, codes: string[], catalog: CatalogRecord[]): string[] {
   const byCode = new Map(catalog.map((item) => [normalizeCode(item.code), item]));
   const missing = codes.find((code) => !byCode.has(code));
@@ -81,6 +85,7 @@ function resolveCodes(field: string, codes: string[], catalog: CatalogRecord[]):
   return codes.map((code) => byCode.get(code)!.id);
 }
 
+/** Chuyển dữ liệu lưu trữ thành DTO public, không làm lộ metadata Prisma. */
 function toResponse(stored: StoredProfile | null): ProfileResponse | null {
   if (!stored) {
     return null;
@@ -105,14 +110,17 @@ function toResponse(stored: StoredProfile | null): ProfileResponse | null {
   };
 }
 
+/** Chuẩn hóa shape và thứ tự item trong response catalog. */
 function catalogResponse(items: CatalogRecord[]) {
   return items
     .map(({ code, name, description }) => ({ code, name, description }))
     .sort((left, right) => left.code.localeCompare(right.code));
 }
 
+/** Tạo service điều phối validate, resolve catalog và ghi hồ sơ atomic. */
 export function createTasteProfileService(repository: TasteProfileRepository) {
   return {
+    /** Đọc một catalog theo loại được route yêu cầu. */
     async listCatalog(kind: CatalogKind) {
       const items =
         kind === "allergens"
@@ -124,10 +132,12 @@ export function createTasteProfileService(repository: TasteProfileRepository) {
       return catalogResponse(items);
     },
 
+    /** Lấy hồ sơ hiện tại hoặc null nếu user chưa onboarding. */
     async getProfile(userId: string): Promise<ProfileResponse | null> {
       return toResponse(await repository.findProfile(userId));
     },
 
+    /** Validate và thay thế toàn bộ hồ sơ của user hiện tại. */
     async saveProfile(
       userId: string,
       input: ProfilePayload,
