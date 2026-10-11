@@ -6,7 +6,7 @@ No provider credential is sent to the browser or belongs in `VITE_*` variables.
 
 ## Configure providers
 
-Fill these variables in `backend/.env`, then restart the backend. Existing secrets
+Fill these variables in the root `.env`, then restart the backend. Existing secrets
 are preserved. `backend/.env.example` documents every integration.
 
 | Variable                | Purpose                                                | Official documentation                                                          |

@@ -95,6 +95,9 @@ test("keeps safety and provider errors visible without fabricated restaurants", 
     page.getByRole("heading", { name: "Chưa đủ dữ liệu an toàn để gợi ý" }),
   ).toBeVisible();
   await page
+    .getByText("Không thấy món hợp? Tìm món khác", { exact: true })
+    .click();
+  await page
     .getByRole("textbox", { name: "Tên món hoặc tên gọi khác" })
     .fill("pho");
   await page.getByRole("button", { name: "Tìm món", exact: true }).click();

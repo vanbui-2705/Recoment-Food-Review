@@ -1,4 +1,11 @@
-import { userErrorMessage } from "./userMessages";
+export function userErrorMessage(code, status, fallback) {
+  if (fallback) return fallback;
+  if (code === "NETWORK_ERROR") return "Không thể kết nối đến máy chủ. Vui lòng kiểm tra mạng.";
+  if (status === 401) return "Phiên đăng nhập đã hết hạn hoặc không hợp lệ.";
+  if (status === 403) return "Bạn không có quyền thực hiện thao tác này.";
+  if (status === 404) return "Không tìm thấy dữ liệu yêu cầu.";
+  return "Đã xảy ra lỗi, vui lòng thử lại sau.";
+}
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "/api").replace(
   /\/$/,
@@ -26,7 +33,7 @@ export function hasLiveSession() {
 
 let refreshing = null;
 export async function apiRequest(path, options = {}, retry = true) {
-  const { responseType, ...fetchOptions } = options;
+  const { responseType, suppressSessionExpiry = false, ...fetchOptions } = options;
   const token = getAccessToken();
   const headers = new Headers(options.headers || {});
   headers.set("Accept", "application/json");
@@ -64,7 +71,12 @@ export async function apiRequest(path, options = {}, retry = true) {
   const currentPasswordFailure =
     path === "/auth/change-password" &&
     payload?.error?.code === "INVALID_CURRENT_PASSWORD";
-  if (response.status === 401 && !publicAuthPath && !currentPasswordFailure) {
+  if (
+    response.status === 401 &&
+    !publicAuthPath &&
+    !currentPasswordFailure &&
+    !suppressSessionExpiry
+  ) {
     const refreshToken =
       retry && window.sessionStorage.getItem("food_refresh_token");
     if (refreshToken) {

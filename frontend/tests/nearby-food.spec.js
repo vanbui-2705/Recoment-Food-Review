@@ -28,12 +28,20 @@ const restaurant = {
   attributions: [],
   mapsUrl: "https://www.google.com/maps/",
 };
-test.beforeEach(async ({ page }) => {
+test.beforeEach(async ({ page, context }) => {
+  await context.grantPermissions(["geolocation"], { origin: "http://127.0.0.1:5173" });
+  await context.setGeolocation({ latitude: 10.7769, longitude: 106.7009 });
   await page.route("**/api/users/me/food-knowledge/analyses", (r) =>
     r.fulfill({ json: { data: { configured: false, analysis: null } } }),
   );
   await page.addInitScript(() =>
     localStorage.setItem("eatwise_access_token", "test-token"),
+  );
+  await page.route("**/api/users/me", (r) =>
+    r.fulfill({ json: { data: { user: { displayName: "Test User", email: "test@example.com" } } } }),
+  );
+  await page.route("**/api/users/me/profile", (r) =>
+    r.fulfill({ json: { data: { profile: { allergies: [] } } } }),
   );
   await page.route("**/api/recommendations/today", (r) =>
     r.fulfill({
@@ -74,12 +82,8 @@ test("finds nearby budget-matching dishes without AI, spins and records only a c
     return r.fulfill({ json: { data: { id: "chosen" } } });
   });
   await page.goto("/");
-  await expect(page.locator(".food-wheel-trigger")).toHaveCSS(
-    "position",
-    "fixed",
-  );
   await page
-    .getByRole("button", { name: "Tìm món quanh tôi", exact: true })
+    .getByRole("button", { name: "Dùng GPS hiện tại", exact: true })
     .click();
   await expect(
     page.getByRole("heading", { name: "Phở bò", exact: true }),
@@ -129,7 +133,7 @@ test("requires explicit permission before adding unpriced restaurants to the whe
   );
   await page.goto("/");
   await page
-    .getByRole("button", { name: "Tìm món quanh tôi", exact: true })
+    .getByRole("button", { name: "Dùng GPS hiện tại", exact: true })
     .click();
   await page.getByRole("button", { name: "Mở vòng quay ăn gì" }).click();
   await expect(

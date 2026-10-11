@@ -2,7 +2,7 @@ FROM node:24-alpine AS build
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
-COPY index.html vite.config.js ./
+COPY index.html vite.config.js postcss.config.js tailwind.config.js ./
 COPY src ./src
 COPY public ./public
 RUN npm run build

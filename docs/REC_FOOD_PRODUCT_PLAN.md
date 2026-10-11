@@ -136,7 +136,7 @@ places/
 
 Frontend không gọi Google API trực tiếp để tránh lộ key và bypass business rules.
 
-Đã có luồng nhập tên món/quán bất kỳ, không yêu cầu món có sẵn trong ngân hàng nội bộ, qua `GET /discovery/restaurants`. Kết nối Google Places, Goong, Foursquare Places hiện hành và Geoapify; chọn nguồn, bán kính, vị trí hiện tại/hồ sơ và chỉ quán xác nhận đang mở cửa. Kết quả giữ nguồn/attribution và phân biệt địa điểm liên quan từ khóa với nhà hàng gần vị trí. Chưa có bằng chứng thực đơn nên không khẳng định quán bán món hoặc bịa giá món. Frontend đã nối backend qua `/api`; toàn bộ key nằm trong `backend/.env`.
+Đã có luồng nhập tên món/quán bất kỳ, không yêu cầu món có sẵn trong ngân hàng nội bộ, qua `GET /discovery/restaurants`. Kết nối Google Places, Goong, Foursquare Places hiện hành và Geoapify; chọn nguồn, bán kính, vị trí hiện tại/hồ sơ và chỉ quán xác nhận đang mở cửa. Kết quả giữ nguồn/attribution và phân biệt địa điểm liên quan từ khóa với nhà hàng gần vị trí. Chưa có bằng chứng thực đơn nên không khẳng định quán bán món hoặc bịa giá món. Frontend đã nối backend qua `/api`; toàn bộ key nằm trong `.env` ở root.
 
 ### 3.5. Recommendation Engine
 

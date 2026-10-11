@@ -1,7 +1,10 @@
 import { describe, it, expect, vi } from "vitest";
 import { loadAiConfig } from "../../src/modules/ai/ai.config.js";
 import { createGeminiProvider } from "../../src/modules/ai/ai.provider.js";
-import { validateAnalysis } from "../../src/modules/taste-analysis/taste-analysis.schema.js";
+import {
+  AnalysisResultSchema,
+  validateAnalysis,
+} from "../../src/modules/taste-analysis/taste-analysis.schema.js";
 const empty = { fields: [], allergies: [], diets: [], cuisines: [], dishes: [], questions: [] };
 const catalogs = {
   allergens: [{ id: "1", code: "PEANUT", name: "Peanut" }],
@@ -63,12 +66,17 @@ describe("taste analysis contracts", () => {
       fetcher,
       async () => true,
     );
-    expect(await provider.generate("extract", { text: "meal" }, {})).toEqual(empty);
+    expect(await provider.generate("extract", { text: "meal" }, AnalysisResultSchema)).toEqual(
+      empty,
+    );
     expect(fetcher.mock.calls[0]![0]).not.toContain("test-private-key");
     const options = fetcher.mock.calls[0]![1];
     expect(options.headers["x-goog-api-key"]).toBe("test-private-key");
-    expect(JSON.parse(options.body).generationConfig.responseFormat.text.mimeType).toBe(
-      "application/json",
+    const structured = JSON.parse(options.body).generationConfig.responseFormat.text;
+    expect(structured.mimeType).toBe("APPLICATION_JSON");
+    expect(structured.schema.additionalProperties).toBeUndefined();
+    expect(structured.schema.properties.fields.items.properties.field.enum).toContain(
+      "budgetMax",
     );
   });
   it("fails closed for unconfigured, quota, blocked and oversized output", async () => {
@@ -91,5 +99,26 @@ describe("taste analysis contracts", () => {
         ).generate("", {}, {}),
       ).rejects.toThrow(code);
     }
+  });
+  it("retries temporary provider failures before returning structured output", async () => {
+    const fetcher = vi
+      .fn()
+      .mockResolvedValueOnce(new Response("", { status: 503 }))
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            candidates: [
+              { finishReason: "STOP", content: { parts: [{ text: JSON.stringify(empty) }] } },
+            ],
+          }),
+        ),
+      );
+    const provider = createGeminiProvider(
+      loadAiConfig({ LLM_API_KEY: "key", JOB_MAX_ATTEMPTS: "2" }),
+      fetcher,
+      async () => true,
+    );
+    await expect(provider.generate("", {}, {})).resolves.toEqual(empty);
+    expect(fetcher).toHaveBeenCalledTimes(2);
   });
 });

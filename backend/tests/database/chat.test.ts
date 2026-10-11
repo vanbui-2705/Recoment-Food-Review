@@ -213,16 +213,15 @@ describe("durable private discovery chat", () => {
   });
   it("shows unavailable AI honestly and requires explicit delete confirmation", async () => {
     const conversation = await service.create(ids[0]!);
-    expect(
-      (
-        await app.inject({
-          method: "POST",
-          url: `/conversations/${conversation.id}/messages`,
-          headers,
-          payload: { text: "hello", idempotencyKey: randomUUID() },
-        })
-      ).statusCode,
-    ).toBe(503);
+    const unavailable = createChatService(
+      app.prisma,
+      { ...config, LLM_API_KEY: "" },
+      undefined,
+      dispatch,
+    );
+    await expect(
+      unavailable.submit(ids[0]!, conversation.id, "hello", randomUUID(), {}),
+    ).rejects.toMatchObject({ statusCode: 503, code: "AI_NOT_CONFIGURED" });
     expect(
       (
         await app.inject({

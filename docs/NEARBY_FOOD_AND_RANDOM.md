@@ -50,7 +50,7 @@ Reduced-motion settings, Escape, focus return and disabled-during-spin states ar
 handled. Spinning does not record an action; confirming a dish persists CHOSEN with
 an idempotency key and removes that dish from current suggestions for four days.
 
-Existing Places credentials in `backend/.env` are reused. Real photos/ratings require
+Existing Places credentials in the root `.env` are reused. Real photos/ratings require
 Google Places API (New) and access to Place Photos under the configured project's
 billing/quota. Other sources may not supply photos or ratings, which is shown clearly.
 Plus Jakarta Sans is self-hosted under `frontend/public/fonts` with its OFL license,

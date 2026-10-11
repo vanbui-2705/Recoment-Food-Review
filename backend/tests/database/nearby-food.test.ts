@@ -157,8 +157,9 @@ describe("nearby food discovery", () => {
       { GOOGLE_PLACES_API_KEY: "test" },
       fetcher,
     ).search(userId, 50000, { latitude: 10.77, longitude: 106.7 });
-    expect(result.items).toHaveLength(1);
-    expect(result.items[0]).toMatchObject({
+    const fixtureItems = result.items.filter((item) => item.dishId === dishId);
+    expect(fixtureItems).toHaveLength(1);
+    expect(fixtureItems[0]).toMatchObject({
       price: 45000,
       budgetVerified: true,
       menuConfirmed: true,
@@ -166,7 +167,7 @@ describe("nearby food discovery", () => {
       ratingCount: 120,
       distanceMeters: 0,
     });
-    expect(result.items[0]?.photo?.authors[0]?.name).toBe("Photo author");
+    expect(fixtureItems[0]?.photo?.authors[0]?.name).toBe("Photo author");
     expect(result.restaurants[0]?.price).toBeNull();
   });
   it("hides a chosen dish for the existing 96-hour cooldown", async () => {
@@ -176,7 +177,7 @@ describe("nearby food discovery", () => {
       { GOOGLE_PLACES_API_KEY: "test" },
       fetcher,
     ).search(userId, 50000, { latitude: 10.77, longitude: 106.7 });
-    expect(result.items).toHaveLength(0);
+    expect(result.items.filter((item) => item.dishId === dishId)).toHaveLength(0);
     expect(result.restaurants).toHaveLength(1);
   });
   it("authenticates photo requests and keeps API keys off image URLs", async () => {

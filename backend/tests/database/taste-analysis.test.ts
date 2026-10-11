@@ -28,7 +28,14 @@ describe("durable taste analysis", () => {
     return response.json().data.knowledge;
   };
   beforeAll(async () => {
-    await app.ready();
+    const originalApiKey = process.env.LLM_API_KEY;
+    delete process.env.LLM_API_KEY;
+    try {
+      await app.ready();
+    } finally {
+      if (originalApiKey === undefined) delete process.env.LLM_API_KEY;
+      else process.env.LLM_API_KEY = originalApiKey;
+    }
     const sessions = [];
     for (const email of emails) {
       const register = await app.inject({

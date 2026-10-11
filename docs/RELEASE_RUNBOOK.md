@@ -51,17 +51,17 @@ Không có runtime `MERCHANT_API_KEY`/`MERCHANT_API_BASE_URL` chung cho một su
 
 ## Chạy local
 
-Tạo private `backend/.env` từ example, sửa DB/auth secrets. Từ root chạy PostgreSQL; trong backend cài bằng `npm ci`, generate client, apply migrations bằng `npm run db:migrate:deploy`, seed bootstrap khi cần rồi `npm run dev`. Trong frontend chạy `npm ci` và `npm run dev`. Dev frontend: `http://127.0.0.1:5173`; API dependency readiness: `http://127.0.0.1:3001/ready`.
+Tạo private `.env` ở root từ `backend/.env.example`, rồi sửa DB/auth secrets. Từ root có thể chạy PostgreSQL, migration và backend bằng `docker compose up --build -d postgres migrate backend`; chạy frontend riêng bằng `docker compose up --build -d --no-deps frontend`. Dev frontend: `http://127.0.0.1:5173`; API dependency readiness: `http://127.0.0.1:3001/ready`.
 
 Khi bật jobs, đặt `WORKER_ENABLED=true`, restart web và chạy `npm run worker` trong backend. Email/privacy jobs chạy không cần AI key. Menu jobs còn yêu cầu flag và adapter được cấu hình. Không chạy worker retention/delete tùy tiện trên database đang sử dụng để thử nghiệm.
 
 Compose từ root:
 
 ```powershell
-docker compose --env-file backend/.env up --build -d
-docker compose --env-file backend/.env --profile bootstrap run --rm seed
+docker compose up --build -d
+docker compose --profile bootstrap run --rm seed
 # Khi WORKER_ENABLED=true và cấu hình đã được review:
-docker compose --env-file backend/.env --profile background up --build -d
+docker compose --profile background up --build -d
 ```
 
 Frontend Compose tại loopback port 8080; API/DB không cần public ports. Bootstrap cần `SEED_ADMIN_EMAIL`/`SEED_ADMIN_PASSWORD` riêng; không seed lại mỗi rollout. Worker có profile `background` và alias `ai`; không phụ thuộc key AI để khởi chạy các jobs khác. `docker compose down` giữ volume, không dùng `down -v` cho database cần bảo toàn.
