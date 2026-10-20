@@ -65,9 +65,96 @@ docker compose down -v
 Có thể đặt `POSTGRES_PASSWORD`, `SEED_ADMIN_EMAIL` và `SEED_ADMIN_PASSWORD` trong
 file `.env` ở root. Các giá trị mặc định trong `compose.yaml` chỉ dành cho local development.
 
-Frontend Nginx chạy tại `http://localhost:8080`, proxy `/api` sang backend. Production seed chỉ tạo catalog chuẩn và ADMIN nếu được cấu hình; nhập ngân hàng món có nguồn qua ADMIN API. Local development chạy `cd frontend`, `npm ci`, `npm run dev` sau khi backend hoạt động.
+Frontend Nginx hiện chạy tại `http://localhost:8081`, proxy `/api` sang backend. Có thể đổi cổng bằng `FRONTEND_PORT` trong file `.env` ở root. Production seed chỉ tạo catalog chuẩn và ADMIN nếu được cấu hình; nhập ngân hàng món có nguồn qua ADMIN API. Local development chạy `cd frontend`, `npm ci`, `npm run dev` sau khi backend hoạt động.
 
-Đặt `GOOGLE_PLACES_API_KEY` ở backend để bật tìm quán thật. Chi tiết rule 4 ngày, API kiến thức, giới hạn Google Places và cách kiểm tra: [Food Discovery implementation](docs/FOOD_DISCOVERY_IMPLEMENTATION.md).
+Đặt `GEOAPIFY_API_KEY` trong file `.env` private ở root để bật tìm quán thật miễn phí qua Geoapify. `backend/.env` chỉ dùng khi chạy backend trực tiếp; Docker Compose đọc `.env` ở root. Không đưa provider key vào biến `VITE_*` hoặc frontend.
+
+Chat dùng Gemini thật khi có `LLM_API_KEY`. Cấu hình local hiện tại dùng `gemini-3.5-flash-lite` vì model này có Free Tier và phù hợp tác vụ chat độ trễ thấp; ứng dụng không thể kiểm tra một API key có thuộc project đã bật billing hay không. Để bảo đảm không phát sinh phí, chỉ dùng key của project Google AI Studio Free Tier chưa liên kết Cloud Billing. Backend vẫn giữ giới hạn request và ngân sách nội bộ; khi hết giới hạn, Chat trả lỗi có kiểm soát thay vì tự tăng quota hoặc chuyển sang dịch vụ tính phí.
+
+Docker local mặc định dùng developer key `1` của TheMealDB để hiển thị công thức miễn phí. Key này chỉ dành cho development/educational use; nếu phát hành ứng dụng công khai cần tuân theo chính sách production của TheMealDB.
+
+### Luồng gợi ý món và cooldown 96 giờ
+
+1. Người dùng cho phép GPS hoặc dùng tọa độ đã lưu trong hồ sơ.
+2. Giao diện hiển thị món gợi ý và công thức có ảnh từ TheMealDB.
+3. Bấm `Xem quán & chọn` chỉ mở danh sách địa điểm liên quan trong bán kính đã cấu hình; thao tác này **chưa** ghi món vào cooldown.
+4. Đóng hộp thoại hoặc quay lại trước khi xác nhận sẽ không tạo interaction `CHOSEN`.
+5. Chỉ sau khi chọn một quán và bấm `Chốt món này`, backend mới ghi `CHOSEN`; món đó mới bị loại khỏi danh sách gợi ý trong 96 giờ.
+
+Geoapify free Places cung cấp địa điểm nhà hàng thật theo GPS nhưng không xác nhận thực đơn của từng quán. Vì vậy giao diện ghi rõ đây là “quán liên quan”, không khẳng định quán chắc chắn bán món đã chọn và không tự tạo giá/đánh giá giả.
+
+Chi tiết rule 4 ngày, API kiến thức và cách kiểm tra: [Food Discovery implementation](docs/FOOD_DISCOVERY_IMPLEMENTATION.md).
+
+## Tài khoản test theo role
+
+Chỉ sử dụng các tài khoản này trong môi trường local/development. Hệ thống hiện có hai role:
+
+| Role | Tài khoản | Mật khẩu | Phạm vi kiểm thử |
+|---|---|---|---|
+| `ADMIN` | `admin@rec-food.local` | `rec-food-local-admin-only` | API quản trị nội dung, tài khoản và vận hành |
+| `USER` | `user.test@rec-food.local` | `UserTest@2026!` | Hồ sơ khẩu vị, gợi ý, bản đồ, chat, lịch sử và dữ liệu cá nhân |
+
+Đăng ký công khai luôn tạo role `USER`. Client không được gửi `role` hoặc tự cấp quyền `ADMIN`.
+
+### Tạo hoặc đặt lại ADMIN local
+
+Khai báo trong file `.env` private ở root:
+
+```dotenv
+SEED_ADMIN_EMAIL=admin@rec-food.local
+SEED_ADMIN_PASSWORD=rec-food-local-admin-only
+```
+
+Sau đó chạy:
+
+```powershell
+docker compose --profile bootstrap run --rm seed
+```
+
+Seed dùng `upsert`, vì vậy chạy lại sẽ đặt role thành `ADMIN` và cập nhật mật khẩu theo private env. Dashboard redesign hiện chưa hiển thị module quản trị; các endpoint `/admin/*` được kiểm thử qua API cho tới khi admin UI được nối lại.
+
+### Tạo lại USER test
+
+```powershell
+$env:TEST_USER_EMAIL = "user.test@rec-food.local"
+$env:TEST_USER_PASSWORD = "UserTest@2026!"
+
+$body = @{
+  email = $env:TEST_USER_EMAIL
+  password = $env:TEST_USER_PASSWORD
+  displayName = "Test User"
+} | ConvertTo-Json
+
+Invoke-RestMethod `
+  -Method Post `
+  -Uri "http://localhost:8081/api/auth/register" `
+  -ContentType "application/json" `
+  -Body $body
+```
+
+Sau khi đăng ký, đăng nhập tại `http://localhost:8081`. Nếu `FRONTEND_PORT` trong private env khác `8081`, sử dụng port đã cấu hình.
+
+### Kiểm tra role thực tế
+
+```powershell
+$loginBody = @{
+  email = $env:TEST_USER_EMAIL
+  password = $env:TEST_USER_PASSWORD
+} | ConvertTo-Json
+
+$session = Invoke-RestMethod `
+  -Method Post `
+  -Uri "http://localhost:8081/api/auth/login" `
+  -ContentType "application/json" `
+  -Body $loginBody
+
+$headers = @{ Authorization = "Bearer $($session.data.accessToken)" }
+Invoke-RestMethod -Uri "http://localhost:8081/api/users/me" -Headers $headers
+```
+
+Response `/users/me` phải trả đúng `data.user.email` và `data.user.role`.
+
+Các email trong `frontend/tests/*.spec.js` phần lớn chỉ là fixture Playwright. Email có tiền tố `api-smoke-`, `codex-smoke-` hoặc hậu tố ngẫu nhiên không phải tài khoản dùng chung. Hai mật khẩu ở trên chỉ dành cho local development, không được dùng ở production và cần đổi nếu môi trường được chia sẻ công khai. Không commit `.env`, access token, refresh token hoặc mật khẩu production vào repository.
 
 ## Kiểm tra chất lượng
 

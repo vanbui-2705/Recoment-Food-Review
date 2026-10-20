@@ -9,6 +9,8 @@ export type Place = {
   source: PlaceSource;
   name: string;
   address: string | null;
+  latitude: number | null;
+  longitude: number | null;
   distanceMeters: number;
   rating: number | null;
   ratingCount: number | null;
@@ -16,8 +18,8 @@ export type Place = {
   mapsUrl: string | null;
   attributions: { provider: string; providerUri: string | null }[];
   matchType: "DISH_QUERY" | "NEARBY_RESTAURANT";
-  menuConfirmed: false;
-  price: null;
+  menuConfirmed: boolean;
+  price: number | null;
   photo: { name: string; authors: { name: string; url: string | null }[] } | null;
 };
 const keyNames: Record<PlaceSource, string> = {
@@ -59,6 +61,8 @@ export function createPlaceProviders(
       source,
       name: string(name).slice(0, 250),
       address: string(address).slice(0, 500) || null,
+      latitude,
+      longitude,
       distanceMeters: distance,
       rating: null,
       ratingCount: null,
@@ -85,6 +89,8 @@ export function createPlaceProviders(
           (p) => ({
             ...p,
             source,
+            latitude: p.latitude ?? origin.latitude,
+            longitude: p.longitude ?? origin.longitude,
             matchType: "DISH_QUERY" as const,
             menuConfirmed: false as const,
             attributions: p.attributions.map((a) => ({
@@ -142,26 +148,29 @@ export function createPlaceProviders(
         url.searchParams.set("categories", "catering.restaurant");
         url.searchParams.set("filter", `circle:${origin.longitude},${origin.latitude},${radius}`);
         url.searchParams.set("bias", `proximity:${origin.longitude},${origin.latitude}`);
-        url.searchParams.set("limit", "10");
+        url.searchParams.set("limit", "100");
+        url.searchParams.set("lang", "vi");
         url.searchParams.set("apiKey", key(source)!);
         const data = await providerJson(source, url.href, {}, fetcher);
         if (!Array.isArray(data.features)) throw new ProviderError("INVALID_DATA");
         return data.features
           .map((v) => {
             const p = object(object(v).properties);
+            const latitude = number(p.lat);
+            const longitude = number(p.lon);
             const place = make(
               source,
               p.place_id,
               p.name,
               p.formatted,
-              p.lat,
-              p.lon,
+              latitude,
+              longitude,
               origin,
               radius,
             );
-            if (place) {
+            if (place && latitude !== null && longitude !== null) {
               // Geoapify finds nearby restaurants; it does not support a dish-name menu search.
-              place.mapsUrl = null;
+              place.mapsUrl = `https://www.openstreetmap.org/?mlat=${latitude}&mlon=${longitude}#map=18/${latitude}/${longitude}`;
               place.attributions = [
                 { provider: "Geoapify", providerUri: "https://www.geoapify.com/" },
                 {

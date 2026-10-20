@@ -23,6 +23,13 @@ export type Recipe = {
   steps: string[];
   language: "SOURCE_ORIGINAL";
 };
+export type RecipeMealPeriod = "BREAKFAST" | "LUNCH" | "DINNER";
+
+const mealDbCategories: Record<RecipeMealPeriod, string[]> = {
+  BREAKFAST: ["Breakfast", "Vegetarian", "Starter", "Side", "Miscellaneous", "Pasta"],
+  LUNCH: ["Chicken", "Beef", "Seafood", "Vegetarian", "Pasta", "Side"],
+  DINNER: ["Beef", "Chicken", "Seafood", "Vegetarian", "Pasta", "Lamb"],
+};
 const plainText = (value: unknown) =>
   string(value)
     .replace(/<[^>]*>/g, " ")
@@ -88,14 +95,46 @@ export function createRecipeProviders(
     (source === "themealdb" ? env.THEMEALDB_API_KEY : env.SPOONACULAR_API_KEY)?.trim();
   return {
     configured: (source: RecipeSource) => !!key(source),
-    async search(source: RecipeSource, query: string, day?: number): Promise<Recipe[]> {
+    async search(
+      source: RecipeSource,
+      query: string,
+      day?: number,
+      mealPeriod: RecipeMealPeriod = "DINNER",
+    ): Promise<Recipe[]> {
       if (!key(source)) return [];
       if (source === "themealdb") {
+        if (!query) {
+          const settled = await Promise.allSettled(
+            mealDbCategories[mealPeriod].map(async (category) => {
+              const url = new URL(
+                `https://www.themealdb.com/api/json/v1/${encodeURIComponent(key(source)!)}/filter.php`,
+              );
+              url.searchParams.set("c", category);
+              const data = await providerJson(source, url.href, {}, fetcher);
+              if (data.meals !== null && !Array.isArray(data.meals))
+                throw new ProviderError("INVALID_DATA");
+              const items = list(data.meals)
+                .map(mealRecipe)
+                .filter((recipe): recipe is Recipe => !!recipe);
+              if (!items.length) return [];
+              const offset = (day ?? 0) % items.length;
+              return [items[offset], items[(offset + 1) % items.length]].filter(
+                (recipe): recipe is Recipe => !!recipe,
+              );
+            }),
+          );
+          const items = settled.flatMap((result) =>
+            result.status === "fulfilled" ? result.value : [],
+          );
+          if (!items.length && settled.some((result) => result.status === "rejected")) {
+            throw settled.find((result) => result.status === "rejected")!.reason;
+          }
+          return items.slice(0, 12);
+        }
         const url = new URL(
           `https://www.themealdb.com/api/json/v1/${encodeURIComponent(key(source)!)}/search.php`,
         );
-        const letters = "abcdefghijklmnoprst";
-        url.searchParams.set(query ? "s" : "f", query || letters[(day ?? 0) % letters.length]!);
+        url.searchParams.set("s", query);
         const data = await providerJson(source, url.href, {}, fetcher);
         if (data.meals !== null && !Array.isArray(data.meals))
           throw new ProviderError("INVALID_DATA");

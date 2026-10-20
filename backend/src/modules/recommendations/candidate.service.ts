@@ -20,6 +20,7 @@ export type RecommendationContext = {
   latitude: number;
   longitude: number;
   onlyOpen?: boolean;
+  mealPeriod?: "BREAKFAST" | "LUNCH" | "DINNER";
 };
 export function createCandidateService(
   prisma: PrismaClient,
@@ -51,6 +52,7 @@ export function createCandidateService(
           settings?.radius ??
           Math.min(4000, Math.max(3000, profile?.maxDistanceMeters ?? 3500)),
         onlyOpen: input.onlyOpen ?? settings?.onlyOpen ?? false,
+        ...(input.mealPeriod ? { mealPeriod: input.mealPeriod } : {}),
       };
     },
     async pool(
@@ -199,6 +201,9 @@ export function createCandidateService(
         if (
           disliked.has(dish.id) ||
           recentIds.has(dish.id) ||
+          (context.mealPeriod &&
+            dish.mealPeriods.length > 0 &&
+            !dish.mealPeriods.includes(context.mealPeriod)) ||
           recentNames.has(foodIdentity(dish.name)) ||
           dish.aliases.some((alias) => recentNames.has(foodIdentity(alias.normalizedAlias)))
         )
@@ -290,6 +295,8 @@ export function createCandidateService(
             optionLabel: offer.optionLabel,
             restaurantName: restaurant.name,
             address: restaurant.address,
+            latitude: Number(restaurant.latitude),
+            longitude: Number(restaurant.longitude),
             price: offer.price,
             expiresAt: offer.expiresAt.toISOString(),
             observedAt: offer.observedAt.toISOString(),

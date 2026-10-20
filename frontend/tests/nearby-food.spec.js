@@ -48,7 +48,7 @@ test.beforeEach(async ({ page, context }) => {
       json: { data: { status: "PROFILE_PENDING_ANALYSIS", items: [] } },
     }),
   );
-  await page.route("**/api/recipes/today", (r) =>
+    await page.route("**/api/recipes/today?*", (r) =>
     r.fulfill({
       json: { data: { status: "PROFILE_PENDING_ANALYSIS", items: [] } },
     }),

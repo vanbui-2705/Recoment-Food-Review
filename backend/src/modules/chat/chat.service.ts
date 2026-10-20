@@ -9,10 +9,12 @@ import { createBudgetedGeminiProvider } from "../ai/ai.budget.js";
 import { createRecommendationService } from "../recommendations/recommendation.service.js";
 import { createDiscoveryService } from "../discovery/discovery.service.js";
 import {
+  CHAT_ANSWER_INSTRUCTION,
   CHAT_INSTRUCTION,
+  ChatAnswerSchema,
   ChatPlanSchema,
-  chatReplies,
   mergeChatContext,
+  validateChatAnswer,
   validateChatPlan,
   type ChatContext,
   type ChatPlan,
@@ -22,7 +24,11 @@ function notFound(): never {
   throw new AppError(404, "CONVERSATION_NOT_FOUND", "Không tìm thấy cuộc trò chuyện của bạn");
 }
 type Tool = ChatPlan["tools"][number];
-type ToolResult = { status: string; references: Prisma.InputJsonObject[] };
+type ToolResult = {
+  status: string;
+  references: Prisma.InputJsonObject[];
+  grounding?: Prisma.InputJsonObject[];
+};
 export type ChatDispatcher = (
   userId: string,
   tool: Tool,
@@ -56,7 +62,20 @@ export function createChatService(
         discovery = createDiscoveryService(prisma, env, fetcher);
       if (tool.name === "RECOMMEND") {
         const result = await recommendations.recommend(userId, { ...context, idempotencyKey: key });
-        return { status: result.status, references: [{ kind: "RECOMMENDATION", id: result.id }] };
+        return {
+          status: result.status,
+          references: [{ kind: "RECOMMENDATION", id: result.id }],
+          grounding: result.items.slice(0, 4).map((item) => ({
+            title: item.title,
+            restaurantName: item.restaurantName,
+            address: item.address,
+            price: item.price,
+            distanceMeters: item.distanceMeters,
+            rating: item.rating,
+            openNow: item.openNow,
+            reason: item.reason,
+          })),
+        };
       }
       if (tool.name === "RESTAURANTS") {
         const result = await discovery.restaurants(
@@ -74,6 +93,16 @@ export function createChatService(
           references: result.items
             .slice(0, 4)
             .map((item) => ({ kind: "PLACE", source: item.source, id: item.placeId })),
+          grounding: result.items.slice(0, 4).map((item) => ({
+            name: item.name,
+            address: item.address,
+            distanceMeters: item.distanceMeters,
+            rating: item.rating,
+            ratingCount: item.ratingCount,
+            openNow: item.openNow,
+            mapsUrl: item.mapsUrl,
+            source: item.source,
+          })),
         };
       }
       if (tool.name === "RECIPES") {
@@ -83,6 +112,13 @@ export function createChatService(
           references: result.items
             .slice(0, 4)
             .map((item) => ({ kind: "RECIPE", source: item.source, id: item.id })),
+          grounding: result.items.slice(0, 4).map((item) => ({
+            title: item.title,
+            cuisine: item.cuisine,
+            readyInMinutes: item.readyInMinutes,
+            source: item.source,
+            id: item.id,
+          })),
         };
       }
       const note = await prisma.personalFoodKnowledge.findUnique({
@@ -127,6 +163,7 @@ export function createChatService(
     status: "COMPLETED" | "FAILED",
     code: string,
     payload?: Prisma.InputJsonObject,
+    assistantText?: string,
   ) {
     return prisma.$transaction(async (tx) => {
       const changed = await tx.chatRun.updateMany({
@@ -141,11 +178,11 @@ export function createChatService(
       if (!changed.count) return false;
       const run = await tx.chatRun.findUniqueOrThrow({ where: { id } });
       if (status === "COMPLETED") {
-        const text = chatReplies[code as keyof typeof chatReplies];
+        if (!assistantText) throw new Error("Completed chat run requires model answer");
         await tx.chatMessage.create({
-          data: { conversationId: run.conversationId, role: "ASSISTANT", content: text },
+          data: { conversationId: run.conversationId, role: "ASSISTANT", content: assistantText },
         });
-        await emit(tx, id, "RESULT", { replyCode: code, text, ...payload });
+        await emit(tx, id, "RESULT", { replyCode: code, text: assistantText, ...payload });
       } else await emit(tx, id, "ERROR", { code });
       await emit(tx, id, "DONE", { status });
       return true;
@@ -363,11 +400,14 @@ export function createChatService(
         if (claimed.attempts > config.maxAttempts)
           throw new AppError(503, "CHAT_ATTEMPTS_EXHAUSTED", "Lượt xử lý bị gián đoạn nhiều lần");
         await guard();
-        const day = new Date().toISOString().slice(0, 10);
-        const reserved = await prisma.$queryRaw<
-          Array<{ requests: number }>
-        >`INSERT INTO ai_request_counters(namespace,day,requests) VALUES (${securityNamespace()},${day},1) ON CONFLICT(namespace,day) DO UPDATE SET requests=ai_request_counters.requests+1 WHERE ai_request_counters.requests<${config.dailyRequests} RETURNING requests`;
-        if (!reserved.length) throw new AiError("AI_QUOTA_EXCEEDED");
+        const reserveAiRequest = async () => {
+          const day = new Date().toISOString().slice(0, 10);
+          const reserved = await prisma.$queryRaw<
+            Array<{ requests: number }>
+          >`INSERT INTO ai_request_counters(namespace,day,requests) VALUES (${securityNamespace()},${day},1) ON CONFLICT(namespace,day) DO UPDATE SET requests=ai_request_counters.requests+1 WHERE ai_request_counters.requests<${config.dailyRequests} RETURNING requests`;
+          if (!reserved.length) throw new AiError("AI_QUOTA_EXCEEDED");
+        };
+        await reserveAiRequest();
         const messages = await prisma.chatMessage.findMany({
           where: { conversationId: claimed.conversationId },
           select: { role: true, content: true },
@@ -422,10 +462,31 @@ export function createChatService(
             ),
           );
           await guard();
-          results.push({ tool: tool.name, status: result.status, references: result.references });
+          results.push({
+            tool: tool.name,
+            status: result.status,
+            references: result.references,
+            grounding: result.grounding ?? [],
+          });
         }
         await guard();
-        await finish(claimed.id, token, "COMPLETED", plan.reply, { results });
+        await reserveAiRequest();
+        const assistantText = validateChatAnswer(
+          await bounded(
+            runProvider.generate(
+              CHAT_ANSWER_INSTRUCTION,
+              {
+                messages: modelMessages,
+                context,
+                intent: plan.reply,
+                toolResults: results,
+              },
+              ChatAnswerSchema,
+            ),
+          ),
+        );
+        await guard();
+        await finish(claimed.id, token, "COMPLETED", plan.reply, { results }, assistantText);
       } catch (error) {
         const code =
           error instanceof AppError

@@ -9,10 +9,12 @@ describe("durable private discovery chat", () => {
   const ids: string[] = [];
   let headers: { authorization: string }, other: { authorization: string };
   let output: unknown = { reply: "HELP", tools: [] };
+  const generatedAnswer = "Câu trả lời mới do mô hình tạo từ nội dung hội thoại.";
   const provider: StructuredAiProvider = {
     configured: true,
     model: "test-only",
-    generate: async () => output,
+    generate: async (instruction) =>
+      instruction.includes("final answer") ? { text: generatedAnswer } : output,
   };
   const calls: string[] = [];
   const dispatch: ChatDispatcher = async (userId) => {
@@ -108,7 +110,9 @@ describe("durable private discovery chat", () => {
     const events = await service.events(ids[0]!, run.id, 1);
     expect(events.events.map((e) => e.seq)).toEqual([2, 3]);
     expect(events.status).toBe("COMPLETED");
-    expect((await service.detail(ids[0]!, conversation.id)).messages).toHaveLength(2);
+    const detail = await service.detail(ids[0]!, conversation.id);
+    expect(detail.messages).toHaveLength(2);
+    expect(detail.messages.at(-1)?.content).toBe(generatedAnswer);
     expect(
       (await app.inject({ method: "GET", url: `/chat-runs/${run.id}/stream?after=1`, headers }))
         .body,

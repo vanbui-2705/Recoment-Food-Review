@@ -67,6 +67,8 @@ export function createFoodRepository(prisma: PrismaClient) {
             slug: input.slug,
             name: input.name,
             description: input.description,
+            imageUrl: input.imageUrl ?? null,
+            imageAttribution: input.imageAttribution ?? null,
             priceMin: input.priceMin,
             priceMax: input.priceMax,
             spicyLevel: input.spicyLevel,

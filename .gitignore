@@ -19,3 +19,7 @@ npm-debug.log*
 .idea/
 .DS_Store
 Thumbs.db
+test-results/
+frontend/test-results/
+playwright-report/
+

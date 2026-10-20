@@ -221,6 +221,7 @@ export function createRecommendationService(
               latitude: input.latitude ?? null,
               longitude: input.longitude ?? null,
               onlyOpen: input.onlyOpen ?? false,
+              mealPeriod: input.mealPeriod ?? null,
             }),
           )
           .digest("hex");
@@ -242,6 +243,7 @@ export function createRecommendationService(
                 budgetMax: context.budget,
                 maxDistanceMeters: context.radius,
                 onlyOpen: context.onlyOpen ?? false,
+                mealPeriod: context.mealPeriod ?? null,
                 status: "FAILED",
                 processingState: "IN_PROGRESS",
                 leaseToken: token,
@@ -274,6 +276,7 @@ export function createRecommendationService(
               budgetMax: context.budget,
               maxDistanceMeters: context.radius,
               onlyOpen: context.onlyOpen ?? false,
+              mealPeriod: context.mealPeriod ?? null,
               requestedAt: now,
               status: "FAILED",
               outcomeCode: null,

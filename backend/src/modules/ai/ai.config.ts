@@ -6,7 +6,7 @@ export function loadAiConfig(env = process.env) {
   };
   const provider = env.LLM_PROVIDER?.trim() || "gemini";
   if (provider !== "gemini") throw new Error("Unsupported LLM_PROVIDER");
-  const model = env.LLM_MODEL?.trim() || "gemini-3.8-flash";
+  const model = env.LLM_MODEL?.trim() || "gemini-3.5-flash-lite";
   if (!/^gemini-[a-zA-Z0-9.-]{1,80}$/.test(model)) throw new Error("Invalid LLM_MODEL");
   const timeoutMs = integer("LLM_TIMEOUT_MS", 20000, 1000, 60000);
   const leaseSeconds = integer("JOB_LEASE_SECONDS", 90, 30, 600);
@@ -26,7 +26,7 @@ export function loadAiConfig(env = process.env) {
   };
   const apiKey = env.LLM_API_KEY?.trim() || "";
   // Cost bounds are verified for this text-only model and Standard service tier.
-  if (apiKey && model !== "gemini-3.8-flash")
+  if (apiKey && model !== "gemini-3.5-flash-lite")
     throw new Error("LLM_MODEL requires a verified budget contract");
   const priceValidUntil = env.LLM_PRICING_VALID_UNTIL?.trim() || "2027-01-01";
   if (
@@ -43,8 +43,8 @@ export function loadAiConfig(env = process.env) {
     maxTokens: integer("LLM_MAX_TOKENS", 4096, 512, 16384),
     dailyRequests: integer("LLM_DAILY_REQUEST_LIMIT", 200, 1, 100000),
     dailyBudgetMicros: Math.round(decimal("LLM_DAILY_BUDGET_USD", 10, 0.01, 10000) * 1000000),
-    inputUsdPerMillion: decimal("LLM_INPUT_USD_PER_MILLION", 1.5, 1.5, 1000),
-    outputUsdPerMillion: decimal("LLM_OUTPUT_USD_PER_MILLION", 7.5, 7.5, 1000),
+    inputUsdPerMillion: decimal("LLM_INPUT_USD_PER_MILLION", 0.3, 0.3, 1000),
+    outputUsdPerMillion: decimal("LLM_OUTPUT_USD_PER_MILLION", 2.5, 2.5, 1000),
     inputMaxBytes: integer("LLM_INPUT_MAX_BYTES", 65536, 4096, 131072),
     // Reserve both visible output and a full model-sized reasoning envelope.
     outputBudgetTokens: 131072,

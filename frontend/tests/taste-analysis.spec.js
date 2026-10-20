@@ -12,6 +12,15 @@ test.beforeEach(async ({ page }) => {
       },
     }),
   );
+  await page.route("**/api/users/me", (route) =>
+    route.fulfill({ json: { data: { user: { id: "taste-user", displayName: "Taste User", email: "taste@example.com" } } } }),
+  );
+  await page.route("**/api/users/me/profile", (route) =>
+    route.fulfill({ json: { data: { profile: { spicyLevel: 30, allergies: [], dietaryRestrictions: [], cuisinePreferences: [] } } } }),
+  );
+  await page.route(/\/api\/catalogs\/(allergens|dietary-restrictions|cuisines)$/, (route) =>
+    route.fulfill({ json: { data: { items: [] } } }),
+  );
 });
 const initialJob = {
   id: "11111111-1111-4111-8111-111111111111",
@@ -51,7 +60,9 @@ test("reviews safety extraction without replacing free text and confirms the exa
     page.getByText("Đã cập nhật khẩu vị từ mô tả của bạn.", { exact: true }),
   ).toBeVisible();
   expect(confirmed).toEqual({ sourceRevision: 2 });
-  await expect(page.getByText("Coming soon", { exact: true })).toBeVisible();
+  await expect(
+    page.getByText("AI đã cập nhật hồ sơ từ mô tả gần nhất.", { exact: true }),
+  ).toBeVisible();
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,

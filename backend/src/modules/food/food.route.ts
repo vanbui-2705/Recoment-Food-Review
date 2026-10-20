@@ -210,10 +210,29 @@ export const foodRoutes: FastifyPluginAsyncTypebox = async (app) => {
       }),
     },
   }));
-  app.get("/recommendations/today", auth, async (req) => {
+  app.get(
+    "/recommendations/today",
+    {
+      ...auth,
+      schema: {
+        querystring: Type.Object(
+          {
+            mealPeriod: Type.Optional(
+              Type.Union([
+                Type.Literal("BREAKFAST"),
+                Type.Literal("LUNCH"),
+                Type.Literal("DINNER"),
+              ]),
+            ),
+          },
+          { additionalProperties: false },
+        ),
+      },
+    },
+    async (req) => {
     const userId = req.authUser!.id;
     const [data, settings, profile, note] = await Promise.all([
-      service.today(userId),
+      service.today(userId, new Date(), req.query.mealPeriod),
       app.prisma.discoverySettings.findUnique({ where: { userId } }),
       app.prisma.tasteProfile.findUnique({ where: { userId } }),
       app.prisma.personalFoodKnowledge.findUnique({ where: { userId } }),
@@ -236,7 +255,8 @@ export const foodRoutes: FastifyPluginAsyncTypebox = async (app) => {
         },
       },
     };
-  });
+    },
+  );
   app.post(
     "/users/me/dishes/:id/interactions",
     {
@@ -245,17 +265,23 @@ export const foodRoutes: FastifyPluginAsyncTypebox = async (app) => {
         ...params,
         body: Type.Object(
           {
-            type: Type.Union([Type.Literal("CHOSEN"), Type.Literal("EATEN")]),
+            type: Type.Union([
+              Type.Literal("VIEWED"),
+              Type.Literal("LIKED"),
+              Type.Literal("SKIPPED"),
+              Type.Literal("CHOSEN"),
+              Type.Literal("EATEN"),
+              Type.Literal("RATED"),
+            ]),
             idempotencyKey: Type.String({ format: "uuid" }),
             eatenAt: Type.Optional(Type.String({ format: "date-time" })),
+            rating: Type.Optional(Type.Integer({ minimum: 1, maximum: 5 })),
           },
           { additionalProperties: false },
         ),
       },
     },
     async (req) => {
-      if (req.body.type === "CHOSEN" && req.body.eatenAt)
-        throw new AppError(400, "INVALID_EATEN_AT", "Thời điểm ăn chỉ áp dụng cho món đã ăn");
       return {
         data: await service.record(
           req.authUser!.id,
@@ -263,6 +289,7 @@ export const foodRoutes: FastifyPluginAsyncTypebox = async (app) => {
           req.body.type,
           req.body.idempotencyKey,
           req.body.eatenAt,
+          req.body.rating,
         ),
       };
     },

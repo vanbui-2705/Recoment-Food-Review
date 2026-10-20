@@ -56,6 +56,8 @@ describe("food discovery persistence", () => {
     slug: `test-${suffix}`,
     name: `Test dish ${suffix}`,
     description: "Test recipe",
+    imageUrl: "/images/dishes/test-dish.jpg",
+    imageAttribution: "Test Photographer · CC BY 4.0",
     cuisineCode: "VIETNAMESE",
     priceMin: 30000,
     priceMax: 60000,
@@ -124,6 +126,10 @@ describe("food discovery persistence", () => {
     expect(invalid.statusCode).toBe(400);
     const read = await app.inject({ url: `/dishes/${dishId}`, headers });
     expect(read.json().data.dish.aliases).toHaveLength(1);
+    expect(read.json().data.dish).toMatchObject({
+      imageUrl: dish.imageUrl,
+      imageAttribution: dish.imageAttribution,
+    });
     expect(
       (await app.inject({ url: "/dishes?q=test%20alias", headers }))
         .json()
@@ -148,6 +154,29 @@ describe("food discovery persistence", () => {
     expect(
       (await app.inject({ url: "/users/me/profile", headers })).json().data.profile,
     ).toMatchObject({ latitude: payload.latitude, mealPeriod: "LUNCH" });
+    const breakfast = await app.inject({
+      url: "/recommendations/today?mealPeriod=BREAKFAST",
+      headers,
+    });
+    const lunch = await app.inject({
+      url: "/recommendations/today?mealPeriod=LUNCH",
+      headers,
+    });
+    expect(breakfast.statusCode).toBe(200);
+    expect(breakfast.json().data.items.some((item: { id: string }) => item.id === dishId)).toBe(
+      false,
+    );
+    expect(
+      lunch
+        .json()
+        .data.items.some(
+          (item: { id: string; imageUrl?: string }) =>
+            item.id === dishId && item.imageUrl === dish.imageUrl,
+        ),
+    ).toBe(true);
+    expect(
+      (await app.inject({ url: "/recommendations/today?mealPeriod=SNACK", headers })).statusCode,
+    ).toBe(400);
     const key = randomUUID();
     const url = `/users/me/dishes/${dishId}/interactions`;
     const first = await app.inject({

@@ -68,15 +68,17 @@ export const chatRoutes: FastifyPluginAsyncTypebox = async (app) => {
         ),
       },
     },
-    async (request) => ({
-      data: await service.submit(
+    async (request) => {
+      const data = await service.submit(
         request.authUser!.id,
         request.params.id,
         request.body.text,
         request.body.idempotencyKey,
         request.body.context ?? {},
-      ),
-    }),
+      );
+      void service.tick(request.authUser!.id).catch(() => {});
+      return { data };
+    },
   );
   app.get(
     "/chat-runs/:id/events",

@@ -100,7 +100,7 @@ test("keeps Google venue rating separate and skips only the current suggestion p
       },
     }),
   );
-  await page.route("**/api/recipes/today", (route) =>
+    await page.route("**/api/recipes/today?*", (route) =>
     route.fulfill({ json: { data: { status: "NOT_CONFIGURED", items: [] } } }),
   );
   await page.route("**/api/recommendations", (route) =>

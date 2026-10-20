@@ -87,6 +87,8 @@ export function createPlacesAdapter(
           placeId: p.id!,
           name: p.displayName!.text!,
           address: typeof p.formattedAddress === "string" ? p.formattedAddress : null,
+          latitude: p.location!.latitude,
+          longitude: p.location!.longitude,
           distanceMeters: distanceMeters(location, p.location!),
           rating:
             typeof p.rating === "number" &&

@@ -7,7 +7,7 @@ test.beforeEach(async ({ page }) => {
   await page.route("**/api/recommendations/today", (r) =>
     r.fulfill({ json: { data: { status: "NO_MATCH", items: [] } } }),
   );
-  await page.route("**/api/recipes/today", (r) =>
+    await page.route("**/api/recipes/today?*", (r) =>
     r.fulfill({ json: { data: { status: "NOT_CONFIGURED", items: [] } } }),
   );
 });

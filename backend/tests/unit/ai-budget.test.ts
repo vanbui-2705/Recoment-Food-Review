@@ -4,7 +4,8 @@ import { estimatedBudgetMicros } from "../../src/modules/ai/ai.budget.policy.js"
 import { createGeminiProvider } from "../../src/modules/ai/ai.provider.js";
 it("reserves reasoning output separately and validates tariff/model configuration", () => {
   const config = loadAiConfig({});
-  expect(estimatedBudgetMicros(config, 0)).toBeGreaterThan(900000n);
+  expect(config.model).toBe("gemini-3.5-flash-lite");
+  expect(estimatedBudgetMicros(config, 0)).toBeGreaterThan(300000n);
   expect(estimatedBudgetMicros(config, 10000)).toBeGreaterThan(estimatedBudgetMicros(config, 0));
   expect(() => estimatedBudgetMicros(config, 65537)).toThrow();
   for (const env of [
@@ -15,6 +16,9 @@ it("reserves reasoning output separately and validates tariff/model configuratio
     { LLM_PRICING_VALID_UNTIL: "2027-02-30" },
   ])
     expect(() => loadAiConfig(env)).toThrow();
+  expect(
+    loadAiConfig({ LLM_API_KEY: "fake", LLM_MODEL: "gemini-3.5-flash-lite" }).model,
+  ).toBe("gemini-3.5-flash-lite");
 });
 it("never calls a provider without a budget reservation or after the pricing contract expires", async () => {
   const fetcher = vi.fn(),

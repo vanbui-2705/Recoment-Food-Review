@@ -10,6 +10,10 @@ export const DishWriteSchema = Type.Object(
     slug: Type.String({ minLength: 1, maxLength: 120, pattern: "^[a-z0-9]+(-[a-z0-9]+)*$" }),
     name: Type.String({ minLength: 1, maxLength: 150 }),
     description: Type.String({ maxLength: 3000 }),
+    imageUrl: Type.Optional(Type.Union([Type.String({ minLength: 1, maxLength: 500 }), Type.Null()])),
+    imageAttribution: Type.Optional(
+      Type.Union([Type.String({ minLength: 1, maxLength: 500 }), Type.Null()]),
+    ),
     cuisineCode: code,
     priceMin: Type.Integer({ minimum: 0, maximum: 100000000 }),
     priceMax: Type.Integer({ minimum: 0, maximum: 100000000 }),

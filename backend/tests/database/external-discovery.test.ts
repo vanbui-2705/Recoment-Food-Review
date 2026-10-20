@@ -106,6 +106,18 @@ describe("external discovery persistence and authorization", () => {
     expect((await service.today(userId)).status).toBe("INSUFFICIENT_SAFETY_DATA");
     expect(fetcher).not.toHaveBeenCalled();
   });
+  it("records a real recipe like from the dashboard", async () => {
+    const oldMeal = { ...meal };
+    try {
+      meal.idMeal = "15";
+      meal.strMeal = "Liked external recipe";
+      const response = await service.record(userId, "themealdb", "15", "LIKED", randomUUID());
+      expect(response.interactionType).toBe("LIKED");
+    } finally {
+      Object.assign(meal, oldMeal);
+      await app.prisma.recipeInteraction.deleteMany({ where: { userId, recipeId: "15" } });
+    }
+  });
   it("keeps ambiguous recipe aliases separate and links only an unambiguous canonical dish", async () => {
     await app.prisma.userAllergy.deleteMany({ where: { userId } });
     const suffix = randomUUID(),

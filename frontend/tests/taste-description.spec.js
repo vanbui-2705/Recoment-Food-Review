@@ -1,7 +1,33 @@
 import { test, expect } from "@playwright/test";
 test.beforeEach(async ({ page }) => {
+  const profile = {
+    areaLabel: "TP. Hồ Chí Minh",
+    latitude: 10.77,
+    longitude: 106.7,
+    mealPeriod: "LUNCH",
+    spicyLevel: 30,
+    sweetLevel: 40,
+    sourLevel: 30,
+    saltyLevel: 40,
+    budgetMin: 0,
+    budgetMax: 120000,
+    maxDistanceMeters: 3500,
+    onboardingCompleted: true,
+    allergies: [],
+    dietaryRestrictions: [],
+    cuisinePreferences: [],
+  };
   await page.route("**/api/users/me/food-knowledge/analyses", (r) =>
     r.fulfill({ json: { data: { configured: false, analysis: null } } }),
+  );
+  await page.route("**/api/users/me", (route) =>
+    route.fulfill({ json: { data: { user: { id: "taste-user", displayName: "Taste User", email: "taste@example.com" } } } }),
+  );
+  await page.route("**/api/users/me/profile", (route) =>
+    route.fulfill({ json: { data: { profile } } }),
+  );
+  await page.route(/\/api\/catalogs\/(allergens|dietary-restrictions|cuisines)$/, (route) =>
+    route.fulfill({ json: { data: { items: [] } } }),
   );
   await page.addInitScript(() =>
     localStorage.setItem("eatwise_access_token", "test-token"),
@@ -28,7 +54,7 @@ test("edits free text, persists its revision and restores after reload without c
       json: { data: { status: "PROFILE_PENDING_ANALYSIS", items: [] } },
     }),
   );
-  await page.route("**/api/recipes/today", (r) =>
+    await page.route("**/api/recipes/today?*", (r) =>
     r.fulfill({
       json: { data: { status: "PROFILE_PENDING_ANALYSIS", items: [] } },
     }),

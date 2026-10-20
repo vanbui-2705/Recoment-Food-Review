@@ -249,6 +249,13 @@ export const recommendationRoutes: FastifyPluginAsyncTypebox = async (app) => {
             latitude: Type.Optional(Type.Number({ minimum: -90, maximum: 90 })),
             longitude: Type.Optional(Type.Number({ minimum: -180, maximum: 180 })),
             onlyOpen: Type.Optional(Type.Boolean()),
+            mealPeriod: Type.Optional(
+              Type.Union([
+                Type.Literal("BREAKFAST"),
+                Type.Literal("LUNCH"),
+                Type.Literal("DINNER"),
+              ]),
+            ),
           },
           { additionalProperties: false },
         ),

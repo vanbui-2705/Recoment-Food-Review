@@ -47,6 +47,18 @@ describe("food recommendation policy", () => {
       false,
     );
   });
+  it("keeps premium diversity candidates out when the saved budget is lower", () => {
+    const premium = { ...dish, id: "premium", priceMin: 280000, priceMax: 480000 };
+    expect(candidateAllowed(premium, profile, new Set(), new Set())).toBe(false);
+    expect(
+      candidateAllowed(
+        premium,
+        { ...profile, budgetMax: 500000 },
+        new Set(),
+        new Set(),
+      ),
+    ).toBe(true);
+  });
   it("fails closed for allergies and unverified mandatory dietary constraints", () => {
     expect(
       candidateAllowed(

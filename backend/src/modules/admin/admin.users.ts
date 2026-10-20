@@ -79,6 +79,24 @@ export const adminUserRoutes: FastifyPluginAsyncTypebox = async (app) => {
       return { data: { items, total, page, limit, currentUserId: req.authUser!.id } };
     },
   );
+  app.get("/admin/users/stats", async () => {
+    const [total, active, disabled, admins, users] = await Promise.all([
+      app.prisma.user.count(),
+      app.prisma.user.count({ where: { status: "ACTIVE" } }),
+      app.prisma.user.count({ where: { status: "DISABLED" } }),
+      app.prisma.user.count({ where: { role: "ADMIN" } }),
+      app.prisma.user.count({ where: { role: "USER" } }),
+    ]);
+    return {
+      data: {
+        total,
+        active,
+        disabled,
+        admins,
+        users,
+      },
+    };
+  });
   app.get(
     "/admin/users/:id",
     {

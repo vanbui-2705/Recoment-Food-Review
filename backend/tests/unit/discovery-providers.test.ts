@@ -60,6 +60,32 @@ describe("external discovery contracts", () => {
     expect(fetcher.mock.calls[1]![1].headers["x-api-key"]).toBe("secret");
     expect(fetcher.mock.calls[1]![0]).not.toContain("secret");
   });
+  it("builds a diverse image-backed dinner list from free TheMealDB categories", async () => {
+    const fetcher = vi.fn().mockImplementation(async (url: string) => {
+      const category = new URL(url).searchParams.get("c")!;
+      return json({
+        meals: [
+          {
+            idMeal: `${category.length}1`,
+            strMeal: `${category} one`,
+            strMealThumb: `https://img.test/${category}-1.jpg`,
+          },
+          {
+            idMeal: `${category.length}2`,
+            strMeal: `${category} two`,
+            strMealThumb: `https://img.test/${category}-2.jpg`,
+          },
+        ],
+      });
+    });
+    const providers = createRecipeProviders({ THEMEALDB_API_KEY: "1" }, fetcher);
+    const items = await providers.search("themealdb", "", 0, "DINNER");
+    expect(items).toHaveLength(12);
+    expect(new Set(fetcher.mock.calls.map(([url]) => new URL(url).searchParams.get("c")))).toEqual(
+      new Set(["Beef", "Chicken", "Seafood", "Vegetarian", "Pasta", "Lamb"]),
+    );
+    expect(items.every((item) => item.image?.startsWith("https://img.test/"))).toBe(true);
+  });
   it("isolates a quota failure and retains results from other sources", async () => {
     const result = await collectSources(
       ["good", "bad", "missing"],
@@ -142,10 +168,15 @@ describe("external discovery contracts", () => {
       3000,
     );
     expect(result[0]?.matchType).toBe("NEARBY_RESTAURANT");
+    expect(result[0]?.mapsUrl).toBe(
+      "https://www.openstreetmap.org/?mlat=10.77&mlon=106.7#map=18/10.77/106.7",
+    );
     expect(result[0]?.attributions).toHaveLength(2);
     expect(new URL(fetcher.mock.calls[0]![0]).searchParams.get("categories")).toBe(
       "catering.restaurant",
     );
+    expect(new URL(fetcher.mock.calls[0]![0]).searchParams.get("limit")).toBe("100");
+    expect(new URL(fetcher.mock.calls[0]![0]).searchParams.get("lang")).toBe("vi");
   });
   it("resolves Goong predictions through details and bounds detail fanout", async () => {
     const fetcher = vi

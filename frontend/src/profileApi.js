@@ -160,6 +160,35 @@ export function replaceProfile(profile) {
   });
 }
 
+export function fetchFoodKnowledge() {
+  return apiRequest("/users/me/food-knowledge", { suppressSessionExpiry: true });
+}
+
+export function saveFoodKnowledge(description, expectedRevision) {
+  return apiRequest("/users/me/food-knowledge", {
+    method: "PUT",
+    body: JSON.stringify({ description, expectedRevision }),
+  });
+}
+
+export function fetchTasteAnalysis() {
+  return apiRequest("/users/me/food-knowledge/analyses", { suppressSessionExpiry: true });
+}
+
+export function startTasteAnalysis() {
+  return apiRequest("/users/me/food-knowledge/analyses", { method: "POST" });
+}
+
+export function confirmTasteAnalysis(id, sourceRevision) {
+  return apiRequest(
+    `/users/me/food-knowledge/analyses/${encodeURIComponent(id)}/confirm`,
+    {
+      method: "POST",
+      body: JSON.stringify({ sourceRevision }),
+    },
+  );
+}
+
 export function profileToPayload(profile, overrides = {}) {
   const source = profile || {};
   return {

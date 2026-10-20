@@ -4,6 +4,11 @@ import { AppError } from "../../common/errors/app-error.js";
 import { createDiscoveryService } from "./discovery.service.js";
 import { createNearbyFoodService } from "./nearby-food.service.js";
 const RecipeSourceSchema = Type.Union([Type.Literal("themealdb"), Type.Literal("spoonacular")]);
+const MealPeriodSchema = Type.Union([
+  Type.Literal("BREAKFAST"),
+  Type.Literal("LUNCH"),
+  Type.Literal("DINNER"),
+]);
 const PlaceSourceSchema = Type.Union([
   Type.Literal("google"),
   Type.Literal("goong"),
@@ -110,7 +115,20 @@ export const discoveryRoutes: FastifyPluginAsyncTypebox = async (app) => {
       return { data: await service.searchRecipes(req.query.q.trim(), req.query.source) };
     },
   );
-  app.get("/recipes/today", async (req) => ({ data: await service.today(req.authUser!.id) }));
+  app.get(
+    "/recipes/today",
+    {
+      schema: {
+        querystring: Type.Object(
+          { mealPeriod: Type.Optional(MealPeriodSchema) },
+          { additionalProperties: false },
+        ),
+      },
+    },
+    async (req) => ({
+      data: await service.today(req.authUser!.id, new Date(), req.query.mealPeriod ?? "DINNER"),
+    }),
+  );
   app.get("/recipes/:source/:id", { schema: { params: RecipeParams } }, async (req) => ({
     data: { recipe: await service.detail(req.params.source, req.params.id) },
   }));
@@ -121,7 +139,11 @@ export const discoveryRoutes: FastifyPluginAsyncTypebox = async (app) => {
         params: RecipeParams,
         body: Type.Object(
           {
-            type: Type.Union([Type.Literal("CHOSEN"), Type.Literal("EATEN")]),
+            type: Type.Union([
+              Type.Literal("LIKED"),
+              Type.Literal("CHOSEN"),
+              Type.Literal("EATEN"),
+            ]),
             idempotencyKey: Type.String({ format: "uuid" }),
             eatenAt: Type.Optional(Type.String({ format: "date-time" })),
           },

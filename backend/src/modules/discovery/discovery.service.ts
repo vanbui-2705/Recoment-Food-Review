@@ -10,6 +10,7 @@ import {
   recipeSources,
   type RecipeSource,
   type Recipe,
+  type RecipeMealPeriod,
 } from "./recipe.providers.js";
 import {
   createPlaceProviders,
@@ -112,11 +113,16 @@ export function createDiscoveryService(
       },
     );
   };
-  const searchRecipes = async (query: string, source?: RecipeSource, day?: number) => {
+  const searchRecipes = async (
+    query: string,
+    source?: RecipeSource,
+    day?: number,
+    mealPeriod: RecipeMealPeriod = "DINNER",
+  ) => {
     const result = await collectSources(
       source ? [source] : recipeSources,
       (s) => recipes.configured(s as RecipeSource),
-      (s) => recipes.search(s as RecipeSource, query, day),
+      (s) => recipes.search(s as RecipeSource, query, day, mealPeriod),
     );
     return {
       ...result,
@@ -206,7 +212,11 @@ export function createDiscoveryService(
           "Kết quả chưa xác nhận thực đơn hay giá món. Geoapify chỉ tìm nhà hàng gần vị trí; Goong trả địa điểm liên quan từ khóa.",
       };
     },
-    async today(userId: string, now = new Date()) {
+    async today(
+      userId: string,
+      now = new Date(),
+      mealPeriod: RecipeMealPeriod = "DINNER",
+    ) {
       if (await hasUnprocessedFoodKnowledge(prisma, userId))
         return { status: "PROFILE_PENDING_ANALYSIS", items: [], sources: [] };
       const profile = await prisma.tasteProfile.findUnique({ where: { userId } });
@@ -221,7 +231,7 @@ export function createDiscoveryService(
         return { status: "INSUFFICIENT_SAFETY_DATA", items: [], sources: [] };
       const day = Math.floor((now.getTime() + 7 * 3600000) / 86400000);
       const [result, recent, localRecent, dislikes] = await Promise.all([
-        searchRecipes("", undefined, day),
+        searchRecipes("", undefined, day, mealPeriod),
         prisma.recipeInteraction.findMany({
           where: {
             userId,
@@ -282,13 +292,13 @@ export function createDiscoveryService(
       userId: string,
       source: RecipeSource,
       id: string,
-      type: "CHOSEN" | "EATEN",
+      type: "LIKED" | "CHOSEN" | "EATEN",
       key: string,
       eatenAt?: string,
     ) {
       const createdAt = eatenAt ? new Date(eatenAt) : new Date();
       if (
-        (type === "CHOSEN" && eatenAt) ||
+        (type !== "EATEN" && eatenAt) ||
         createdAt.getTime() > Date.now() ||
         createdAt.getTime() < Date.now() - 30 * 86400000 ||
         !Number.isFinite(createdAt.getTime())

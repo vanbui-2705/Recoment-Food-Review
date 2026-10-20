@@ -5,11 +5,20 @@ test("refreshes today automatically after the pending analysis applies", async (
   await page.addInitScript(() =>
     localStorage.setItem("eatwise_access_token", "test-token"),
   );
+  await page.route("**/api/users/me", (route) =>
+    route.fulfill({ json: { data: { user: { id: "taste-user", displayName: "Taste User" } } } }),
+  );
+  await page.route("**/api/users/me/profile", (route) =>
+    route.fulfill({ json: { data: { profile: { latitude: 10.77, longitude: 106.7, allergies: [] } } } }),
+  );
+  await page.route("**/api/dishes?*", (route) =>
+    route.fulfill({ json: { data: { items: [] } } }),
+  );
   let applied = false;
   let allowApply = false;
   let reads = 0;
   let recommendations = 0;
-  await page.route("**/api/recommendations/today", (r) => {
+  await page.route("**/api/recommendations/today?*", (r) => {
     recommendations++;
     return r.fulfill({
       json: {
@@ -20,7 +29,7 @@ test("refreshes today automatically after the pending analysis applies", async (
       },
     });
   });
-  await page.route("**/api/recipes/today", (r) =>
+    await page.route("**/api/recipes/today?*", (r) =>
     r.fulfill({ json: { data: { status: "NOT_CONFIGURED", items: [] } } }),
   );
   await page.route("**/api/users/me/food-knowledge/analyses", (r) => {
@@ -42,13 +51,13 @@ test("refreshes today automatically after the pending analysis applies", async (
   });
   await page.goto("/");
   await expect(
-    page.getByText("Đang đọc mô tả của bạn…", { exact: true }),
-  ).toBeVisible();
+    page.getByRole("status").filter({ hasText: "Đang đọc mô tả của bạn…" }),
+  ).toContainText("Đang đọc mô tả của bạn…");
   allowApply = true;
   await expect
     .poll(() => recommendations, { timeout: 15000 })
     .toBeGreaterThan(1);
   await expect(
-    page.getByText("Đang đọc mô tả của bạn…", { exact: true }),
+    page.getByRole("status").filter({ hasText: "Đang đọc mô tả của bạn…" }),
   ).toHaveCount(0);
 });

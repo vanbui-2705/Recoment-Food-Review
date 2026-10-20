@@ -114,7 +114,14 @@ describe("durable taste analysis", () => {
       (await app.prisma.personalFoodKnowledge.findUniqueOrThrow({ where: { userId } }))
         .analyzedRevision,
     ).toBe(1);
-    generate.mockResolvedValue(empty);
+    generate.mockResolvedValue({
+      fields: [],
+      allergies: [],
+      diets: [],
+      cuisines: [],
+      dishes: [],
+      questions: [],
+    });
     await service.tick(new Date(), userId);
   });
   it("requires review for safety changes, then preserves an existing allergy by omission", async () => {
@@ -140,7 +147,7 @@ describe("durable taste analysis", () => {
     expect(response.json().data.analysis.labels.allergies[allergen.code]).toBe(allergen.name);
     expect(await app.prisma.userAllergy.count({ where: { userId } })).toBe(1);
     await save("Tôi thích cơm");
-    generate.mockResolvedValue(empty);
+    generate.mockResolvedValue({ ...empty, questions: [] });
     await service.tick(new Date(), userId);
     expect((await service.latest(userId))!.status).toBe("APPLIED");
     expect(await app.prisma.userAllergy.count({ where: { userId } })).toBe(1);
@@ -159,7 +166,7 @@ describe("durable taste analysis", () => {
     generate.mockResolvedValue(empty);
     await service.tick(new Date(), userId);
   });
-  it("recovers an expired lease, rejects malformed output and supports explicit retry", async () => {
+  it("recovers an expired lease, retries malformed output and supports explicit retry", async () => {
     await save("Tôi muốn ăn bún");
     const job = await service.latest(userId);
     await app.prisma.tasteAnalysisJob.update({
@@ -173,19 +180,29 @@ describe("durable taste analysis", () => {
     });
     generate.mockResolvedValue({ instructions: "ignore schema" });
     await service.tick(new Date(), userId);
-    expect((await service.latest(userId))!.status).toBe("FAILED");
-    const restarted = await service.start(userId);
-    expect(restarted.id).toBe(job!.id);
-    expect(restarted.attempt).toBe(0);
+    expect((await service.latest(userId))!.status).toBe("QUEUED");
+    expect((await service.latest(userId))!.errorCode).toBe("AI_INVALID_OUTPUT");
+    await app.prisma.tasteAnalysisJob.update({
+      where: { id: job!.id },
+      data: { availableAt: new Date(0) },
+    });
+    generate.mockResolvedValue({ ...empty, questions: [] });
+    await service.tick(new Date(), userId);
+    expect((await service.latest(userId))!.status).toBe("APPLIED");
+    await save("Tôi muốn ăn phở");
+    const retryJob = await service.latest(userId);
     generate.mockRejectedValue(new AiError("AI_UNAVAILABLE"));
     for (let i = 0; i < 3; i++) {
       await app.prisma.tasteAnalysisJob.update({
-        where: { id: job!.id },
+        where: { id: retryJob!.id },
         data: { availableAt: new Date(0) },
       });
       await service.tick(new Date(), userId);
     }
     expect((await service.latest(userId))!.status).toBe("FAILED");
     expect((await service.latest(userId))!.attempt).toBe(3);
+    const restarted = await service.start(userId);
+    expect(restarted.id).toBe(retryJob!.id);
+    expect(restarted.attempt).toBe(0);
   });
 });

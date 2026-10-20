@@ -67,7 +67,7 @@ export function createNearbyFoodService(
                 }
               : { longitude: { gte: longitudeMin, lte: longitudeMax } }),
       };
-      const [places, menus, history, recipeHistory, preferences] = await Promise.all([
+      const [places, menus, history, recipeHistory, preferences, dbRestaurants] = await Promise.all([
         discovery.restaurants(userId, "quán ăn", undefined, origin, radius),
         prisma.restaurantDish.findMany({
           where: {
@@ -92,6 +92,20 @@ export function createNearbyFoodService(
         prisma.userDishPreference.findMany({
           where: { userId, preference: "DISLIKED" },
           select: { dishId: true },
+        }),
+        prisma.restaurant.findMany({
+          where: {
+            businessStatus: "OPERATIONAL",
+            ...geographicBounds,
+          },
+          include: {
+            dishes: {
+              where: { isAvailable: true },
+              include: { dish: true },
+              take: 3,
+            },
+          },
+          take: 50,
         }),
       ]);
       const blockedIds = new Set([...history, ...preferences].map((row) => row.dishId));
@@ -135,6 +149,8 @@ export function createNearbyFoodService(
               ),
               restaurantName: menu.restaurant.name,
               address: menu.restaurant.address,
+              latitude: Number(menu.restaurant.latitude),
+              longitude: Number(menu.restaurant.longitude),
               price: menu.price,
               budgetVerified: true,
               menuConfirmed: true,
@@ -169,8 +185,36 @@ export function createNearbyFoodService(
             ),
         ),
       ];
+      const localPlaces: Place[] = dbRestaurants.flatMap((r) => {
+        const lat = Number(r.latitude);
+        const lng = Number(r.longitude);
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) return [];
+        const distance = distanceMeters(origin, { latitude: lat, longitude: lng });
+        if (distance > radius) return [];
+        return [
+          {
+            placeId: `db:${r.id}`,
+            source: "google" as const,
+            name: r.name,
+            address: r.address,
+            latitude: lat,
+            longitude: lng,
+            distanceMeters: distance,
+            rating: r.rating ? Number(r.rating) : null,
+            ratingCount: r.ratingCount,
+            openNow: true,
+            mapsUrl: `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`,
+            attributions: [],
+            matchType: "NEARBY_RESTAURANT" as const,
+            menuConfirmed: r.dishes.length > 0,
+            price: r.dishes[0]?.price ?? null,
+            photo: null,
+          },
+        ];
+      });
       const seen = new Set<string>();
-      const restaurants: Place[] = places.items.filter((place) => {
+      const combinedPlaces = [...localPlaces, ...places.items];
+      const restaurants: Place[] = combinedPlaces.filter((place) => {
         const key = `${normalizeFoodText(place.name)}:${normalizeFoodText(place.address || `${place.source}:${place.placeId}`)}`;
         if (seen.has(key)) return false;
         seen.add(key);

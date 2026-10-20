@@ -8,7 +8,145 @@
 body {
   font-family: 'Plus Jakarta Sans', sans-serif;
   background-color: #f7f7f9;
-  color: #333;
+  color: #24242b;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── 3D & PERSPECTIVE UTILITIES ── */
+.perspective-800 {
+  perspective: 800px;
+}
+
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.perspective-1500 {
+  perspective: 1500px;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+/* 3D Depth Card Hover */
+.card-3d-interactive {
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transform: perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0);
+  will-change: transform, box-shadow;
+}
+
+.card-3d-interactive:hover {
+  transform: perspective(1000px) translateY(-5px) scale(1.01) translateZ(12px);
+  box-shadow: 0 18px 36px -8px rgba(255, 123, 0, 0.16), 0 8px 16px -4px rgba(0, 0, 0, 0.04);
+}
+
+/* 3D Tactile Buttons */
+.btn-3d-orange {
+  box-shadow: 0 4px 0 #d96200, 0 8px 18px rgba(255, 123, 0, 0.32);
+  transition: all 0.15s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.btn-3d-orange:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 0 #d96200, 0 11px 22px rgba(255, 123, 0, 0.4);
+}
+.btn-3d-orange:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #d96200, 0 3px 8px rgba(255, 123, 0, 0.2);
+}
+
+.btn-3d-purple {
+  box-shadow: 0 4px 0 #6b21a8, 0 8px 18px rgba(124, 58, 237, 0.32);
+  transition: all 0.15s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.btn-3d-purple:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 0 #6b21a8, 0 11px 22px rgba(124, 58, 237, 0.4);
+}
+.btn-3d-purple:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #6b21a8, 0 3px 8px rgba(124, 58, 237, 0.2);
+}
+
+.btn-3d-emerald {
+  box-shadow: 0 4px 0 #047857, 0 8px 18px rgba(5, 150, 105, 0.32);
+  transition: all 0.15s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.btn-3d-emerald:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 0 #047857, 0 11px 22px rgba(5, 150, 105, 0.4);
+}
+.btn-3d-emerald:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #047857, 0 3px 8px rgba(5, 150, 105, 0.2);
+}
+
+.btn-3d-white {
+  box-shadow: 0 3px 0 #e2e4e9, 0 6px 14px rgba(0, 0, 0, 0.05);
+  transition: all 0.15s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.btn-3d-white:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 0 #e2e4e9, 0 8px 18px rgba(0, 0, 0, 0.08);
+}
+.btn-3d-white:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #e2e4e9, 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+/* 3D Heart Bounce */
+@keyframes heart3dPop {
+  0% { transform: scale(1) translateZ(0); }
+  40% { transform: scale(1.35) rotate(-12deg) translateZ(20px); }
+  70% { transform: scale(0.9) rotate(6deg) translateZ(10px); }
+  100% { transform: scale(1) rotate(0deg) translateZ(0); }
+}
+.animate-heart-pop {
+  animation: heart3dPop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
+/* 3D Shimmer Effect */
+@keyframes shimmerGlow {
+  0% { transform: translateX(-150%) skewX(-20deg); }
+  100% { transform: translateX(250%) skewX(-20deg); }
+}
+.shimmer-layer {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer-layer::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 60%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.28), transparent);
+  transform: translateX(-150%) skewX(-20deg);
+  pointer-events: none;
+}
+.shimmer-layer:hover::after {
+  animation: shimmerGlow 1.4s ease-in-out infinite;
+}
+
+/* Floating animation */
+@keyframes float3d {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-5px) rotate(0.5deg); }
+}
+.animate-float-3d {
+  animation: float3d 5s ease-in-out infinite;
+}
+
+/* Scrollbar hide */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .dashboard-feature-shell.food-shell {

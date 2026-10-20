@@ -48,13 +48,11 @@ export const tasteAnalysisRoutes: FastifyPluginAsyncTypebox = async (app) => {
       analysis: await serialize(await service.latest(req.authUser!.id)),
     },
   }));
-  app.post("/users/me/food-knowledge/analyses", { preHandler: limited }, async (req, reply) =>
-    reply.code(202).send({
-      data: {
-        analysis: await serialize(await service.start(req.authUser!.id)),
-      },
-    }),
-  );
+  app.post("/users/me/food-knowledge/analyses", { preHandler: limited }, async (req, reply) => {
+    const analysis = await serialize(await service.start(req.authUser!.id));
+    void service.tick(new Date(), req.authUser!.id).catch(() => {});
+    return reply.code(202).send({ data: { analysis } });
+  });
   app.get("/users/me/food-knowledge/analyses/:id", { schema: { params } }, async (req) => ({
     data: {
       analysis: await serialize(await service.get(req.authUser!.id, req.params.id)),

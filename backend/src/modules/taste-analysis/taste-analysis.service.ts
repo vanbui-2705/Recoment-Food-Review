@@ -340,7 +340,7 @@ export function createTasteAnalysisService(
         const code = error instanceof AiError ? error.code : "AI_UNAVAILABLE";
         const terminal =
           job.attempt >= config.maxAttempts ||
-          ["AI_INVALID_OUTPUT", "AI_NOT_CONFIGURED", "AI_BUDGET_EXCEEDED"].includes(code);
+          ["AI_NOT_CONFIGURED", "AI_BUDGET_EXCEEDED"].includes(code);
         await prisma.tasteAnalysisJob.updateMany({
           where: { id, status: "RUNNING", leaseToken: token },
           data: {

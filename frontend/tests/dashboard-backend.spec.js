@@ -30,7 +30,7 @@ test('dashboard loads account, profile and recommendations from the API', async 
       },
     }),
   );
-  await page.route('**/api/recommendations/today', (route) =>
+  await page.route('**/api/recommendations/today?*', (route) =>
     route.fulfill({
       json: {
         data: {
@@ -49,7 +49,7 @@ test('dashboard loads account, profile and recommendations from the API', async 
       },
     }),
   );
-  await page.route('**/api/recipes/today', (route) =>
+  await page.route('**/api/recipes/today?*', (route) =>
     route.fulfill({ json: { data: { status: 'NOT_CONFIGURED', items: [] } } }),
   );
 
@@ -83,10 +83,10 @@ test('sidebar changes between live feature pages', async ({ page }) => {
   await page.route('**/api/users/me/profile', (route) =>
     route.fulfill({ json: { data: { profile: { allergies: [] } } } }),
   );
-  await page.route('**/api/recommendations/today', (route) =>
+  await page.route('**/api/recommendations/today?*', (route) =>
     route.fulfill({ json: { data: { status: 'NO_MATCH', items: [] } } }),
   );
-  await page.route('**/api/recipes/today', (route) =>
+  await page.route('**/api/recipes/today?*', (route) =>
     route.fulfill({ json: { data: { status: 'NOT_CONFIGURED', items: [] } } }),
   );
   await page.route('**/api/users/me/food-knowledge', (route) =>

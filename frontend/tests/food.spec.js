@@ -16,7 +16,7 @@ test.beforeEach(async ({ page }) => {
   await page.addInitScript(() =>
     localStorage.setItem("eatwise_access_token", "test-token"),
   );
-  await page.route("**/api/recipes/today", (route) =>
+    await page.route("**/api/recipes/today?*", (route) =>
     route.fulfill({ json: { data: { status: "NOT_CONFIGURED", items: [] } } }),
   );
 });
