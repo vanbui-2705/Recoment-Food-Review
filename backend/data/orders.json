@@ -1,0 +1,44 @@
+[
+  {
+    "id": "ord_1792572010359_iuyi2",
+    "code": "ORD-010359",
+    "userId": "7cdac55b-2891-49d6-a545-e850aef5dc53",
+    "restaurantId": "res_pho_24",
+    "restaurantName": "Phá»Ÿ 24 Pasteur",
+    "restaurantAddress": "158 Pasteur, Quáº­n 1, TP.HCM",
+    "items": [
+      {
+        "id": "item_1",
+        "name": "Phá»Ÿ bÃ² tÃ¡i lÄƒn",
+        "spice": "Cay vá»«a",
+        "note": "Ãt bÃ¡nh, nhiá»u hÃ nh lÃ¡",
+        "quantity": 2,
+        "price": 65000,
+        "size": "L"
+      },
+      {
+        "id": "item_2",
+        "name": "TrÃ  Ä‘Ã o cam sáº£",
+        "sugar": "50%",
+        "ice": "ÄÃ¡ chung",
+        "quantity": 1,
+        "price": 35000
+      }
+    ],
+    "subtotal": 165000,
+    "deliveryFee": 15000,
+    "totalAmount": 180000,
+    "recipientName": "Nguyá»…n VÄƒn Khang",
+    "recipientPhone": "0987654321",
+    "deliveryAddress": "Sá»‘ 123 LÃª Lá»£i, PhÆ°á»ng Báº¿n NghÃ©, Quáº­n 1, TP.HCM",
+    "note": "Giao lÃªn láº§u 3 giÃºp mÃ¬nh",
+    "paymentMethod": "COD",
+    "status": "CONFIRMED",
+    "estimatedMinutes": 25,
+    "driverName": "Nguyễn Văn Hùng",
+    "driverPhone": "0912 345 678",
+    "driverPlate": "59P1-882.91",
+    "createdAt": "2026-10-21T08:40:10.359Z",
+    "updatedAt": "2026-10-21T08:40:10.359Z"
+  }
+]

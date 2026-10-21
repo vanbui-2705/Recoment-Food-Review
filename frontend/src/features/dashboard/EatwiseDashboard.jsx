@@ -13,6 +13,11 @@ import ProfilePage from "../../pages/ProfilePage.jsx";
 import HistoryPage from "../../pages/HistoryPage.jsx";
 import LoginPage from "../../pages/LoginPage.jsx";
 import AdminAccountsPage from "../../pages/AdminAccountsPage.jsx";
+import CartDrawer from "../ordering/CartDrawer.jsx";
+import DishCustomizerModal from "../ordering/DishCustomizerModal.jsx";
+import RestaurantStorefrontModal from "../ordering/RestaurantStorefrontModal.jsx";
+import CheckoutModal from "../ordering/CheckoutModal.jsx";
+import OrderTrackingModal from "../ordering/OrderTrackingModal.jsx";
 
 const screens = ["today", "chat", "map", "profile", "history", "admin-users"];
 const readScreen = () => {
@@ -40,6 +45,128 @@ export default function EatwiseDashboard() {
   const [locationError, setLocationError] = useState("");
   const [chatPrompt, setChatPrompt] = useState("");
   const autoLocationAttempted = useRef(false);
+
+  // Ordering State
+  const [cart, setCart] = useState(() => {
+    try {
+      const saved = localStorage.getItem("eatwise_cart");
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [isTrackingOpen, setIsTrackingOpen] = useState(false);
+  const [selectedStorefrontRestaurant, setSelectedStorefrontRestaurant] = useState(null);
+  const [dishToCustomize, setDishToCustomize] = useState(null);
+  const [activeTrackingOrder, setActiveTrackingOrder] = useState(() => {
+    try {
+      const saved = localStorage.getItem("eatwise_active_order");
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("eatwise_cart", JSON.stringify(cart));
+    } catch {
+      // ignore
+    }
+  }, [cart]);
+
+  useEffect(() => {
+    try {
+      if (activeTrackingOrder) {
+        localStorage.setItem("eatwise_active_order", JSON.stringify(activeTrackingOrder));
+      } else {
+        localStorage.removeItem("eatwise_active_order");
+      }
+    } catch {
+      // ignore
+    }
+  }, [activeTrackingOrder]);
+
+  const handleAddToCart = (item) => {
+    setCart((prev) => {
+      const firstRes = prev[0]?.restaurantName;
+      if (firstRes && firstRes !== item.restaurantName) {
+        return [item];
+      }
+      const existingIdx = prev.findIndex(
+        (p) =>
+          p.dishId === item.dishId &&
+          p.customizations?.size === item.customizations?.size &&
+          p.customizations?.sugar === item.customizations?.sugar &&
+          p.customizations?.ice === item.customizations?.ice &&
+          p.customizations?.spice === item.customizations?.spice
+      );
+      if (existingIdx >= 0) {
+        const copy = [...prev];
+        copy[existingIdx].quantity += item.quantity;
+        return copy;
+      }
+      return [...prev, item];
+    });
+    setDishToCustomize(null);
+    setNotice(`Đã thêm “${item.name}” vào giỏ hàng!`);
+    setTimeout(() => setNotice(""), 3500);
+  };
+
+  const handleUpdateQuantity = (id, delta) => {
+    setCart((prev) =>
+      prev
+        .map((item) =>
+          item.id === id ? { ...item, quantity: item.quantity + delta } : item
+        )
+        .filter((item) => item.quantity > 0)
+    );
+  };
+
+  const handleRemoveItem = (id) => {
+    setCart((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const handleClearCart = () => {
+    setCart([]);
+  };
+
+  const handleOpenStorefront = (restaurant, dish) => {
+    setSelectedStorefrontRestaurant(restaurant);
+    if (dish) {
+      // opened from specific dish
+    }
+  };
+
+  const handleOrderDish = (dish, restaurant) => {
+    setDishToCustomize({
+      dish,
+      restaurant: restaurant || {
+        name: dish.restaurantName || "Quán Ăn Chọn Lọc",
+        id: dish.id,
+      },
+    });
+  };
+
+  const handleOrderSuccess = (createdOrder) => {
+    setCart([]);
+    setIsCheckoutOpen(false);
+    setActiveTrackingOrder(createdOrder);
+    setIsTrackingOpen(true);
+    setNotice(`Đặt đơn thành công! Mã đơn #${createdOrder.id}`);
+  };
+
+  const totalCartAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const totalCartCount = cart.reduce((count, item) => count + item.quantity, 0);
+
+  const money = (val) =>
+    new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+      maximumFractionDigits: 0,
+    }).format(val || 0);
 
   useEffect(() => {
     const sync = () => setScreen(readScreen());
@@ -326,6 +453,10 @@ export default function EatwiseDashboard() {
               locationStatus={locationStatus}
               locationError={locationError}
               onUseCurrentLocation={useCurrentLocation}
+              onOpenStorefront={handleOpenStorefront}
+              onOrderDish={handleOrderDish}
+              cart={cart}
+              onOpenCart={() => setIsCartOpen(true)}
             />
           )}
           {screen === "chat" && (
@@ -336,6 +467,8 @@ export default function EatwiseDashboard() {
               profile={profile}
               user={user}
               onNavigate={navigate}
+              onProfileChanged={setProfile}
+              onSaved={setNotice}
             />
           )}
           {screen === "map" && (
@@ -347,6 +480,7 @@ export default function EatwiseDashboard() {
               locationStatus={locationStatus}
               locationError={locationError}
               onUseCurrentLocation={useCurrentLocation}
+              onOpenStorefront={handleOpenStorefront}
             />
           )}
           {screen === "profile" && (
@@ -355,6 +489,7 @@ export default function EatwiseDashboard() {
               profile={profile}
               onProfileChanged={setProfile}
               onSaved={setNotice}
+              onNavigate={navigate}
             />
           )}
           {screen === "history" && <HistoryPage onNavigate={navigate} />}
@@ -362,6 +497,95 @@ export default function EatwiseDashboard() {
             <AdminAccountsPage user={user} onNavigate={navigate} />
           )}
         </main>
+
+        {/* Floating Cart Button */}
+        {cart.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setIsCartOpen(true)}
+            aria-label={`Giỏ hàng ${totalCartCount} món, ${money(totalCartAmount)}`}
+            className="fixed bottom-20 lg:bottom-6 right-4 sm:right-6 z-40 flex items-center gap-3 bg-gradient-to-r from-[#ff7b00] to-orange-500 text-white px-4 py-3 rounded-2xl shadow-xl shadow-orange-500/30 hover:scale-105 active:scale-95 transition btn-3d-orange border border-white/20"
+          >
+            <div className="relative">
+              <span className="material-symbols-outlined text-2xl">shopping_cart</span>
+              <span className="absolute -top-1.5 -right-2 bg-white text-orange-600 text-[10px] font-black rounded-full w-4 h-4 flex items-center justify-center shadow">
+                {totalCartCount}
+              </span>
+            </div>
+            <div className="text-left font-black leading-tight text-xs pr-1">
+              <p className="text-[10px] text-orange-100 font-semibold truncate max-w-[120px]">
+                {cart[0]?.restaurantName || "Đơn hàng"}
+              </p>
+              <p>{money(totalCartAmount)}</p>
+            </div>
+          </button>
+        )}
+
+        {/* Floating Active Order Tracker Pill */}
+        {activeTrackingOrder &&
+          activeTrackingOrder.status !== "cancelled" &&
+          activeTrackingOrder.status !== "completed" && (
+            <button
+              type="button"
+              onClick={() => setIsTrackingOpen(true)}
+              aria-label={`Theo dõi đơn hàng ${activeTrackingOrder.id}`}
+              className="fixed bottom-20 lg:bottom-6 left-4 sm:left-6 z-40 flex items-center gap-2.5 bg-gray-900 text-white px-4 py-2.5 rounded-2xl shadow-xl border border-gray-700 hover:bg-black active:scale-95 transition"
+            >
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500" />
+              </span>
+              <div className="text-left text-xs font-bold leading-tight">
+                <span className="text-orange-400 font-black">#{activeTrackingOrder.id}</span>
+                <span className="text-[11px] text-gray-300 ml-1.5 hidden sm:inline">
+                  Đang giao hàng
+                </span>
+              </div>
+            </button>
+          )}
+
+        {/* ── ORDERING & CHECKOUT MODALS ── */}
+        <CartDrawer
+          cart={cart}
+          isOpen={isCartOpen}
+          onClose={() => setIsCartOpen(false)}
+          onUpdateQuantity={handleUpdateQuantity}
+          onRemoveItem={handleRemoveItem}
+          onClearCart={handleClearCart}
+          onCheckout={() => {
+            setIsCartOpen(false);
+            setIsCheckoutOpen(true);
+          }}
+        />
+
+        <DishCustomizerModal
+          dish={dishToCustomize?.dish}
+          restaurant={dishToCustomize?.restaurant}
+          isOpen={Boolean(dishToCustomize)}
+          onClose={() => setDishToCustomize(null)}
+          onAddToCart={handleAddToCart}
+        />
+
+        <RestaurantStorefrontModal
+          restaurant={selectedStorefrontRestaurant}
+          isOpen={Boolean(selectedStorefrontRestaurant)}
+          onClose={() => setSelectedStorefrontRestaurant(null)}
+          onSelectDish={(dish) => handleOrderDish(dish, selectedStorefrontRestaurant)}
+        />
+
+        <CheckoutModal
+          cart={cart}
+          isOpen={isCheckoutOpen}
+          onClose={() => setIsCheckoutOpen(false)}
+          onOrderSuccess={handleOrderSuccess}
+        />
+
+        <OrderTrackingModal
+          order={activeTrackingOrder}
+          isOpen={isTrackingOpen}
+          onClose={() => setIsTrackingOpen(false)}
+          onOrderUpdated={(updated) => setActiveTrackingOrder(updated)}
+        />
 
         {/* Mobile Bottom Navigation */}
         <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-16 border-t border-gray-100 bg-white/95 px-2 backdrop-blur lg:hidden">

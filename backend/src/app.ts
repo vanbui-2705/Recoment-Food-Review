@@ -27,6 +27,7 @@ import { recommendationRoutes } from "./modules/recommendations/recommendation.r
 import { historyRoutes } from "./modules/history/history.route.js";
 import { chatRoutes } from "./modules/chat/chat.route.js";
 import { reportRoutes } from "./modules/reports/report.route.js";
+import { orderRoutes } from "./modules/orders/orders.route.js";
 import { authPlugin } from "./plugins/auth.plugin.js";
 import { databasePlugin } from "./plugins/database.plugin.js";
 
@@ -89,6 +90,7 @@ export function buildApp(options: BuildAppOptions = {}) {
     app.register(historyRoutes);
     app.register(chatRoutes);
     app.register(reportRoutes);
+    app.register(orderRoutes);
   }
 
   app.register(healthRoutes);

@@ -8,7 +8,19 @@ import {
   sendConversationMessage,
   streamChatEvents,
 } from "../dashboardApi.js";
-import { chatMessageToView } from "../dashboardAdapters.js";
+import {
+  chatMessageToView,
+  hasTasteSignals,
+  analyzeTasteLocally,
+  allergiesFromProfile,
+  mergeAllergiesIntoProfile,
+} from "../dashboardAdapters.js";
+import {
+  fetchFoodKnowledge,
+  saveFoodKnowledge,
+  replaceProfile,
+  profileToPayload,
+} from "../profileApi.js";
 
 export default function ChatPage({
   initialPrompt = "",
@@ -17,6 +29,8 @@ export default function ChatPage({
   profile,
   user,
   onNavigate = () => {},
+  onProfileChanged = () => {},
+  onSaved = () => {},
 }) {
   const [input, setInput] = useState("");
   const [conversationId, setConversationId] = useState(null);
@@ -24,6 +38,7 @@ export default function ChatPage({
   const [sending, setSending] = useState(false);
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [chatError, setChatError] = useState("");
+  const [tasteLearnedNotice, setTasteLearnedNotice] = useState(null);
   const sendLock = useRef(false);
   const streamController = useRef(null);
   const messagesEndRef = useRef(null);
@@ -109,12 +124,72 @@ export default function ChatPage({
     }
   };
 
+  const learnTasteFromText = async (text) => {
+    if (!hasTasteSignals(text)) return;
+    try {
+      const knowledgeResp = await fetchFoodKnowledge().catch(() => null);
+      const prevKnowledge = knowledgeResp?.data?.knowledge;
+      const prevDesc = prevKnowledge?.description || "";
+      const revision = prevKnowledge?.revision || 0;
+
+      const trimmed = text.trim();
+      let updatedDesc = prevDesc;
+      if (!prevDesc.toLowerCase().includes(trimmed.toLowerCase())) {
+        updatedDesc = prevDesc ? `${prevDesc}; ${trimmed}` : trimmed;
+        if (updatedDesc.length > 5000) updatedDesc = updatedDesc.slice(-4000);
+        await saveFoodKnowledge(updatedDesc, revision).catch(() => {});
+      }
+
+      // Automatically parse taste metrics & update profile in PostgreSQL
+      const parsed = analyzeTasteLocally(updatedDesc);
+      const currentAllergies = allergiesFromProfile(profile);
+      const mergedAllergies = {
+        ...currentAllergies,
+        ...parsed.allergies,
+      };
+
+      const payload = profileToPayload(profile, {
+        spicyLevel: parsed.spicyLevel,
+        sweetLevel: parsed.sweetLevel,
+        sourLevel: parsed.sourLevel,
+        saltyLevel: parsed.saltyLevel,
+        budgetMin: parsed.budgetMin,
+        budgetMax: parsed.budgetMax,
+        maxDistanceMeters: parsed.maxDistanceMeters,
+        allergies: mergeAllergiesIntoProfile(profile, mergedAllergies),
+      });
+
+      const updatedProfileResp = await replaceProfile(payload);
+      if (updatedProfileResp?.data?.profile) {
+        onProfileChanged(updatedProfileResp.data.profile);
+      }
+
+      const summaryPill = [];
+      if (parsed.spicyLevel !== 30) summaryPill.push(`🌶️ Cay ${parsed.spicyLevel}%`);
+      if (parsed.sweetLevel !== 45) summaryPill.push(`🍯 Ngọt ${parsed.sweetLevel}%`);
+      if (parsed.budgetMax !== 70000) summaryPill.push(`💰 ${(parsed.budgetMax / 1000)}k`);
+      const detectedAllergyKeys = Object.entries(parsed.allergies).filter(([, v]) => v).map(([k]) => k);
+      if (detectedAllergyKeys.length) summaryPill.push(`🚫 Dị ứng: ${detectedAllergyKeys.join(", ")}`);
+
+      setTasteLearnedNotice({
+        snippet: trimmed.length > 70 ? `${trimmed.slice(0, 70)}...` : trimmed,
+        pills: summaryPill.length ? summaryPill : parsed.tags.slice(0, 3),
+      });
+      setTimeout(() => setTasteLearnedNotice(null), 8000);
+    } catch {
+      // Background taste learning is best-effort and does not block chat
+    }
+  };
+
   const send = async (value = input) => {
     const text = (value || "").trim();
     if (!text || !conversationId || sendLock.current) return;
     sendLock.current = true;
     setSending(true);
     const key = createIdempotencyKey();
+
+    // Trigger AI background taste learning & knowledge base persistence
+    learnTasteFromText(text);
 
     try {
       setChatError("");
@@ -271,7 +346,37 @@ export default function ChatPage({
         </div>
 
         {/* Input Bar */}
-        <div className="p-3 lg:p-4 bg-white border-t border-gray-100 shrink-0 pb-[70px] lg:pb-4">
+        <div className="p-3 lg:p-4 bg-white border-t border-gray-100 shrink-0 pb-[70px] lg:pb-4 space-y-2">
+          {/* AI Learned Taste Notification Pill */}
+          {tasteLearnedNotice && (
+            <div className="p-2.5 rounded-2xl bg-gradient-to-r from-violet-50 via-purple-50 to-indigo-50 border border-violet-200/80 flex items-center justify-between text-xs text-violet-950 shadow-sm animate-fadeInScale">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-violet-600 text-white shadow-xs">
+                  <span className="material-symbols-outlined text-sm">psychology</span>
+                </span>
+                <div className="min-w-0">
+                  <strong className="block text-[11px] font-black text-violet-900 truncate">
+                    ✨ AI đã tự động học & cập nhật vào Hồ sơ Vị giác của bạn!
+                  </strong>
+                  <div className="flex flex-wrap items-center gap-1 mt-0.5">
+                    {tasteLearnedNotice.pills?.map((p) => (
+                      <span key={p} className="px-2 py-0.2 bg-white/90 border border-violet-200 text-violet-800 text-[9px] font-extrabold rounded-md shadow-xs">
+                        {p}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => onNavigate("profile")}
+                className="ml-2 px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white font-extrabold text-[10px] rounded-xl whitespace-nowrap shadow-xs transition"
+              >
+                Xem hồ sơ
+              </button>
+            </div>
+          )}
+
           {/* Message input */}
           <div className="relative">
             <input

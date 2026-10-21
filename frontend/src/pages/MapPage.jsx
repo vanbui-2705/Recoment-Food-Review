@@ -3,6 +3,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { fetchNearbyFood } from "../dashboardApi.js";
 import { nearbyToPlace } from "../dashboardAdapters.js";
+import { resolveDishImage } from "../menuData.js";
 
 const money = (value) =>
   typeof value === "number" ? `${value.toLocaleString("vi-VN")}đ` : "";
@@ -24,22 +25,7 @@ const DEFAULT_CENTER = {
 };
 
 export const getPlaceImage = (place) => {
-  if (place?.image) return place.image;
-  const text = `${place?.name || ""} ${place?.dish || ""} ${place?.address || ""}`.toLowerCase();
-  if (text.includes("phở")) return "/images/dishes/pho-bo.jpg";
-  if (text.includes("bún bò")) return "/images/dishes/bun-bo-hue.jpg";
-  if (text.includes("bún")) return "/images/dishes/bun-cha.jpg";
-  if (text.includes("cơm")) return "/images/dishes/com-tam-suon-trung.jpg";
-  if (text.includes("bánh mì")) return "/images/dishes/banh-mi-thit.jpg";
-  if (text.includes("bánh cuốn")) return "/images/dishes/banh-cuon.jpg";
-  if (text.includes("bánh xèo")) return "/images/dishes/banh-xeo.jpg";
-  if (text.includes("steak") || text.includes("bò") || text.includes("nướng")) return "/images/dishes/bo-luc-lac.jpg";
-  if (text.includes("sushi") || text.includes("udon") || text.includes("nhật") || text.includes("japanese")) return "/images/dishes/sushi-set.jpg";
-  if (text.includes("lẩu") || text.includes("buffet") || text.includes("hải sản")) return "/images/dishes/goi-cuon-tom-thit.jpg";
-  if (text.includes("trà sữa")) return "/images/dishes/tra-sua-tran-chau.jpg";
-  if (text.includes("cà phê") || text.includes("coffee") || text.includes("cafe")) return "/images/dishes/ca-phe-sua-da.jpg";
-  if (text.includes("chè")) return "/images/dishes/che-dau-xanh.jpg";
-  return "/images/dishes/pho-bo.jpg";
+  return resolveDishImage(place, place?.id || place?.dishId || place?.name);
 };
 
 function createUserIcon() {
@@ -88,6 +74,7 @@ export default function MapPage({
   locationStatus = "idle",
   locationError = "",
   onUseCurrentLocation = () => {},
+  onOpenStorefront,
 }) {
   const [category, setCategory] = useState("all");
   const [selectedPlace, setSelectedPlace] = useState(null);
@@ -95,10 +82,12 @@ export default function MapPage({
   const [loadState, setLoadState] = useState("loading");
   const [providerStatus, setProviderStatus] = useState(null);
   const [mobileView, setMobileView] = useState("split");
+  const [mapLayerType, setMapLayerType] = useState("roadmap"); // "roadmap" | "satellite"
 
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const markersGroupRef = useRef(null);
+  const tileLayersRef = useRef({});
 
   useEffect(() => {
     if (!profileLoaded && !currentLocation) return;
@@ -171,10 +160,24 @@ export default function MapPage({
         zoomControl: false,
       });
 
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 19,
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-      }).addTo(map);
+      // Google Maps Roadmap & Satellite Layers
+      const googleRoadmap = L.tileLayer("https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}", {
+        subdomains: ["0", "1", "2", "3"],
+        maxZoom: 20,
+        attribution: '&copy; <a href="https://maps.google.com" target="_blank" rel="noreferrer">Google Maps</a>',
+      });
+
+      const googleSatellite = L.tileLayer("https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}", {
+        subdomains: ["0", "1", "2", "3"],
+        maxZoom: 20,
+        attribution: '&copy; <a href="https://maps.google.com" target="_blank" rel="noreferrer">Google Maps Vệ Tinh</a>',
+      });
+
+      googleRoadmap.addTo(map);
+      tileLayersRef.current = {
+        roadmap: googleRoadmap,
+        satellite: googleSatellite,
+      };
 
       L.control.zoom({ position: "topright" }).addTo(map);
 
@@ -193,6 +196,20 @@ export default function MapPage({
       }
     };
   }, []);
+
+  // Switch between Google Maps Roadmap and Google Satellite
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    const layers = tileLayersRef.current;
+    if (!map || !layers?.roadmap || !layers?.satellite) return;
+    if (mapLayerType === "satellite") {
+      if (map.hasLayer(layers.roadmap)) map.removeLayer(layers.roadmap);
+      if (!map.hasLayer(layers.satellite)) layers.satellite.addTo(map);
+    } else {
+      if (map.hasLayer(layers.satellite)) map.removeLayer(layers.satellite);
+      if (!map.hasLayer(layers.roadmap)) layers.roadmap.addTo(map);
+    }
+  }, [mapLayerType]);
 
   // Update map markers when places, user coordinates or selection change
   useEffect(() => {
@@ -440,7 +457,20 @@ export default function MapPage({
                       {place.price != null && <span>{money(place.price)}</span>}
                     </div>
                   )}
-                  <div className="flex gap-1.5">
+                  <div className="flex flex-wrap gap-1.5">
+                    {onOpenStorefront && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onOpenStorefront(place);
+                        }}
+                        className="px-2.5 py-1 bg-orange-100 hover:bg-orange-200 text-orange-800 text-[10px] font-black rounded-lg transition-colors flex items-center gap-0.5"
+                        title="Xem thực đơn & Đặt món"
+                      >
+                        <span className="material-symbols-outlined text-xs">storefront</span>
+                        <span>Menu & Đặt món</span>
+                      </button>
+                    )}
                     {onNavigate && (
                       <button
                         onClick={(e) => {
@@ -489,7 +519,35 @@ export default function MapPage({
           <div ref={mapContainerRef} className="absolute inset-0 w-full h-full z-0" />
 
           {/* Top Right Quick Controls */}
-          <div className="absolute right-4 top-4 z-20 flex items-center gap-2">
+          <div className="absolute right-4 top-4 z-20 flex flex-wrap items-center justify-end gap-2">
+            {/* Google Maps Layer Switcher */}
+            <div className="flex items-center rounded-xl border border-gray-200 bg-white/95 p-0.5 shadow-md backdrop-blur">
+              <button
+                type="button"
+                onClick={() => setMapLayerType("roadmap")}
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 ${
+                  mapLayerType === "roadmap"
+                    ? "bg-[#ff7b00] text-white shadow-sm"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                <span className="material-symbols-outlined text-xs">map</span>
+                <span>Bản đồ Google</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setMapLayerType("satellite")}
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 ${
+                  mapLayerType === "satellite"
+                    ? "bg-[#ff7b00] text-white shadow-sm"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                <span className="material-symbols-outlined text-xs">satellite_alt</span>
+                <span>Vệ tinh</span>
+              </button>
+            </div>
+
             <button
               type="button"
               onClick={() => {
@@ -502,22 +560,25 @@ export default function MapPage({
                 }
               }}
               title="Căn giữa vị trí của bạn"
-              className="flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white/95 px-3 py-2 text-xs font-bold text-gray-700 shadow-md hover:bg-white active:scale-95 transition"
+              className="flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white/95 px-3 py-1.5 text-xs font-bold text-gray-700 shadow-md hover:bg-white active:scale-95 transition"
             >
               <span className="material-symbols-outlined text-sm text-[#ff7b00]">my_location</span>
               <span className="hidden sm:inline">Vị trí của tôi</span>
             </button>
+
             <a
-              href={`https://www.openstreetmap.org/#map=15/${
+              href={`https://www.google.com/maps/@${
                 currentLocation?.latitude || profile?.latitude || DEFAULT_CENTER.latitude
-              }/${
+              },${
                 currentLocation?.longitude || profile?.longitude || DEFAULT_CENTER.longitude
-              }`}
+              },15z`}
               target="_blank"
               rel="noreferrer"
-              className="rounded-xl border border-gray-200 bg-white/95 px-3 py-2 text-xs font-bold text-gray-700 shadow-md hover:bg-white"
+              className="flex items-center gap-1 rounded-xl border border-gray-200 bg-white/95 px-3 py-1.5 text-xs font-bold text-gray-700 shadow-md hover:bg-white transition"
+              title="Mở toàn màn hình trên Google Maps"
             >
-              Mở OSM
+              <span className="material-symbols-outlined text-sm text-red-500">near_me</span>
+              <span>Google Maps</span>
             </a>
           </div>
 
@@ -554,21 +615,31 @@ export default function MapPage({
                       .join(" • ")}
                   </p>
                 )}
-                <div className="mt-2.5 flex items-center gap-2">
+                {onOpenStorefront && (
+                  <button
+                    type="button"
+                    onClick={() => onOpenStorefront(selectedPlace)}
+                    className="w-full mt-2.5 py-2 bg-gradient-to-r from-[#ff7b00] to-orange-500 hover:from-orange-600 hover:to-orange-700 text-white text-xs font-black rounded-xl shadow-md btn-3d-orange transition flex items-center justify-center gap-1.5"
+                  >
+                    <span className="material-symbols-outlined text-sm">restaurant_menu</span>
+                    <span>Xem Menu Quán & Đặt Món</span>
+                  </button>
+                )}
+                <div className="mt-2 flex items-center gap-2">
                   <button
                     type="button"
                     onClick={() => {
-                      const url =
-                        selectedPlace.mapsUrl ||
-                        `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                          selectedPlace.name + " " + (selectedPlace.address || ""),
-                        )}`;
+                      const url = validCoordinate(selectedPlace.latitude, selectedPlace.longitude)
+                        ? `https://www.google.com/maps/dir/?api=1&destination=${selectedPlace.latitude},${selectedPlace.longitude}`
+                        : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                            selectedPlace.name + " " + (selectedPlace.address || ""),
+                          )}`;
                       window.open(url, "_blank", "noopener,noreferrer");
                     }}
-                    className="flex-1 py-1.5 bg-gray-100 text-gray-800 text-xs font-bold rounded-xl hover:bg-gray-200 transition flex items-center justify-center gap-1"
+                    className="flex-1 py-1.5 bg-blue-50 text-blue-700 text-xs font-bold rounded-xl hover:bg-blue-100 transition flex items-center justify-center gap-1"
                   >
-                    <span>Chỉ đường</span>
-                    <span className="material-symbols-outlined text-xs">open_in_new</span>
+                    <span className="material-symbols-outlined text-sm text-blue-600">directions</span>
+                    <span>Chỉ đường Google Maps</span>
                   </button>
                   {onNavigate && (
                     <button

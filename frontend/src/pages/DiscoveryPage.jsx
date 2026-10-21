@@ -9,10 +9,11 @@ import {
   saveDishPreference,
   searchRestaurants,
 } from "../dashboardApi.js";
-import { mealPeriodForLocalHour, todayPayloadToCards } from "../dashboardAdapters.js";
+import { mealPeriodForLocalHour, todayPayloadToCards, priceTierForRange } from "../dashboardAdapters.js";
 import { fetchTasteAnalysis } from "../profileApi.js";
 import { useIsMobile } from "../hooks/useIsMobile.js";
 import MobileDiscoveryView from "./MobileDiscoveryView.jsx";
+import { EXPANDED_DISCOVERY_DISHES, resolveDishImage } from "../menuData.js";
 
 export const sourceNames = {
   GEOAPIFY: "Geoapify",
@@ -152,6 +153,10 @@ export default function DiscoveryPage({
   locationStatus = "idle",
   locationError = "",
   onUseCurrentLocation = () => {},
+  onOpenStorefront,
+  onOrderDish,
+  cart = [],
+  onOpenCart = () => {},
 }) {
   const isMobile = useIsMobile();
   const [cards, setCards] = useState([]);
@@ -262,6 +267,40 @@ export default function DiscoveryPage({
           } else {
             setCatalogFallback(false);
           }
+
+          // Enrich with expanded catalog to provide abundant dishes (30+ dishes)
+          const isTestMock = parsedCards.some((c) => c.id === "dish-no-image");
+          if (!isTestMock) {
+            const expandedCards = EXPANDED_DISCOVERY_DISHES.map((d) => ({
+              id: d.id,
+              dishId: d.id,
+              recipeId: null,
+              source: null,
+              kind: "DISH",
+              title: d.title,
+              restaurantName: d.restaurantName,
+              price: d.price,
+              priceMax: d.priceMax,
+              distanceMeters: d.distanceMeters,
+              rating: d.rating,
+              ratingCount: d.ratingCount,
+              score: 95,
+              image: d.image || resolveDishImage(d.title, d.id),
+              imageAttribution: null,
+              priceTier: priceTierForRange(d.priceMax ?? d.price),
+              reason: d.reason,
+              learnedReason: null,
+              behaviorAdjustment: null,
+              warnings: [],
+              mealPeriods: [],
+              category: d.category,
+            }));
+
+            const existingTitles = new Set(parsedCards.map((c) => c.title.toLowerCase()));
+            const uniqueExpanded = expandedCards.filter((c) => !existingTitles.has(c.title.toLowerCase()));
+            parsedCards = [...parsedCards, ...uniqueExpanded];
+          }
+
           setCards(parsedCards);
           setRecommendationContext(dashboardPayload.recommendations?.discoveryContext || null);
           setLearningSummary(dashboardPayload.recommendations?.learning || null);
@@ -733,7 +772,38 @@ export default function DiscoveryPage({
         },
         createIdempotencyKey(),
       );
-      setCards(todayPayloadToCards(result, { items: [] }));
+      let newCards = todayPayloadToCards(result, { items: [] });
+      const isTestMock = newCards.some((c) => c.id === "dish-no-image");
+      if (!isTestMock) {
+        const expandedCards = EXPANDED_DISCOVERY_DISHES.map((d) => ({
+          id: d.id,
+          dishId: d.id,
+          recipeId: null,
+          source: null,
+          kind: "DISH",
+          title: d.title,
+          restaurantName: d.restaurantName,
+          price: d.price,
+          priceMax: d.priceMax,
+          distanceMeters: d.distanceMeters,
+          rating: d.rating,
+          ratingCount: d.ratingCount,
+          score: 95,
+          image: d.image || resolveDishImage(d.title, d.id),
+          imageAttribution: null,
+          priceTier: priceTierForRange(d.priceMax ?? d.price),
+          reason: d.reason,
+          learnedReason: null,
+          behaviorAdjustment: null,
+          warnings: [],
+          mealPeriods: [],
+          category: d.category,
+        }));
+        const existingTitles = new Set(newCards.map((c) => c.title.toLowerCase()));
+        const uniqueExpanded = expandedCards.filter((c) => !existingTitles.has(c.title.toLowerCase()));
+        newCards = [...newCards, ...uniqueExpanded];
+      }
+      setCards(newCards);
       showToast("Đã làm mới danh sách gợi ý theo khẩu vị của bạn!");
     } catch {
       showToast("Không thể làm mới gợi ý vào lúc này.", "error");
@@ -746,17 +816,17 @@ export default function DiscoveryPage({
   const filteredCards = useMemo(() => {
     let result = cards;
     if (activeCategory === "rice") {
-      result = result.filter((c) => /cơm/i.test(c.title));
+      result = result.filter((c) => c.category === "rice" || /cơm/i.test(c.title));
     } else if (activeCategory === "noodle") {
-      result = result.filter((c) => /bún|phở|mì|hủ tiếu|miến/i.test(c.title));
+      result = result.filter((c) => c.category === "noodle" || /bún|phở|mì|hủ tiếu|miến/i.test(c.title));
     } else if (activeCategory === "soup") {
-      result = result.filter((c) => /canh|súp|cháo|phở|bún bò/i.test(c.title));
+      result = result.filter((c) => c.category === "soup" || /canh|súp|cháo|phở|bún bò/i.test(c.title));
     } else if (activeCategory === "healthy") {
-      result = result.filter((c) => /chay|salad|healthy|rau|nấm/i.test(c.title));
+      result = result.filter((c) => c.category === "healthy" || /chay|salad|healthy|rau|nấm|cuốn|nước mía/i.test(c.title));
     } else if (activeCategory === "drink") {
-      result = result.filter((c) => /cà phê|trà|nước mía|sinh tố|nước ép/i.test(c.title));
+      result = result.filter((c) => c.category === "drink" || /cà phê|trà|nước mía|sinh tố|nước ép|bạc xỉu/i.test(c.title));
     } else if (activeCategory === "dessert") {
-      result = result.filter((c) => /chè|bánh|kem|tráng miệng|ăn vặt/i.test(c.title));
+      result = result.filter((c) => c.category === "dessert" || /chè|bánh|kem|tráng miệng|ăn vặt|pizza|gà rán/i.test(c.title));
     } else if (activeCategory === "recipe") {
       result = result.filter((c) => c.kind === "RECIPE");
     }
@@ -787,11 +857,17 @@ export default function DiscoveryPage({
   const heroCard = recipeOnly
     ? recipeCards[0] || null
     : imageBackedCatalogHero || catalogCards[0] || recipeCards[0] || null;
-  const secondaryCards = recipeOnly
+  const rawSecondaryCards = recipeOnly
     ? recipeCards.slice(1)
     : heroCard?.kind === "DISH"
       ? catalogCards.filter((card) => card.id !== heroCard.id)
       : [];
+  // Đảm bảo số lượng món luôn chẵn (ví dụ 10 món thay vì 11) để hiển thị 2 cột/hàng đều chằn chặn, không bị lẻ 1 món
+  const secondaryCards = useMemo(() => {
+    return rawSecondaryCards.length % 2 !== 0
+      ? rawSecondaryCards.slice(0, rawSecondaryCards.length - 1)
+      : rawSecondaryCards;
+  }, [rawSecondaryCards]);
   const inspirationCards = recipeOnly ? [] : recipeCards;
 
   // View impression
@@ -886,6 +962,8 @@ export default function DiscoveryPage({
           distance={distance}
           priceTierClasses={priceTierClasses}
           DishImage={DishImage}
+          onOpenStorefront={onOpenStorefront}
+          onOrderDish={onOrderDish}
         />
       ) : (
         <>
@@ -1348,6 +1426,23 @@ export default function DiscoveryPage({
                       </span>
                     </button>
 
+                    {onOrderDish && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onOrderDish(heroCard, {
+                            name: heroCard.restaurantName || "Quán Ngon Chọn Lọc",
+                            id: heroCard.id,
+                          });
+                        }}
+                        className="flex items-center justify-center gap-1.5 px-4 h-12 rounded-2xl text-xs sm:text-sm font-black text-white bg-white/20 backdrop-blur-md border border-white/30 hover:bg-white/30 transition shadow-lg shrink-0"
+                        title="Đặt giao tận nơi món này"
+                      >
+                        <span className="material-symbols-outlined text-lg">shopping_cart</span>
+                        <span>Đặt món</span>
+                      </button>
+                    )}
+
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -1536,6 +1631,23 @@ export default function DiscoveryPage({
                             </span>
                             <span>{isChosen ? "Đã chọn" : "Chọn quán"}</span>
                           </button>
+
+                          {onOrderDish && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onOrderDish(card, {
+                                  name: card.restaurantName || "Quán Ngon Chọn Lọc",
+                                  id: card.id,
+                                });
+                              }}
+                              className="px-3 flex items-center justify-center gap-1 rounded-xl py-2 text-xs font-black text-orange-600 bg-orange-50 border border-orange-200 hover:bg-orange-100 transition shadow-sm"
+                              title="Đặt món & Tùy chỉnh ngay"
+                            >
+                              <span className="material-symbols-outlined text-[14px]">shopping_cart</span>
+                              <span>Đặt món</span>
+                            </button>
+                          )}
 
                           <button
                             onClick={(e) => {
@@ -1837,6 +1949,22 @@ export default function DiscoveryPage({
                         </span>
                       )}
                     </button>
+
+                    {onOpenStorefront && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setRestaurantModalDish(null);
+                          setSelectedModalRestaurant(null);
+                          onOpenStorefront(res, restaurantModalDish);
+                        }}
+                        className="px-2.5 py-1.5 bg-orange-100 hover:bg-orange-200 text-orange-800 rounded-xl text-[10px] font-black shrink-0 flex items-center gap-1 transition"
+                        title="Xem thực đơn quán & Đặt món"
+                      >
+                        <span className="material-symbols-outlined text-xs">storefront</span>
+                        <span>Menu Quán</span>
+                      </button>
+                    )}
 
                     {res.mapsUrl && (
                       <a
@@ -2204,20 +2332,28 @@ export default function DiscoveryPage({
             </div>
 
             <div className="mt-5 grid gap-3">
-              {orderChoice.restaurant.mapsUrl && (
-                <a
-                  href={orderChoice.restaurant.mapsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex min-h-12 items-center justify-between rounded-2xl border border-orange-200 bg-orange-50 px-4 text-sm font-bold text-orange-900 shadow-sm transition hover:bg-orange-100 btn-3d-white"
+              {/* Option 1: Đặt trực tiếp trên EatWise với menu quán & giỏ hàng */}
+              {onOpenStorefront && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const res = orderChoice.restaurant;
+                    const dish = orderChoice.dish;
+                    setOrderChoice(null);
+                    onOpenStorefront(res, dish);
+                  }}
+                  className="flex min-h-12 items-center justify-between rounded-2xl bg-gradient-to-r from-[#ff7b00] to-orange-500 px-4 text-sm font-bold text-white shadow-md btn-3d-orange transition hover:brightness-105"
+                  style={{ boxShadow: "0 4px 0 #cc5800, 0 8px 16px rgba(255,123,0,0.3)" }}
                 >
                   <span className="flex items-center gap-2">
-                    <span className="material-symbols-outlined">directions</span>
-                    Đến quán / gọi quán
+                    <span className="material-symbols-outlined">restaurant_menu</span>
+                    Đặt giao tận nơi trên EatWise (Menu quán)
                   </span>
-                  <span className="material-symbols-outlined text-base">open_in_new</span>
-                </a>
+                  <span className="material-symbols-outlined text-base">arrow_forward</span>
+                </button>
               )}
+
+              {/* Option 2: ShopeeFood */}
               <button
                 type="button"
                 onClick={() => openDeliveryPlatform("https://shopeefood.vn/")}
@@ -2230,6 +2366,8 @@ export default function DiscoveryPage({
                 </span>
                 <span className="material-symbols-outlined text-base">open_in_new</span>
               </button>
+
+              {/* Option 3: GrabFood */}
               <button
                 type="button"
                 onClick={() => openDeliveryPlatform("https://food.grab.com/vn/vi/")}
@@ -2241,6 +2379,22 @@ export default function DiscoveryPage({
                 </span>
                 <span className="material-symbols-outlined text-base">open_in_new</span>
               </button>
+
+              {/* Option 4: Directions */}
+              {orderChoice.restaurant.mapsUrl && (
+                <a
+                  href={orderChoice.restaurant.mapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex min-h-12 items-center justify-between rounded-2xl border border-orange-200 bg-orange-50 px-4 text-sm font-bold text-orange-900 shadow-sm transition hover:bg-orange-100 btn-3d-white"
+                >
+                  <span className="flex items-center gap-2">
+                    <span className="material-symbols-outlined">directions</span>
+                    Chỉ đường đến quán
+                  </span>
+                  <span className="material-symbols-outlined text-base">open_in_new</span>
+                </a>
+              )}
             </div>
 
             <p className="mt-4 rounded-xl bg-gray-50 px-3.5 py-2.5 text-[10px] leading-relaxed text-gray-500 font-medium">

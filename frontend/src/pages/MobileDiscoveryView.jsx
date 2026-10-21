@@ -35,14 +35,23 @@ export default function MobileDiscoveryView({
   distance = (v) => `${v}m`,
   priceTierClasses = {},
   DishImage,
+  onOpenStorefront,
+  onOrderDish,
 }) {
   const [activeStory, setActiveStory] = useState(null);
 
   // Filter and sort cards
   const filteredCards = cards.filter((card) => {
-    if (activeCategory !== "all" && card.category !== activeCategory) {
-      if (activeCategory === "recipe" && card.sourceType !== "RECIPE") return false;
-      if (activeCategory !== "recipe" && card.sourceType === "RECIPE") return false;
+    if (activeCategory !== "all") {
+      if (card.category === activeCategory) return true;
+      if (activeCategory === "rice" && /cơm/i.test(card.title)) return true;
+      if (activeCategory === "noodle" && /bún|phở|mì|hủ tiếu|miến/i.test(card.title)) return true;
+      if (activeCategory === "soup" && /canh|súp|cháo|phở|bún bò/i.test(card.title)) return true;
+      if (activeCategory === "healthy" && /chay|salad|healthy|rau|nấm|cuốn|nước mía/i.test(card.title)) return true;
+      if (activeCategory === "drink" && /trà|cà phê|nước|sinh tố/i.test(card.title)) return true;
+      if (activeCategory === "dessert" && /chè|bánh|kem|tráng miệng|ăn vặt|pizza|gà rán/i.test(card.title)) return true;
+      if (activeCategory === "recipe" && (card.sourceType === "RECIPE" || card.kind === "RECIPE")) return true;
+      return false;
     }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
@@ -54,7 +63,11 @@ export default function MobileDiscoveryView({
   });
 
   const catalogCards = filteredCards.filter((c) => c.sourceType !== "RECIPE" && c.kind !== "RECIPE");
-  const secondaryCards = heroCard ? catalogCards.filter((c) => c.id !== heroCard.id) : catalogCards;
+  const rawSecondaryCards = heroCard ? catalogCards.filter((c) => c.id !== heroCard.id) : catalogCards;
+  // Đảm bảo số lượng luôn chẵn (ví dụ 10 món thay vì 11) để chia đều 2 cột trên điện thoại
+  const secondaryCards = rawSecondaryCards.length % 2 !== 0
+    ? rawSecondaryCards.slice(0, rawSecondaryCards.length - 1)
+    : rawSecondaryCards;
   const recipeCards = filteredCards.filter((c) => c.sourceType === "RECIPE" || c.kind === "RECIPE");
 
   const storyItems = [
@@ -309,12 +322,27 @@ export default function MobileDiscoveryView({
                 </div>
 
                 <div className="flex items-center gap-2">
+                  {onOrderDish && (
+                    <button
+                      onClick={() =>
+                        onOrderDish(heroCard, {
+                          name: heroCard.restaurantName || "Quán Ngon Chọn Lọc",
+                          id: heroCard.id,
+                        })
+                      }
+                      aria-label={`Đặt món ngay: ${heroCard.title}`}
+                      className="px-3 py-2 rounded-xl text-xs font-black text-orange-600 bg-orange-50 border border-orange-200 active:scale-95 transition flex items-center gap-1"
+                    >
+                      <span className="material-symbols-outlined text-sm">shopping_cart</span>
+                      <span>Đặt món</span>
+                    </button>
+                  )}
                   <button
                     onClick={() => handleFindRestaurants(heroCard)}
                     aria-label={`Xem quán gần bạn cho món ${heroCard.title}`}
-                    className="px-4 py-2 rounded-xl text-xs font-black text-white bg-[#ff7b00] shadow-md btn-3d-orange active:scale-95 transition"
+                    className="px-3.5 py-2 rounded-xl text-xs font-black text-white bg-[#ff7b00] shadow-md btn-3d-orange active:scale-95 transition"
                   >
-                    Xem quán & chọn món
+                    Xem quán
                   </button>
                 </div>
               </div>
@@ -429,17 +457,35 @@ export default function MobileDiscoveryView({
                       <span className="text-xs font-black text-[#ff7b00]">
                         {money(card.price || card.priceMin || 45000)}
                       </span>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleFindRestaurants(card);
-                        }}
-                        className="flex h-6 w-6 items-center justify-center rounded-lg bg-orange-50 text-orange-600 active:bg-orange-500 active:text-white transition"
-                        title="Xem quán"
-                      >
-                        <span className="material-symbols-outlined text-sm">storefront</span>
-                      </button>
+                      <div className="flex items-center gap-1.5">
+                        {onOrderDish && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onOrderDish(card, {
+                                name: card.restaurantName || "Quán Ngon Chọn Lọc",
+                                id: card.id,
+                              });
+                            }}
+                            className="flex h-6 w-6 items-center justify-center rounded-lg bg-orange-500 text-white shadow-sm active:scale-90 transition"
+                            title="Đặt món ngay"
+                          >
+                            <span className="material-symbols-outlined text-[13px]">shopping_cart</span>
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleFindRestaurants(card);
+                          }}
+                          className="flex h-6 w-6 items-center justify-center rounded-lg bg-orange-50 text-orange-600 active:bg-orange-500 active:text-white transition"
+                          title="Xem quán"
+                        >
+                          <span className="material-symbols-outlined text-sm">storefront</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
